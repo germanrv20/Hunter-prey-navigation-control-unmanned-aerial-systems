@@ -156,7 +156,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/germanrv/drone_ws/install/lib;/home/germanrv/catkin_ws/devel_isolated/mi_paquete/lib;/home/germanrv/catkin_ws/devel_isolated/iq_gnc/lib;/home/germanrv/catkin_ws/devel_isolated/mavros/lib;/home/germanrv/catkin_ws/devel_isolated/iq_sim/lib;/home/germanrv/catkin_ws/devel_isolated/darknet_ros/lib;/home/germanrv/catkin_ws/devel_isolated/darknet_ros_msgs/lib;/home/germanrv/catkin_ws/install_isolated/lib;/home/germanrv/catkin_ws/devel_isolated/beginner_tutorials/lib;/home/germanrv/drone_ws/devel/lib;/opt/ros/noetic/lib;/home/germanrv/catkin_ws/devel/lib)
+    foreach(path /home/germanrv/drone_ws/install/lib;/home/germanrv/catkin_ws/devel_isolated/mi_paquete/lib;/home/germanrv/catkin_ws/devel_isolated/iq_gnc/lib;/home/germanrv/catkin_ws/devel_isolated/mavros/lib;/home/germanrv/catkin_ws/devel_isolated/iq_sim/lib;/home/germanrv/catkin_ws/devel_isolated/darknet_ros/lib;/home/germanrv/catkin_ws/devel_isolated/darknet_ros_msgs/lib;/home/germanrv/catkin_ws/install_isolated/lib;/home/germanrv/catkin_ws/devel_isolated/beginner_tutorials/lib;/opt/ros/noetic/lib;/home/germanrv/catkin_ws/devel/lib;/home/germanrv/drone_ws/devel/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

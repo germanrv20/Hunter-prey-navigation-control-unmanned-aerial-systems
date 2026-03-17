@@ -24,8 +24,8 @@ const double CENTER_Y = -10.0;
 
 // --- PARÁMETROS DE LA ONDA Z (Tu fórmula) ---
 const double Z0 = 7.0;           // Altura base (z0)
-const double AMP = 1.5;          // Amplitud (amp) +/- 2m
-const double WAVE_FREQ_HZ = 0.05; // Frecuencia de la onda (0.1 Hz = 10s por ciclo)
+const double AMP = 1;          // Amplitud (amp) +/- 2m
+const double WAVE_FREQ_HZ = 0.1; // Frecuencia de la onda (0.1 Hz = 10s por ciclo)
 
 
 // --- PARÁMETROS DEL CÍRCULO XY ---
