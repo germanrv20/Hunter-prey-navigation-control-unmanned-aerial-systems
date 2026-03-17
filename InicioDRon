@@ -1,0 +1,82 @@
+INICIAR DRON
+
+terminal 1 - germanrv@germanrv-Pulse-GL66-12UEK:~/catkin_ws/src$ roslaunch iq_sim runway.launch
+terminal 2 - germanrv@germanrv-Pulse-GL66-12UEK:~$ ./startsitl.sh
+terminal 3 -  germanrv@germanrv-Pulse-GL66-12UEK:~/catkin_ws$ roslaunch iq_sim apm.launch
+terminal 4 - ros progrma  germanrv@germanrv-Pulse-GL66-12UEK:~/catkin_ws/src$ rosrun iq_gnc square
+
+
+ 
+ 
+poner camra roslaunch darknet_ros darknet_ros.launch
+
+
+
+DRONES
+
+
+T1 -- germanrv@germanrv-Pulse-GL66-12UEK:~$ roslaunch iq_sim runway.launch
+t2 -- sim_vehicle.py -v ArduCopter -f gazebo-iris --console -I0 --out=tcpin:0.0.0.0:8100
+T3-- sim_vehicle.py -v ArduCopter -f gazebo-iris --console -I1 --out=tcpin:0.0.0.0:8200
+
+ sim_vehicle.py -v ArduCopter -f gazebo-drone1 --console -I0 --out=tcpin:0.0.0.0:8100
+sim_vehicle.py -v ArduCopter -f gazebo-drone2 --console -I1 --out=tcpin:0.0.0.0:8200
+
+
+-----------------------------2 drones ejecutar------------------------
+
+t1 - roslaunch iq_sim runway.launch
+t2 - sim_vehicle.py -v ArduCopter -f gazebo-iris --console -I0 --out=tcpin:0.0.0.0:8100 --add-param-file="/home/germanrv/catkin_ws/src/iq_sim/models/drone1/drone1_params.parm"
+
+t3 - sim_vehicle.py -v ArduCopter -f gazebo-iris --console -I1 --out=tcpin:0.0.0.0:8200 --add-param-file="/home/germanrv/catkin_ws/src/iq_sim/models/drone2/drone2_params.parm"
+
+t4 - roslaunch iq_sim apm.launch drone_id:=1 fcu_url:=udp://127.0.0.1:14551@14555 mavros_ns:=/drone1 tgt_system:=1
+t5 - roslaunch iq_sim apm.launch drone_id:=2 fcu_url:=udp://127.0.0.1:14561@14565 mavros_ns:=/drone2 tgt_system:=2
+
+
+		----- PROYECCCOIN Y CALCULO ERROR-------------
+~/drone_ws$ rosrun drone_projection drone_projection_node  #primer nodo ver camara
+
+
+~/drone_ws$ rosrun drone_lap drone_lap_projection #camara con el error y el dron 
+
+~/drone_ws$ rosrun drone_lap yolo_coordinate_sender.py #genera y manda cordenadas yolo
+
+		---------Movimiento Dron2 ------------------------
+
+~/drone_ws$ rosrun drone_projection drone1_spin_up_down_gnc_node  #dron1 da vueltas y sube
+
+~/drone_ws$ rosrun drone_projection drone2_vertical_square_node  # dron2 hace un cuadrado vertical
+
+~/drone_ws$ rosrun drone_lap drone2_spin_up_down_node  #dube y baja el dron2
+
+~/drone_ws$ rosrun drone_lap drone2_360lap # dron2 hace una circunferencia sobre un ejee  0 , 0 x
+
+~/drone_ws$ rosrun drone_lap dron2_prueba # dron2 hace una circunferencia sobre un ejee  0 , 0 x de forma local
+
+~/drone_ws$ rosrun drone_lap drone2_wavy_circle_node #dron circulo y ondas en x con forma senoidal
+
+		----------- PLOTTER----------------------------
+
+~/drone_ws rosrun drone_lap realtime_errorYaw_plotter.py #Hace un grafico del error del pid en el tiempo de yaw
+
+~/drone_ws$ rosrun drone_lap realtime_error_plotter_y.py #Hace un grafico del error del pid en el tiempo de y
+
+~/drone_ws$ rosrun drone_lap realtime_error_combined_plotter.py # #Hace un grafico del error del pid en el tiempo de y x y distancia
+
+~/drone_ws$  rosrun drone_lap plot_trajectory.py #dibuja la circunferencia del dron2
+
+~/drone_ws$ rosrun drone_lap wave_trajectory_plot.py #dibuja separado en 2D ciruclo xy y seno en z
+
+~/drone_ws$ rosrun drone_lap wave_trajectory_3D_plot.py #dibuja su trayectoria en 3D
+
+		----------- PDI ---------------------------
+~/drone_ws$ rosrun drone_lap drone1_vertical_pid_node  #PID vertical
+
+~/drone_ws$ rosrun drone_lap drone1_Yaw_pid_node  #Ejecuta el PID yaw
+
+~/drone_ws$ rosrun drone_lap drone1_follow_xy_pid # Ejecuta el PID x e y
+--------------------------------------------------------------
+
+
+
