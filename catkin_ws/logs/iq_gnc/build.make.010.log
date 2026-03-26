@@ -1,7 +1,0 @@
-[35m[1mScanning dependencies of target sub[0m
-[ 12%] [32mBuilding CXX object CMakeFiles/sub.dir/src/sub.cpp.o[0m
-[ 50%] Built target gnc_example
-[ 62%] Built target square
-[ 87%] Built target set_wp
-[100%] [32m[1mLinking CXX executable /home/germanrv/catkin_ws/devel/.private/iq_gnc/lib/iq_gnc/sub[0m
-[100%] Built target sub

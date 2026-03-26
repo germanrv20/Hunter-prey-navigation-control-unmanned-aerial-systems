@@ -1,2 +1,0 @@
-beginner_tutorials:darknet_ros/darknet_ros:darknet_ros/darknet_ros_msgs:iq_gnc:iq_sim:mavlink:mavros:mi_paquete
--DCATKIN_DEVEL_PREFIX=/home/germanrv/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/germanrv/catkin_ws/install -G Unix Makefiles

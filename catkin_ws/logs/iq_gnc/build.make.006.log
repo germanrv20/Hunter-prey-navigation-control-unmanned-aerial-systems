@@ -1,6 +1,0 @@
-[ 33%] [32m[1mLinking CXX executable /home/germanrv/catkin_ws/devel/.private/iq_gnc/lib/iq_gnc/square[0m
-[ 33%] [32m[1mLinking CXX executable /home/germanrv/catkin_ws/devel/.private/iq_gnc/lib/iq_gnc/set_wp[0m
-[ 50%] [32m[1mLinking CXX executable /home/germanrv/catkin_ws/devel/.private/iq_gnc/lib/iq_gnc/gnc_example[0m
-[ 83%] Built target square
-[ 83%] Built target gnc_example
-[100%] Built target set_wp

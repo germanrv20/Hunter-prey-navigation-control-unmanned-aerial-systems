@@ -1,7 +1,0 @@
-[31m[1mCMake Error[0m at /home/germanrv/catkin_ws/src/iq_gnc/CMakeLists.txt:224 (add_executable):
-  add_executable cannot create target "square" because another target with
-  the same name already exists.  The existing target is an executable created
-  in source directory "/home/germanrv/catkin_ws/src/iq_gnc".  See
-  documentation for policy CMP0002 for more details.
-
-

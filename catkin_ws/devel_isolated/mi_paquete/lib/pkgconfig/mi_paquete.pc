@@ -1,8 +1,0 @@
-prefix=/home/germanrv/catkin_ws/devel_isolated/mi_paquete
-
-Name: mi_paquete
-Description: Description of mi_paquete
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

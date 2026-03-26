@@ -1,8 +1,0 @@
-[35m[1mScanning dependencies of target sr[0m
-[ 40%] Built target set_wp
-[ 40%] Built target sub
-[ 60%] Built target gnc_example
-[ 80%] Built target square
-[ 90%] [32mBuilding CXX object CMakeFiles/sr.dir/src/sr.cpp.o[0m
-[100%] [32m[1mLinking CXX executable /home/germanrv/catkin_ws/devel/.private/iq_gnc/lib/iq_gnc/sr[0m
-[100%] Built target sr

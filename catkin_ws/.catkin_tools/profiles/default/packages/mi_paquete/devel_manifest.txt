@@ -1,4 +1,0 @@
-mi_paquete
-/home/germanrv/catkin_ws/devel/.private/mi_paquete/lib/pkgconfig/mi_paquete.pc /home/germanrv/catkin_ws/devel/lib/pkgconfig/mi_paquete.pc
-/home/germanrv/catkin_ws/devel/.private/mi_paquete/share/mi_paquete/cmake/mi_paqueteConfig-version.cmake /home/germanrv/catkin_ws/devel/share/mi_paquete/cmake/mi_paqueteConfig-version.cmake
-/home/germanrv/catkin_ws/devel/.private/mi_paquete/share/mi_paquete/cmake/mi_paqueteConfig.cmake /home/germanrv/catkin_ws/devel/share/mi_paquete/cmake/mi_paqueteConfig.cmake

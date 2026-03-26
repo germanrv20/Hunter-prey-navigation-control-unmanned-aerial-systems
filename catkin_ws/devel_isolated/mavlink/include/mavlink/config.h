@@ -1,1 +1,0 @@
-#define MAVLINK_VERSION "2025.5.5"
