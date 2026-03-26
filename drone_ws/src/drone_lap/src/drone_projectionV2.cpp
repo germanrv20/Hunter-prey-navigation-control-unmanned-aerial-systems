@@ -11,6 +11,7 @@
 #include <Eigen/Geometry>
 
 #include <cv_bridge/cv_bridge.h>
+#include "ros/package.h"
 #include <opencv2/opencv.hpp>
 #include <opencv2/calib3d.hpp>    
 #include <opencv2/core/eigen.hpp> 
@@ -40,7 +41,15 @@ int yolo_state = 0;
 cv::Scalar color;
 std::string label;
 
-
+// Variables para almacenar los datos
+struct CameraParams {
+    double width;
+    double height;
+    double hfov;
+    bool success;
+};
+cv::Mat dist_coeffs;
+cv::Mat camera_matrix;
 
 // --------------------
 // FILTRO EMA PARA CENTRO YOLO
@@ -126,7 +135,37 @@ Eigen::Matrix4d getCameraTransform() {
 }
 
 
+// Función que DEVUELVE los datos nominales
+CameraParams leer_datos_camera(const std::string& path) {
+    cv::FileStorage fs(path, cv::FileStorage::READ);
+    CameraParams params = {640.0, 480.0, 1.2, false}; // Valores por defecto
 
+    if (fs.isOpened()) {
+        fs["width"] >> params.width;
+        fs["height"] >> params.height;
+        fs["hfov"] >> params.hfov;
+        params.success = true;
+        fs.release();
+    } else {
+        ROS_ERROR("No se pudo abrir el archivo de configuracion en: %s", path.c_str());
+    }
+    return params;
+}
+
+// Función que DEVUELVE la matriz de distorsión
+cv::Mat leer_distorsion_camera(const std::string& path) {
+    cv::FileStorage fs(path, cv::FileStorage::READ);
+    cv::Mat dist;
+
+    if (fs.isOpened()) {
+        fs["distortion_coefficients"] >> dist;
+        fs.release();
+    } else {
+        ROS_WARN("Usando distorsion cero por defecto.");
+        dist = cv::Mat::zeros(5, 1, CV_64F);
+    }
+    return dist;
+}
 // -----------------------------------------
 // Main
 // -----------------------------------------
@@ -138,7 +177,7 @@ int main(int argc, char** argv)
     ros::Publisher error_pub = nh.advertise<geometry_msgs::PointStamped>("/drone1/vision_error", 1);
 
     ros::Subscriber model_states_sub = nh.subscribe("/gazebo/model_states", 10, modelStatesCallback);
-    ros::Subscriber image_sub = nh.subscribe("webcam/image_raw", 10, imageCallback); ///   /capture_node/camera/image
+    ros::Subscriber image_sub = nh.subscribe("webcam/image_raw", 10, imageCallback); ///  /capture_node/camera/image    
     
     // SUSCRIPCIÓN AL NODO DE YOLO
     ros::Subscriber yolo_sub = nh.subscribe("/drone1/yolo_pixel_coords", 10, yoloCallback);
@@ -146,17 +185,24 @@ int main(int argc, char** argv)
 
     ros::Rate rate(20); 
 
+    // --- CARGAR CONFIGURACIÓN DESDE ARCHIVO ---
+    std::string config_path = ros::package::getPath("drone_lap") + "/config/camera_params.yaml";
+    
+    // Llamamos a las funciones que devuelven los datos
+    CameraParams datos = leer_datos_camera(config_path);
+    cv::Mat dist_coeffs = leer_distorsion_camera(config_path);
+
     // --- CONFIGURACIÓN CÁMARA ---
-    double width = 640.0;
-    double height = 480.0;
-    double h_fov = 1.2;
-    double fx = width / (2.0 * tan(h_fov / 2.0));
+
+    //double width = 640.0;
+    //double height = 480.0;
+    //double h_fov = 1.2;
+    double fx = datos.width / (2.0 * tan(datos.hfov / 2.0));
     double fy = fx;
-    double cx = width / 2.0;
-    double cy = height / 2.0;
+    double cx = datos.width / 2.0;
+    double cy = datos.height / 2.0;
 
     cv::Mat camera_matrix = (cv::Mat_<double>(3,3) << fx, 0, cx, 0, fy, cy, 0, 0, 1);
-    cv::Mat dist_coeffs = cv::Mat::zeros(5, 1, CV_64F); 
 
     geometry_msgs::PointStamped error_msg;
     double error_x = 0.0;
@@ -167,6 +213,11 @@ int main(int argc, char** argv)
     R_flu2cv << 0, -1, 0, 0, 0, -1, 1, 0, 0;
 
     ROS_INFO("Nodo proyeccion V3 iniciado. Modo YOLO: %s", use_yolo ? "ACTIVADO" : "DESACTIVADO");
+
+
+    // Utilizado para hacer video
+    //int frame_count = 0;
+    //std::string folder_path = "/home/germanrv/drone_ws/frames/";
 
     while (ros::ok())
     {
@@ -211,6 +262,10 @@ int main(int argc, char** argv)
                 continue;
             }
 
+
+            // Clonar para video
+            //cv::Mat img_original = cv_ptr->image.clone();
+
             cv::Point2d center_pt(cx, cy);
             cv::drawMarker(cv_ptr->image, center_pt, cv::Scalar(0, 255, 0), cv::MARKER_CROSS, 20, 2);
 
@@ -236,7 +291,7 @@ int main(int argc, char** argv)
                     pt_math_undist = pts_undistorted[0];
                     cv::Point2d pt_math_dist = pts_distorted[0];
 
-                    if (pt_math_dist.x >= 0 && pt_math_dist.x < width && pt_math_dist.y >= 0 && pt_math_dist.y < height) {
+                    if (pt_math_dist.x >= 0 && pt_math_dist.x < datos.width && pt_math_dist.y >= 0 && pt_math_dist.y < datos.height) {
                         // Pintar círculo Rojo
                         cv::circle(cv_ptr->image, pt_math_dist, 3, cv::Scalar(0, 0, 255), 2);
                         gt_visible = true;
@@ -390,6 +445,9 @@ int main(int argc, char** argv)
                     error_z = -999.0;
                     cv::putText(cv_ptr->image, "YOLO LOST", cv::Point(50, 50), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
                 }
+
+
+
             } else {
                 // Modo Gazebo puro
                 if (gt_visible && pts_distorted.size() > 0) {
@@ -401,6 +459,22 @@ int main(int argc, char** argv)
             }
 
             cv::imshow("Drone1 Vision (Red=GT, Green=YOLO)", cv_ptr->image);
+            /*
+            // 2. CONCATENAR HORIZONTALMENTE
+            cv::Mat combined;
+            cv::hconcat(img_original, cv_ptr->image, combined);
+
+            
+            // 3. MOSTRAR Y GUARDAR
+            cv::imshow("TFG Demo: Original vs Procesada", combined);
+            
+            // Guardamos el frame con un nombre secuencial (ej: frame_0001.jpg)
+            char filename[100];
+            sprintf(filename, "frame_%04d.jpg", frame_count);
+            cv::imwrite(folder_path + filename, combined);
+            
+            frame_count++;
+            */
             cv::waitKey(1);
         }
 

@@ -84,7 +84,7 @@ class YoloSender:
             exit()
         
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("webcam/image_raw", Image, self.callback) #/capture_node/camera/image
+        self.image_sub = rospy.Subscriber("webcam/image_raw", Image, self.callback) #    /capture_node/camera/image 
         self.coord_pub = rospy.Publisher("/drone1/yolo_pixel_coords", Quaternion, queue_size=1)
         self.state_pub = rospy.Publisher("/drone1/yolo_state", Int32, queue_size=1)
 

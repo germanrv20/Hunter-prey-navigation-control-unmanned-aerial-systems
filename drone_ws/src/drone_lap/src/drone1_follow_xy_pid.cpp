@@ -33,7 +33,7 @@ const double MAX_VERT_VEL = 1.0;  // rad/s
 const double Kp_dist = 0.007; // Ajustar experimentalmente
 const double Ki_dist = 0.000;
 const double Kd_dist = 0.0010; 
-const double MAX_LINEAR_X = 0.7; // m/s
+const double MAX_LINEAR_X = 1.5; // m/s
 
 
 

@@ -1,0 +1,2 @@
+drone_lap:drone_projection:iq_gnc:iq_sim:mavlink:mavros
+-DPYTHON_EXECUTABLE=/usr/bin/python3 -G Unix Makefiles -DCATKIN_DEVEL_PREFIX=/home/germanrv/drone_ws/devel_isolated -DCMAKE_INSTALL_PREFIX=/home/germanrv/drone_ws/install_isolated

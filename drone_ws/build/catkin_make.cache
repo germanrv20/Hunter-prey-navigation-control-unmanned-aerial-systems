@@ -1,2 +1,2 @@
-drone_lap:drone_projection
+drone_lap:drone_projection:iq_gnc:iq_sim:mavlink:mavros
 -DCATKIN_DEVEL_PREFIX=/home/germanrv/drone_ws/devel -DCMAKE_INSTALL_PREFIX=/home/germanrv/drone_ws/install -G Unix Makefiles

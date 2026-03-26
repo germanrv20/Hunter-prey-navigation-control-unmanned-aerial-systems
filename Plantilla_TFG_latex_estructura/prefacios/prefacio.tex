@@ -1,0 +1,126 @@
+\input{portada/portada_2}
+
+
+
+\chapter*{Agradecimientos\\[-0.4ex]\rule{\textwidth}{1pt}}
+Poner aquí agradecimientos.
+
+\clearpage
+
+\begin{center}
+{\large\bfseries Control de navegación cazador-presa para sistemas aéreos no tripulados}\\
+\end{center}
+\begin{center}
+Germán Rodríguez Vidal\\
+\end{center}
+
+%\vspace{0.7cm}
+\noindent{\textbf{Palabras clave}: Control de navegación, UAV, , Sistemas aéreos no tripulados,
+Navegación autónoma, Ardupilot, Gazebo, PID, Filtro de Kalman, Detección de Objetos}\\
+
+\vspace{0.7cm}
+\begingroup\setlength{\parindent}{0pt}
+\noindent{\textbf{Resumen}}\\
+
+Este Trabajo Fin de Grado propone el desarrollo de métodos de navegación autónoma para sistemas aéreos no tripulados (UAV, por sus siglas en inglés) convencionales en el caso de uso del problema cazador-presa. En concreto, se plantea una estrategia de control de navegación que permita el seguimiento a corta distancia de un UAV presa por parte de un UAV cazador, el cual debe perseguirlo en espacio abierto de forma estable y robusta. Para lograrlo, se integran métodos de control y técnicas de visión por computador que facilitan la detección, localización y seguimiento del objetivo durante la misión. 
+
+\vspace{0.3cm}
+
+Los objetivos principales de este proyecto son, en primer lugar, validar un algoritmo de control de navegación capaz de realizar el seguimiento autónomo de un UAV presa a partir de la imagen. En segundo lugar, se persigue implementar los algoritmos desarrollados en una plataforma empotrada para su posterior validación experimental en condiciones de operación real.
+
+\vspace{0.3cm}
+Para alcanzar estos objetivos, se ha seleccionado el simulador 3D Gazebo como entorno de experimentación inicial. Esta herramienta permite evaluar los algoritmos de control en escenarios controlados, modificar variables de forma sistemática y repetir pruebas con alta precisión, lo que facilita una comparación rigurosa del rendimiento del sistema ante distintas trayectorias y condiciones dinámicas.
+
+\vspace{0.3cm}
+Una vez verificado el funcionamiento del algoritmo en simulación, mediante múltiples escenarios y perfiles de movimiento, se procederá a su validación en un campo de pruebas físico. En esta fase se analizará el comportamiento del sistema frente a situaciones reales, incluyendo perturbaciones e incertidumbres propias del entorno. El sistema se considerará satisfactorio si mantiene el seguimiento del UAV presa durante un tiempo predefinido y a una distancia fija respecto al objetivo.
+
+
+\endgroup
+\clearpage
+
+
+
+
+\begin{center}
+{\large\bfseries Hunter-prey navigation control for unmanned aerial systems}\\
+\end{center}
+\begin{center}
+Germán Rodríguez Vidal\\
+\end{center}
+
+%\vspace{0.7cm}
+\noindent{\textbf{Keywords}: Navigation control, UAV, Unmanned aerial systems, Autonomous navigation, Ardupilot, Gazebo, PID, Kalman filter, Object detection}\\
+
+\vspace{0.7cm}
+\begingroup\setlength{\parindent}{0pt}
+\noindent{\textbf{Abstract}}\\
+
+This Bachelor's Thesis proposes the development of autonomous navigation methods for conventional unmanned aerial vehicles (UAVs) in the hunter-prey use case. Specifically, it presents a navigation control strategy that enables short-range tracking of a prey UAV by a hunter UAV, which must pursue it in open space in a stable and robust manner. To achieve this, control methods and computer vision techniques are integrated to facilitate target detection, localization, and tracking throughout the mission.
+
+\vspace{0.3cm}
+
+The main objectives of this project are, first, to validate a navigation control algorithm capable of autonomously tracking a prey UAV from image-based information and, second, to implement the developed algorithms on an embedded platform for subsequent experimental validation under real operating conditions.
+
+\vspace{0.3cm}
+
+To achieve these objectives, the 3D Gazebo simulator has been selected as the initial experimentation environment. This tool makes it possible to evaluate control algorithms in controlled scenarios, modify variables systematically, and repeat tests with high precision, which enables a rigorous comparison of system performance under different trajectories and dynamic conditions.
+
+\vspace{0.3cm}
+
+Once the algorithm has been verified in simulation through multiple scenarios and motion profiles, it will be validated in a physical test field. In this phase, the system behavior will be analyzed under real-world conditions, including disturbances and uncertainties inherent to the environment. The system will be considered satisfactory if it maintains tracking of the prey UAV for a predefined period and at a fixed distance from the target.
+
+\endgroup
+\clearpage
+
+\noindent\rule[-1ex]{\textwidth}{2pt}\\[4.5ex]
+
+Yo, \textbf{Germán Rodríguez Vidal}, alumno de la titulación Ingeniería Informática de la \textbf{Escuela Técnica Superior
+de Ingenierías Informática y de Telecomunicación de la Universidad de Granada}, con DNI 32913011B, autorizo la
+ubicación de la siguiente copia de mi Trabajo Fin de Grado en la biblioteca del centro para que pueda ser
+consultada por las personas que lo deseen.
+
+\vspace{6cm}
+
+\noindent Fdo: Germán Rodríguez Vidal
+
+\vspace{2cm}
+
+\begin{flushright}
+Granada a Junio de 2026 .
+\end{flushright}
+
+
+\clearpage
+
+\noindent\rule[-1ex]{\textwidth}{2pt}\\[4.5ex]
+
+D. \textbf{Francisco Barranco Expósito (tutor1)}, Profesor del Área de XXXX del Departamento YYYY de la Universidad de Granada.
+
+\vspace{0.5cm}
+
+D. \textbf{Álvaro Martínez Novo (tutor2)}, Profesor del Área de XXXX del Departamento YYYY de la Universidad de Granada.
+
+
+\vspace{0.5cm}
+
+\textbf{Informan:}
+
+\vspace{0.5cm}
+
+Que el presente trabajo, titulado \textit{\textbf{Control de navegación cazador-presa para sistemas aéreos no tripulados}},
+ha sido realizado bajo su supervisión por \textbf{Germán Rodríguez Vidal }, y autorizamos la defensa de dicho trabajo ante el tribunal
+que corresponda.
+
+\vspace{0.5cm}
+
+Y para que conste, expiden y firman el presente informe en Granada a Junio de mes de 2026 .
+
+\vspace{1cm}
+
+\textbf{Los directores:}
+
+\vspace{5cm}
+
+\noindent \textbf{Francisco Barranco Expósito  \ \ \ \ \ Álvaro Martínez Novo }
+
+

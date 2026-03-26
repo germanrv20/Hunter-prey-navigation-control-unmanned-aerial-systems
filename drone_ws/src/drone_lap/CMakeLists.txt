@@ -157,6 +157,12 @@ target_link_libraries(drone2_wavy_circle_node
   ${catkin_LIBRARIES}
 )
 
+add_executable(drone2_aggressive_node src/drone2_aggressive_trajectories.cpp)
+
+target_link_libraries(drone2_aggressive_node
+  ${catkin_LIBRARIES}
+)
+
 # Crea el ejecutable para el controlador PID del drone 1
 add_executable(drone1_Yaw_pid_node src/drone1_Yaw_pid.cpp)
 

@@ -1,0 +1,8 @@
+prefix=/home/germanrv/drone_ws/install_isolated
+
+Name: drone_lap
+Description: Description of drone_lap
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: roscpp rospy std_msgs geometry_msgs tf mavros_msgs cv_bridge image_transport tf2 tf2_ros tf2_eigen eigen_conversions

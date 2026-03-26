@@ -1,0 +1,8 @@
+prefix=/home/germanrv/drone_ws/install_isolated
+
+Name: iq_gnc
+Description: Description of iq_gnc
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
