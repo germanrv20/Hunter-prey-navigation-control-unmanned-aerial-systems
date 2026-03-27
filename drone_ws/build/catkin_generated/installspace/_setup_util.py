@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
         if not args.local:
             # environment at generation time
-            CMAKE_PREFIX_PATH = r'/home/germanrv/catkin_ws/devel_isolated/mi_paquete;/home/germanrv/catkin_ws/devel_isolated/iq_gnc;/home/germanrv/catkin_ws/devel_isolated/mavros;/home/germanrv/catkin_ws/devel_isolated/iq_sim;/home/germanrv/catkin_ws/devel_isolated/darknet_ros;/home/germanrv/catkin_ws/devel_isolated/darknet_ros_msgs;/home/germanrv/catkin_ws/install_isolated;/home/germanrv/catkin_ws/devel_isolated/beginner_tutorials;/opt/ros/noetic;/home/germanrv/catkin_ws/devel;/home/germanrv/drone_ws/devel;/home/germanrv/catkin_ws/devel_isolated/mavlink'.split(';')
+            CMAKE_PREFIX_PATH = r'/home/germanrv/drone_ws/devel_isolated/iq_gnc;/home/germanrv/drone_ws/devel_isolated/mavros;/home/germanrv/drone_ws/devel_isolated/mavlink;/home/germanrv/drone_ws/devel_isolated/iq_sim;/home/germanrv/drone_ws/devel_isolated/drone_projection;/home/germanrv/drone_ws/devel_isolated/drone_lap;/opt/ros/noetic'.split(';')
         else:
             # don't consider any other prefix path than this one
             CMAKE_PREFIX_PATH = []

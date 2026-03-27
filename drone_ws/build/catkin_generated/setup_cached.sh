@@ -7,7 +7,11 @@
 # new environment variables
 
 # modified environment variables
+export CMAKE_PREFIX_PATH='/home/germanrv/drone_ws/devel:/opt/ros/noetic'
+export LD_LIBRARY_PATH='/home/germanrv/drone_ws/devel/lib:/opt/ros/noetic/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins'
 export PATH='/opt/ros/noetic/bin:/home/germanrv/anaconda3/condabin:/home/germanrv/.nvm/versions/node/v22.19.0/bin:/usr/lib/ccache:/usr/lib/ccache:/home/germanrv/ardupilot/Tools/autotest:/opt/gcc-arm-none-eabi-10-2020-q4-major/bin:/home/germanrv/.local/bin:/home/germanrv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/germanrv/ardupilot/Tools/autotest'
+export PKG_CONFIG_PATH='/home/germanrv/drone_ws/devel/lib/pkgconfig:/opt/ros/noetic/lib/pkgconfig'
 export PWD='/home/germanrv/drone_ws/build'
-export ROSLISP_PACKAGE_DIRECTORIES='/home/germanrv/catkin_ws/devel_isolated/mi_paquete/share/common-lisp:/home/germanrv/catkin_ws/devel_isolated/iq_gnc/share/common-lisp:/home/germanrv/catkin_ws/devel_isolated/mavros/share/common-lisp:/home/germanrv/catkin_ws/devel_isolated/iq_sim/share/common-lisp:/home/germanrv/catkin_ws/devel_isolated/darknet_ros/share/common-lisp:/home/germanrv/catkin_ws/devel_isolated/darknet_ros_msgs/share/common-lisp:/home/germanrv/catkin_ws/devel_isolated/beginner_tutorials/share/common-lisp:/home/germanrv/catkin_ws/devel/share/common-lisp:/home/germanrv/drone_ws/devel/share/common-lisp'
-export ROS_PACKAGE_PATH='/home/germanrv/catkin_ws/src/mi_paquete:/home/germanrv/catkin_ws/src/iq_gnc:/home/germanrv/catkin_ws/src/mavros:/home/germanrv/catkin_ws/src/iq_sim:/home/germanrv/catkin_ws/src/darknet_ros/darknet_ros:/home/germanrv/catkin_ws/src/darknet_ros/darknet_ros_msgs:/home/germanrv/catkin_ws/install_isolated/share:/home/germanrv/catkin_ws/src/beginner_tutorials:/opt/ros/noetic/share:/home/germanrv/catkin_ws/src:/home/germanrv/drone_ws/src'
+export PYTHONPATH='/home/germanrv/drone_ws/devel/lib/python3/dist-packages:/opt/ros/noetic/lib/python3/dist-packages'
+export ROSLISP_PACKAGE_DIRECTORIES='/home/germanrv/drone_ws/devel/share/common-lisp'
+export ROS_PACKAGE_PATH='/home/germanrv/drone_ws/src:/opt/ros/noetic/share'

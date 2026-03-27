@@ -146,7 +146,9 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/germanrv/drone_ws/build/gtest/cmake_install.cmake")
+  include("/home/germanrv/drone_ws/build/iq_sim/cmake_install.cmake")
   include("/home/germanrv/drone_ws/build/drone_projection/cmake_install.cmake")
+  include("/home/germanrv/drone_ws/build/iq_gnc/cmake_install.cmake")
   include("/home/germanrv/drone_ws/build/drone_lap/cmake_install.cmake")
 
 endif()
