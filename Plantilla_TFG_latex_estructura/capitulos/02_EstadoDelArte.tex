@@ -2,17 +2,21 @@
 \clearpage
 
 \refstepcounter{chapter}
-\chapter*{Estado del Arte}
+\addcontentsline{toc}{chapter}{\protect\numberline{\thechapter}Estado del Arte}
 
+\noindent{\Huge\bfseries Estado del Arte}\par
+\vspace{0.2cm} 
+\noindent\HRule\par
 
-\addcontentsline{toc}{chapter}{\protect\numberline{\thechapter}Estado del arte}\vspace{-1.5cm} 
-\noindent\HRule\par\vspace{0.1cm}
-
-
+% --- EL TRUCO ESTÁ AQUÍ ---
+\vspace*{0.8cm} % El asterisco fuerza un espacio rígido de 0.8cm
 \section{Introducción al Estado del Arte}
-
+Coemnzar
 \section{Sistemas Aéreos no Tripulados}
 \subsection{Clasificación y arquitecturas de control actuales}
+
+
+\section{Enfoques actuales para intercepción de drones}
 
 \section{Percepción Visual mediante Deep Learning}
 \subsection{Comparativa de modelos}

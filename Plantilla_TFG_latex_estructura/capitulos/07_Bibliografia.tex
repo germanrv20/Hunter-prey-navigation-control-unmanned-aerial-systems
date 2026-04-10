@@ -2,12 +2,34 @@
 
 \refstepcounter{chapter}
 \chapter*{Bibliografía}
-
 \addcontentsline{toc}{chapter}{\protect\numberline{\thechapter}Bibliografía}
-\vspace{-1.5cm} 
+
+\vspace{-1.5cm}
 \noindent\HRule\par\vspace{0.1cm}
 
-\section{Planificación de las Pruebas}
+% --- Inicio del truco para ocultar el título automático ---
+\begingroup
+\renewcommand{\chapter}[2]{}% Oculta \chapter*{...} (para clases book o report)
+\renewcommand{\section}[2]{}% Oculta \section*{...} (para clase article)
+\begin{thebibliography}{9}
 
+\bibitem{LogoInta}
+\begin{minipage}[t]{0.84\textwidth}
+\raggedright
+Instituto Nacional de Técnica Aeroespacial (INTA).\\
+\textit{Logotipo del INTA}.\\
+URL: \url{https://www.inta.es/INTA/es/index.html}.
+\end{minipage}
 
+\bibitem{jobted2025}
+\begin{minipage}[t]{0.84\textwidth}
+\raggedright
+Jobted.\\
+\textit{Salario promedio para ingeniero de software en España}.\\
+2025.\\
+Disponible en: \url{https://www.jobted.es/salario/ingeniero-software}.
+\end{minipage}
 
+\end{thebibliography}
+\endgroup
+% --- Fin del truco ---

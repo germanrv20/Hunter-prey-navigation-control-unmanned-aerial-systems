@@ -12,9 +12,34 @@
 
 \section{Descripción del problema} % Ahora aparecerá automáticamente como 1.1
 
-El presente Trabajo Fin de Grado se enmarca en la creciente necesidad de fortalecer la soberanía tecnológica nacional en materia de seguridad y defensa. Un hito fundamental en esta estrategia es la creación del \textbf{Instituto Nacional de Técnica Aeroespacial (INTA)} con sede principal en Torrejón de Ardoz (Madrid), impulsado por el Ministerio de Defensa. Dentro de sus líneas maestras, destaca la actividad de defensa, cuyo uno de sus propósitos es liderar el desarrollo de capacidades avanzadas para la detección, monitorización y neutralización de sistemas aéreos no tripulados (UAVs) que operen de forma hostil.
+El auge y la proliferación de los Vehículos Aéreos No Tripulados (UAVs), especialmente los cuadricópteros, ha transformado múltiples sectores que van desde la logística hasta la defensa, gracias a sus capacidades de despegue y aterrizaje vertical (VTOL), alta maniobrabilidad y coste relativamente bajo. Sin embargo, esta democratización tecnológica ha generado simultáneamente nuevos retos de seguridad debido a su potencial uso hostil, irrumpiendo cada vez más en espacios aéreos restringidos como aeropuertos, zonas militares e infraestructuras críticas
 
 \vspace{0.4cm}
+
+Las contramedidas actuales para neutralizar estas amenazas, que incluyen sistemas de interferencia electrónica y soluciones cinéticas (como láseres o torretas), presentan limitaciones significativas debido a los riesgos de daños colaterales, restricciones regulatorias y altos costes operativos. En este contexto, los cuadricópteros han surgido como una plataforma óptima para la interceptación. A diferencia de los sistemas estacionarios o de superficie, un dron interceptor opera en el mismo dominio aéreo que su objetivo, ofreciendo un mayor alcance y precisión, a la vez que minimiza las interrupciones involuntarias al tráfico aéreo legal. Además, su despliegue resulta mucho más rentable en comparación con los sistemas tradicionales de grado militar, presentándose como una solución escalable para asegurar espacios aéreos sensibles
+
+
+
+
+\vspace{0.4cm}
+
+No obstante, la eficacia de un dron cazador depende críticamente de su nivel de autonomía. El enfoque convencional de operación remota basa su éxito en la pericia del piloto humano bajo estrés y en la integridad de un enlace de radiocomunicación bidireccional en tiempo real. Esta dependencia hace que los sistemas sean detectables, limitando su escalabilidad y tiempos de respuesta. Peor aún, los vuelve extremadamente vulnerables a la latencia, a técnicas de guerra electrónica y a la inhibición de frecuencias (jamming o spoofing de GPS), amenazas predominantes que pueden dejar al cazador inoperativo en el momento crítico de la misión.
+
+\vspace{0.8cm}
+
+Para superar estas vulnerabilidades, este Trabajo Fin de Grado aborda el desarrollo de una solución de navegación autónoma para un escenario de interceptación cazador-presa. Se propone una estrategia de control basada en la identificación y persecución visual activa, permitiendo al UAV cazador aproximarse a su objetivo de forma precisa. Frente a la vulnerabilidad de las comunicaciones, esta solución garantiza la independencia táctica al procesar la información visual mediante algoritmos de inteligencia artificial directamente en una plataforma empotrada (on-board) en el dron. Esto permite tiempos de reacción mínimos y un seguimiento robusto que no se ve degradado por interferencias, maximizando la eficiencia de la respuesta.
+
+\vspace{0.4cm}
+
+A su vez, para que esta solución mantenga su viabilidad económica frente a alternativas que utilizan sensores costosos (como LiDAR o radar) que erosionan la rentabilidad de los UAVs pequeños , el sistema propuesto está diseñado para operar con un conjunto sensorial mínimo: una cámara monocular y una unidad de medida inercial (IMU).
+
+
+\vspace{0.4cm}
+
+Esta investigación se enmarca directamente en la necesidad de fortalecer la soberanía tecnológica nacional en materia de seguridad y defensa. En esta línea, el desarrollo está alineado con los intereses del \textbf{Instituto Nacional de Técnica Aeroespacial (INTA)}, con sede principal en Torrejón de Ardoz (Madrid), orientado al desarrollo de capacidades avanzadas para la detección, monitorización y neutralización de UAVs que operen de forma hostil. Uno de los objetivos de ese proyecto es precisamente el abordado en este TFG.
+
+\vspace{0.4cm}
+
 
 \begin{center}
 \includegraphics[width=0.65\textwidth]{imagenes/Inta.png}\\[0.5ex]
@@ -24,15 +49,173 @@ El presente Trabajo Fin de Grado se enmarca en la creciente necesidad de fortale
 \vspace{0.4cm}
 
 
-La prioridad de esta iniciativa se centra en el diseño de sistemas cazadrón capaces de operar con total autonomía. Por ello, este trabajo propone una solución basada en la identificación y persecución visual activa, permitiendo que un UAV cazador realice una aproximación precisa y segura hacia la amenaza, minimizando el riesgo colateral y maximizando la eficiencia de la respuesta ante la incursión de aeronaves no autorizadas.
+\vspace{0.4cm}
+
 
 \vspace{0.4cm}
 
-Frente al enfoque convencional de operación remota, donde la eficacia de la persecución depende exclusivamente de la pericia de un piloto humano y de la integridad de un enlace de datos en tiempo real, la navegación autónoma ofrece ventajas críticas. Los sistemas pilotados manualmente son vulnerables a la latencia de la señal y al error humano derivado del estrés en maniobras de alta velocidad. Además, la pérdida del enlace de control (\textit{C2 link}) dejaría al cazador inoperativo en el momento más crítico de la misión. Por el contrario, la solución desarrollada procesa la información visual directamente en la plataforma empotrada, permitiendo tiempos de reacción reducidos y una precisión en el seguimiento que no se ve degradada por la distancia o las interferencias electromagnéticas, garantizando la continuidad de la operación de forma independiente.
+Por ello, el problema específico abordado en este trabajo es demostrar que un sistema de control de navegación visual, basado en modelos de percepción profunda (Deep Learning) y algoritmos de control reactivo, permite a un UAV cazador realizar una persecución autónoma, estable y robusta en tiempo real.Los criterios principales a validar durante la investigación son:
+
+\begin{itemize}
+    \item Mantener al UAV objetivo enfocado y centrado en el campo de visión de la cámara de forma continua, minimizando el error de seguimiento.
+    \item Asegurar la capacidad de respuesta y maniobrabilidad del UAV cazador ante trayectorias dinámicas, aceleraciones bruscas o movimientos imprevistos de la presa.
+    \item Garantizar que el stack de software pueda ejecutarse manteniendo una tasa de fotogramas (FPS) óptima en hardware de recursos limitados.
+\end{itemize}
+
+\vspace{0.4cm}
+
+Para llevar a cabo esta validación, el sistema propuesto se probará inicialmente en entornos de simulación 3D , utilizando ROS y Gazebo, integrados con ArduPilot mediante simulaciones SITL. Finalmente, tras analizar las métricas obtenidas, se preparará su despliegue en plataformas empotradas reales para su evaluación práctica.
+
+\section{Motivación}
+
+El uso en aumento de sistemas aéreos no tripulados en defensa con la amenaza que representan los UAVs para la seguridad nacional hace necesaria la creación de sistemas antidrón que funcionen de forma autónoma, eficaz y segura. A medida que los UAVs comerciales son más accesibles y potentes, también se incrementa el riesgo de un uso indebido: desde espiar hasta amenazar a infraestructuras críticas, áreas urbanas y eventos donde hay una gran concentración de personas. Esto ha evidenciado la apremiante necesidad de tener sistemas de neutralización reactivos y muy eficaces.
+
+\vspace{0.4cm}
+ 
+La principal motivación de este trabajo es dotar a los UAVs cazadores de la capacidad de percepción y navegación que permitan adaptarse rápidamente a maniobras evasivas o a cambios inesperados en las trayectorias de los objetivos. Se trata de ir más allá de las limitaciones de los clásicos métodos de navegación basados en control remoto o en la recepción continua de coordenadas GPS, y de ofrecer una solución basada en modelos de Deep Learning y en algoritmos de control reactivo basados en visión artificial.
+
+\vspace{0.4cm}
+
+Asimismo, el desafío tecnológico de combinar un sistema de detección visual con un control de navegación avanzado en un entorno de simulación, junto con su implementación en hardware real, ofrece una práctica valiosa para aplicar los conocimientos adquiridos. Esto implica integrar disciplinas como la inteligencia artificial, la teoría del control, la simulación robótica y el desarrollo de sistemas embebidos. Estas áreas son clave en la ingeniería informática y en la robótica moderna.
+
+\vspace{0.4cm}
+
+Este trabajo no solo busca mejorar la autonomía y precisión de seguimiento de los UAVs cazadores, sino también establecer las bases para desarrollos futuros en navegación autónoma robusta, que opere de manera independiente en el exigente campo de la seguridad y defensa.
 
 \section{Objetivos}
-\section{Planificacion}
+
+\subsection{Objetivo General}
+
+\vspace{0.4cm}
+Desarrollar e implementar un sistema robusto de control de navegación autónoma para vehículos aéreos no tripulados (UAVs) capaz de realizar el seguimiento de un objetivo en tiempo real, integrando técnicas de control reactivo, algoritmos de estimación de estado y visión por computador.
+
+
+\vspace{0.6cm}
+
+\subsection{Objetivos Específicos}
+Para alcanzar el objetivo general, se proponen los siguientes hitos técnicos:
+\begin{itemize}
+    \item \textbf{OE1: Evaluar y optimizar modelos de percepción visual para sistemas empotrados}.Entrenar y comparar distintas arquitecturas de detección de objetos de última generación (familia YOLO) evaluando el equilibrio (trade-off) entre precisión matemática (mAP) , tiempo de inferencia y tamaño del modelo para seleccionar el modelo óptimo que garantice un seguimiento fluido en tiempo real.
+    \item \textbf{OE2: Diseñar e implementar el lazo de control de navegación visual}.Desarrollar el algoritmo encargado de traducir las detecciones 2D de la cámara en comandos de vuelo 3D. Esto implicará el uso de transformaciones geométricas de coordenadas y la sintonización de un controlador reactivo (PID) para mantener a la presa centrada en el campo de visión.
+    \item \textbf{OE3: Integrar la arquitectura software en un entorno de simulación de alta fidelidad}.Implementar el sistema completo utilizando ROS como middleware de comunicación, acoplando los nodos de visión y control con el simulador físico 3D Gazebo y la pila de vuelo ArduPilot mediante simulaciones SITL (Software In The Loop).
+    \item \textbf{OE4: Validar la robustez del sistema frente a maniobras evasivas}.Diseñar y ejecutar una batería de pruebas automatizadas donde el UAV objetivo (presa) realice diferentes perfiles de vuelo dinámicos (slalom, espirales, frenadas de emergencia) para cuantificar el error de seguimiento y los tiempos de respuesta del cazador.
+    \item \textbf{OE5: Desplegar y evaluar la viabilidad computacional en una plataforma empotrada real}. Migrar el stack de software desarrollado a un hardware de recursos limitados para verificar que el sistema es capaz de mantener la tasa de procesamiento necesaria (FPS) sin comprometer la latencia ni la seguridad del vuelo.
+\end{itemize}
+
+
+\section{Planificación}
+La planificación del proyecto se llevó a cabo utilizando un método en cascada, siguiendo un proceso lineal donde cada etapa se basa en el éxito de la precedente. Este enfoque es el adecuado, ya que cada progreso tecnológico debe consolidar la fase anterior para reducir riesgos y fallos.
+
+\vspace{0.4cm}
+
+El tiempo total para la realización del proyecto se estimó en 300 horas, correspondientes a 12 créditos ECTS. Sin embargo, la asignación de este tiempo experimentó algunas alteraciones debido a la necesidad de ajustarse a otras responsabilidades personales y a los obstáculos técnicos que surgieron a lo largo del desarrollo.
+
+\vspace{0.4cm}
+
+En la tabla que se presenta a continuación se puede apreciar claramente la organización general del proyecto, seguida de una explicación detallada de cada etapa.
+
+\vspace{0.4cm}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{6.2cm}|c|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Fase} & \textbf{Duración} & \textbf{Oct.} & \textbf{Nov.} & \textbf{Dic.} & \textbf{Ene.} & \textbf{Feb.} & \textbf{Mar.} & \textbf{Abr.} & \textbf{May.} \\
+\hline
+Configuración del Entorno e Integración del Controlador & 1 mes & X &  &  &  &  &  &  &  \\
+\hline
+Incorporación de los UAVs al Simulador & 1 mes &  & X &  &  &  &  &  &  \\
+\hline
+Configuración de los Controladores & 2 meses &  &  & X & X &  &  &  &  \\
+\hline
+Pruebas Simuladas y Representación Visual de los Resultados & 2 meses &  &  &  &  & X & X &  &  \\
+\hline
+Implementación del Control en UAV real & 1 mes &  &  &  &  &  &  & X &  \\
+\hline
+Documentación & 3 semanas &  &  &  &  &  &  &  & X \\
+\hline
+\end{tabular}%
+}
+\par\vspace{0.3cm}
+{\small \textbf{Tabla 1.1}: Planificación del proyecto.}
+\end{center}
+
+\subsection{Detalle de las fases}
+
+A continuación, se describe brevemente el contenido de cada una de las etapas representadas en la Tabla 1.1.
+
+\begin{enumerate}
+    \item \textbf{Configuración del entorno e integración del controlador (octubre).} Durante esta fase se instaló y configuró el entorno de trabajo, incluyendo ROS, Gazebo, MAVROS y ArduPilot.
+    \item \textbf{Incorporación de los UAVs al simulador (noviembre).} Se integraron los modelos de los UAVs en Gazebo y se verificó el funcionamiento de los sensores virtuales y de los canales de comunicación. Esta etapa permitió disponer de un entorno de simulación consistente y representativo del escenario de trabajo.
+    \item \textbf{Configuración de los controladores (diciembre--enero).} Se desarrollaron y ajustaron los controladores necesarios para el seguimiento visual del objetivo, así como los nodos ROS encargados de intercambiar información entre percepción, estimación y actuación. Además, se realizaron pruebas iniciales en condiciones controladas para comprobar la estabilidad del lazo de control.
+    \item \textbf{Pruebas simuladas y representación visual de los resultados (febrero--marzo).} Se ejecutaron vuelos de prueba en distintos escenarios simulados para evaluar métricas como el error de seguimiento, la capacidad de respuesta y la estabilidad del sistema frente a maniobras dinámicas de la presa. Los datos obtenidos se procesaron y representaron mediante gráficas que facilitaron su análisis e interpretación.
+    \item \textbf{Implementación del control en UAV real (abril).} El sistema desarrollado se adaptó para su despliegue en una plataforma embebida asociada al UAV real. En esta fase se realizaron ajustes de integración y las primeras verificaciones experimentales orientadas a validar el funcionamiento del sistema fuera del entorno puramente simulado.
+    \item \textbf{Documentación (mayo, 3 semanas).} Finalmente, se elaboró la memoria del proyecto, recopilando el desarrollo realizado, los resultados obtenidos, las conclusiones principales y las posibles líneas de mejora y trabajo futuro.
+\end{enumerate}
+
+\vspace{0.4cm}
+Si bien la planificación inicial resultó adecuada, durante el desarrollo del proyecto surgieron desviaciones inevitables respecto al cronograma previsto. En particular, la fase de configuración del entorno requirió más esfuerzo del estimado debido a incompatibilidades entre distintas versiones de ROS y a dificultades en la integración con MAVROS. Asimismo, la comunicación entre los UAVs presentó problemas adicionales que obligaron a realizar ajustes sucesivos en la arquitectura software y provocaron retrasos puntuales en algunas de las fases posteriores.
+
+\vspace{0.4cm}
+Las pruebas en simulación se desarrollaron de manera satisfactoria. No obstante, la incorporación de nuevas implementaciones y ajustes de diseño prolongó ligeramente esta fase, ya que durante su ejecución se detectaron pequeños errores que fue necesario corregir de forma iterativa. Aun así, el desarrollo de scripts y automatizaciones para el procesamiento y la representación de los datos contribuyó a agilizar el análisis de resultados y a hacer más eficiente el flujo de trabajo.
+
+
+\vspace{0.4cm}
+
+En conjunto, la metodología en cascada permitió mantener una estructura de trabajo clara y ordenada a lo largo del proyecto. No obstante, su carácter secuencial dificultó en determinados momentos la adaptación ágil ante incidencias imprevistas, especialmente durante las fases de integración de módulos y depuración del entorno experimental. A pesar de estas limitaciones, el proyecto avanzó conforme a los plazos generales previstos, y los resultados obtenidos en simulación respaldan la viabilidad del enfoque de navegación autónoma propuesto como base para su posterior validación en una plataforma real.
+
+
+
 \subsection{Presupuesto}
 
+El desarrollo del proyecto ha implicado distintos costes asociados al uso de equipamiento informático para la ejecución de simulaciones, a la adquisición de materiales necesarios para la implementación del sistema embebido en el UAV real y al coste estimado de la dedicación personal. A continuación, se detallan los conceptos principales que conforman el presupuesto global del proyecto.
 
+\subsubsection{Equipo y herramientas}
 
+Durante las fases iniciales del trabajo fue necesario disponer de un equipo informático con capacidad suficiente para ejecutar simulaciones con una carga moderada tanto de procesamiento como gráfica. Para ello se utilizó un ordenador personal, cuyas prestaciones procesador de alto rendimiento, tarjeta gráfica dedicada y memoria RAM suficiente permitieron ejecutar de manera adecuada los entornos ROS, Gazebo y el resto de herramientas software empleadas en el desarrollo.
+
+El coste estimado del equipo informático utilizado se fija, de forma aproximada, en \textbf{1.400€}.
+
+\vspace{0.4cm}
+
+\subsubsection{Gastos de implementación del sistema embebido}
+
+La implementación del sistema embebido en el UAV real supuso un coste total de \textbf{2.693,10€}. Este importe incluye la adquisición de componentes estructurales, como el chasis y el tren de aterrizaje; elementos de propulsión, entre ellos motores, variadores electrónicos de velocidad (ESC) y hélices; el sistema de control y navegación, compuesto por la controladora Pixhawk Cube Orange, el módulo RTK y la estación base; los dispositivos de comunicación, como la telemetría RFD y la emisora RC; el sistema de procesamiento embebido basado en una Jetson Orin Nano; los elementos de alimentación, como baterías y convertidores DC-DC; así como cableado, conectores y diverso material auxiliar de montaje.
+
+\vspace{0.4cm}
+
+\subsubsection{Horas de trabajo}
+
+La dedicación al proyecto se estima en 300 horas, correspondientes a los 12 créditos ECTS asignados. Para realizar una valoración económica orientativa del trabajo desarrollado, se considera una tarifa de 12€ por hora, representativa de un perfil junior de ingeniería \cite{jobted2025}. Bajo esta hipótesis, el coste asociado a la dedicación personal asciende a:
+
+\begin{center}
+300 horas $\times$ 12€ / hora = 3.600€
+\end{center}
+
+\vspace{0.4cm}
+
+\subsubsection{Resumen de costes}
+
+En la Tabla 1.2 se recoge el resumen de los costes estimados del proyecto.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|p{9cm}|r|}
+\hline
+\textbf{Concepto} & \textbf{Coste (€)} \\
+\hline
+Ordenador personal para simulaciones & 1.400,00 \\
+\hline
+Materiales para la implementación del sistema embebido & 2.693,10 \\
+\hline
+Horas de trabajo & 3.600,00 \\
+\hline
+\textbf{Total estimado del proyecto} & \textbf{7693,10} \\
+\hline
+\end{tabular}
+\par\vspace{0.3cm}
+{\small \textbf{Tabla 1.2}: Resumen de costes del proyecto.}
+\end{center}
+
+Por tanto, el coste total estimado del proyecto asciende a \textbf{7693,10€}, considerando tanto los recursos materiales empleados como la valoración económica aproximada del tiempo de trabajo dedicado a su desarrollo.
