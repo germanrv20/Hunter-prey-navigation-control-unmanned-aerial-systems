@@ -29,6 +29,11 @@ Para evitar cuellos de botella y problemas de compatibilidad con C++17, el siste
 2. **`distance_sender.py`**: Carga el modelo `.pth` de PyTorch, procesa el área de la caja detectada por YOLO y publica la distancia real estimada (Metros).
 3. **`drone_projectionV2.cpp`**: Nodo principal en C++. Escucha a la IA, proyecta los vectores 3D de compensación del movimiento de la cámara (Roll/Pitch), calcula el error para el controlador PID y pinta la interfaz visual para depuración.
 
+
+<img  height="1200" alt="arquitectura_proyecto" src="https://github.com/user-attachments/assets/d8f476a7-8583-4ce7-a088-894b82ec8e0f" />
+
+
+
 ---
 
 ##  Requisitos y Dependencias
