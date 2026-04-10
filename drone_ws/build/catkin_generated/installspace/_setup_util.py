@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
         if not args.local:
             # environment at generation time
-            CMAKE_PREFIX_PATH = r'/home/germanrv/drone_ws/devel_isolated/iq_gnc;/home/germanrv/drone_ws/devel_isolated/mavros;/home/germanrv/drone_ws/devel_isolated/mavlink;/home/germanrv/drone_ws/devel_isolated/iq_sim;/home/germanrv/drone_ws/devel_isolated/drone_projection;/home/germanrv/drone_ws/devel_isolated/drone_lap;/opt/ros/noetic'.split(';')
+            CMAKE_PREFIX_PATH = r'/home/germanrv/drone_ws/devel;/opt/ros/noetic'.split(';')
         else:
             # don't consider any other prefix path than this one
             CMAKE_PREFIX_PATH = []

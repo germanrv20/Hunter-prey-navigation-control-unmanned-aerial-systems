@@ -16,6 +16,7 @@
 #include <opencv2/calib3d.hpp>    
 #include <opencv2/core/eigen.hpp> 
 #include <image_transport/image_transport.h>
+#include <std_msgs/Float64.h>
 
 #include <iostream>
 #include <vector>
@@ -27,7 +28,8 @@
 // --- CONFIGURACIÓN PRINCIPAL ---
 bool use_yolo = true; // true: PID sigue a YOLO, false: PID sigue a Gazebo
 bool use_perfect_lidar = false; // true usar yolo perfecto, false: usar bounding box area
-double TARGET_DIST_METERS = 1.0;
+bool area_mode = false; // area_mode true hace calculos con el area, false utiliza el modelo de regresion
+double TARGET_DIST_METERS = 1.35;
 
 // Variables Gazebo (Ground Truth)
 geometry_msgs::Pose pose_d1_gz;
@@ -68,6 +70,7 @@ bool yolo_detected = false;
 sensor_msgs::Image latest_image;
 bool image_received = false;
 
+double ia_distance = -999.0;
 // -----------------------------------------
 // Callbacks
 // -----------------------------------------
@@ -105,6 +108,10 @@ void yoloCallback(const geometry_msgs::Quaternion::ConstPtr& msg) {
 
 void yoloStateCallback(const std_msgs::Int32::ConstPtr& msg) {
     yolo_state = msg->data;
+}
+
+void distanceCallback(const std_msgs::Float64::ConstPtr& msg) {
+    ia_distance = msg->data;
 }
 
 // --- Funciones de transformación ---
@@ -182,6 +189,7 @@ int main(int argc, char** argv)
     // SUSCRIPCIÓN AL NODO DE YOLO
     ros::Subscriber yolo_sub = nh.subscribe("/drone1/yolo_pixel_coords", 10, yoloCallback);
     ros::Subscriber state_sub = nh.subscribe("/drone1/yolo_state", 10, yoloStateCallback);
+    ros::Subscriber dist_sub = nh.subscribe("/drone1/estimated_distance", 10, distanceCallback);
 
     ros::Rate rate(20); 
 
@@ -214,7 +222,7 @@ int main(int argc, char** argv)
 
     ROS_INFO("Nodo proyeccion V3 iniciado. Modo YOLO: %s", use_yolo ? "ACTIVADO" : "DESACTIVADO");
 
-
+   
     // Utilizado para hacer video
     //int frame_count = 0;
     //std::string folder_path = "/home/germanrv/drone_ws/frames/";
@@ -380,8 +388,6 @@ int main(int argc, char** argv)
                     m_tf.getRPY(roll, pitch, yaw); 
 
                     // 3. Crear el Cuaternión de Compensación en Ejes de Cámara (OpenCV)
-                    // - Pitch sobre el eje X (UnitX): Pitch positivo (nariz arriba) baja el rayo.
-                    // - Roll sobre el eje Z (UnitZ): Ladeo de la cámara.
                     Eigen::Quaterniond q_p(Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitX()));
                     Eigen::Quaterniond q_r(Eigen::AngleAxisd(roll,  Eigen::Vector3d::UnitZ()));
 
@@ -420,19 +426,42 @@ int main(int argc, char** argv)
                         error_z = Z_depth - TARGET_DIST_METERS;
                         cv::putText(cv_ptr->image, "DIST: LIDAR (Perfecto)", cv::Point(10, 30), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 0), 2);
                     }else{
-                        double current_area = (yolo_x2 - yolo_x1) * (yolo_y2 - yolo_y1);
-                        double TARGET_AREA = 30000.0; // ¡Calibrar este número a 1 metro
 
+                        if(area_mode){
+                            //double current_area = (yolo_x2 - yolo_x1) * (yolo_y2 - yolo_y1);
+                            //double TARGET_AREA = 30000.0; // ¡Calibrar este número a 1 metro
 
-                        double current_size = std::sqrt(current_area);
-                        double target_size = std::sqrt(TARGET_AREA);
+                            //double current_size = std::sqrt(current_area);
+                            //double target_size = std::sqrt(TARGET_AREA);
 
+                            //error_z = target_size - current_size;
+                        }else{
 
-                        error_z = target_size - current_size;
+                            if (ia_distance > 0.0) {
+                                // Calculamos el error para el dron
+                                error_z = ia_distance - TARGET_DIST_METERS;
+                                
+                                // Formateamos el texto: IA vs Realidad vs Error
+                                std::string texto_info = cv::format("IA: %.2f m | Real: %.2f m | Error Z: %.2f m", ia_distance, Z_depth, error_z);
+                                
+                                // Lo pintamos en Verde (YOLO lo está viendo bien)
+                                cv::putText(cv_ptr->image, texto_info, cv::Point(10, 30), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 255, 0), 2);
+                                double Ia_eror = Z_depth -ia_distance;
+                                 ROS_INFO("error de la ia = %.2f",Ia_eror);
+                            } else {
+                                // Si el topic de Python manda -999.0 (YOLO perdido)
+                                error_z = -999.0;
+                                
+                                std::string texto_info = cv::format("IA: LOST | Real: %.2f m", Z_depth);
+                                
+                                // Lo pintamos en Rojo (Peligro, no hay IA)
+                                cv::putText(cv_ptr->image, texto_info, cv::Point(10, 30), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 0, 255), 2);
+                            }
+                        }
                         
-                        // TEXTO MEJORADO
-                        std::string texto_area = cv::format("Size: %.0f px | Z_real: %.2f m", current_size, Z_depth);
-                        cv::putText(cv_ptr->image, texto_area, cv::Point(10, 30), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 255, 255), 2);
+
+
+                        
                     
                     }
 

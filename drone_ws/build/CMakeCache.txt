@@ -297,6 +297,9 @@ CMAKE_STRIP:FILEPATH=/usr/bin/strip
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//The directory containing a CMake configuration file for Caffe2.
+Caffe2_DIR:PATH=/home/germanrv/libtorch/share/cmake/Caffe2
+
 //Path to a program.
 DOXYGEN_EXECUTABLE:FILEPATH=DOXYGEN_EXECUTABLE-NOTFOUND
 
@@ -352,6 +355,12 @@ LSB_FOUND:BOOL=TRUE
 //Path to a program.
 LSB_RELEASE_EXECUTABLE:FILEPATH=/usr/bin/lsb_release
 
+//The directory containing a CMake configuration file for MKLDNN.
+MKLDNN_DIR:PATH=MKLDNN_DIR-NOTFOUND
+
+//The directory containing a CMake configuration file for MKL.
+MKL_DIR:PATH=MKL_DIR-NOTFOUND
+
 //Path to a program.
 NOSETESTS:FILEPATH=/usr/bin/nosetests3
 
@@ -382,6 +391,9 @@ SETUPTOOLS_DEB_LAYOUT:BOOL=ON
 //Name of the computer/site where compile is being run
 SITE:STRING=germanrv-Pulse-GL66-12UEK
 
+//Path to a library.
+TORCH_LIBRARY:FILEPATH=/home/germanrv/libtorch/lib/libtorch.so
+
 //LSB Distrib tag
 UBUNTU:BOOL=TRUE
 
@@ -405,6 +417,9 @@ actionlib_DIR:PATH=/opt/ros/noetic/share/actionlib/cmake
 
 //The directory containing a CMake configuration file for actionlib_msgs.
 actionlib_msgs_DIR:PATH=/opt/ros/noetic/share/actionlib_msgs/cmake
+
+//Path to a library.
+c10_LIBRARY:FILEPATH=/home/germanrv/libtorch/lib/libc10.so
 
 //The directory containing a CMake configuration file for catkin.
 catkin_DIR:PATH=/opt/ros/noetic/share/catkin/cmake
@@ -523,6 +538,9 @@ iq_sim_BINARY_DIR:STATIC=/home/germanrv/drone_ws/build/iq_sim
 
 //Value Computed by CMake
 iq_sim_SOURCE_DIR:STATIC=/home/germanrv/drone_ws/src/iq_sim
+
+//Path to a library.
+kineto_LIBRARY:FILEPATH=/home/germanrv/libtorch/lib/libkineto.a
 
 //Path to a library.
 lib:FILEPATH=/opt/ros/noetic/lib/librospack.so
@@ -813,6 +831,8 @@ FIND_PACKAGE_MESSAGE_DETAILS_PY_em:INTERNAL=[/home/germanrv/.local/lib/python3.8
 FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/usr/bin/python3][v3.8.10()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
+//Details about finding Torch
+FIND_PACKAGE_MESSAGE_DETAILS_Torch:INTERNAL=[/home/germanrv/libtorch/lib/libtorch.so][/home/germanrv/libtorch/include;/home/germanrv/libtorch/include/torch/csrc/api/include][v()]
 GMOCK_FROM_SOURCE_FOUND:INTERNAL=TRUE
 GMOCK_FROM_SOURCE_INCLUDE_DIRS:INTERNAL=/usr/src/googletest/googlemock/include
 GMOCK_FROM_SOURCE_LIBRARIES:INTERNAL=gmock

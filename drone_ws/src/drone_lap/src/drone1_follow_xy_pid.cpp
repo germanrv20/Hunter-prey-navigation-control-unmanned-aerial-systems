@@ -23,17 +23,17 @@ const double Kd_yaw = 0.001;
 const double MAX_YAW_RATE = 1.0; // rad/s
 
 // 2. PID Altura (Vertical - Controla subida/bajada)
-const double Kp_vert = 0.01;   
+const double Kp_vert = 0.009;   
 const double Ki_vert = 0.000;  
-const double Kd_vert = 0.0006;   
+const double Kd_vert = 0.0008;   
 const double MAX_VERT_VEL = 1.0;  // rad/s
 
 
 // 3. PID Avance (Distancia - Eje X Frontal)
-const double Kp_dist = 0.007; // Ajustar experimentalmente
+const double Kp_dist = 0.27; //0.01; // valores sin modelo regresion
 const double Ki_dist = 0.000;
-const double Kd_dist = 0.0010; 
-const double MAX_LINEAR_X = 1.5; // m/s
+const double Kd_dist = 0.014; //0.0014; 
+const double MAX_LINEAR_X = 1.4; // m/s
 
 
 
@@ -132,7 +132,7 @@ void error_cb(const geometry_msgs::PointStamped::ConstPtr& msg) {
         // ZONAS MUERTAS APLICADAS A LOS MOTORES 
         if (std::abs(err_x) < 5.0)  cmd_yaw = 0.0;
         if (std::abs(err_y) < 5.0) cmd_z   = 0.0;
-        if (std::abs(err_dist) < 10.0) cmd_x = 0.0;
+        //if (std::abs(err_dist) < 10.0) cmd_x = 0.0;
 
 
         //   LÍMITES DE SEGURIDAD
