@@ -1,4 +1,4 @@
-# 🦅 Hunter-Prey Navigation & Control for Unmanned Aerial Systems (UAS)
+#  Hunter-Prey Navigation & Control for Unmanned Aerial Systems (UAS)
 
 ![ROS](https://img.shields.io/badge/ROS-Noetic-green?logo=ros)
 ![C++](https://img.shields.io/badge/C++-17-blue?logo=c%2B%2B)
@@ -6,13 +6,13 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-Deep_Learning-red?logo=pytorch)
 ![Gazebo](https://img.shields.io/badge/Gazebo-Simulation-orange)
 
-## 📖 Descripción del Proyecto
+##  Descripción del Proyecto
 
 Este repositorio contiene el código fuente para un Trabajo de Fin de Grado (TFG) centrado en el desarrollo de un sistema autónomo de navegación y persecución entre dos vehículos aéreos no tripulados (drones). 
 
 El sistema implementa una arquitectura de control de tipo **"Cazador-Presa"** (Hunter-Prey) en un entorno de simulación realista (Gazebo + ArduPilot SITL). El dron "cazador" es capaz de localizar, seguir y mantener una distancia de seguridad con el dron "presa" utilizando exclusivamente **visión monocular** (una sola cámara), prescindiendo de sensores pesados y costosos como los LiDAR.
 
-### ✨ Características Principales
+###  Características Principales
 * **Visión Artificial:** Detección en tiempo real del dron objetivo mediante **YOLO**.
 * **Estimación de Distancia con Deep Learning:** Una Red Neuronal Perceptrón Multicapa (MLP) entrenada en PyTorch infiere la distancia física en metros basándose en el área del *bounding box* de YOLO.
 * **Física y Feature Engineering:** El modelo de IA implementa conceptos de física óptica (inversa de la raíz cuadrada del área) para linealizar la predicción, logrando precisiones centimétricas a largas distancias usando una sola neurona.
@@ -21,7 +21,7 @@ El sistema implementa una arquitectura de control de tipo **"Cazador-Presa"** (H
 
 ---
 
-## 🏗️ Arquitectura del Sistema (Separation of Concerns)
+##  Arquitectura del Sistema (Separation of Concerns)
 
 Para evitar cuellos de botella y problemas de compatibilidad con C++17, el sistema divide las responsabilidades en múltiples nodos de ROS que se comunican a través de *topics*:
 
@@ -31,7 +31,7 @@ Para evitar cuellos de botella y problemas de compatibilidad con C++17, el siste
 
 ---
 
-## ⚙️ Requisitos y Dependencias
+##  Requisitos y Dependencias
 
 Este proyecto está diseñado para funcionar sobre **Ubuntu 20.04** y **ROS Noetic**.
 
@@ -43,7 +43,7 @@ Este proyecto está diseñado para funcionar sobre **Ubuntu 20.04** y **ROS Noet
 
 ---
 
-## 🚀 Instalación y Uso
+##  Instalación y Uso
 
 ### 1. Clonar y Compilar
 Clona este repositorio dentro de la carpeta `src` de tu *workspace* de ROS (ej. `~/drone_ws/src/`):
