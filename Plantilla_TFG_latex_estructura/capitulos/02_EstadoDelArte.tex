@@ -11,20 +11,93 @@
 % --- EL TRUCO ESTÁ AQUÍ ---
 \vspace*{0.8cm} % El asterisco fuerza un espacio rígido de 0.8cm
 \section{Introducción al Estado del Arte}
-Coemnzar
+
+Esta sección tiene como objetivo establecer el marco teórico y tecnológico que sustenta el desarrollo de este proyecto. Dado que el control de navegación para la intercepción de vehículos aéreos no tripulados (UAV) constituye un campo multidisciplinar, resulta necesario revisar las principales tecnologías empleadas para abordar este problema \cite{yang2024high} y fundamentar la solución propuesta.
+
+\vspace{0.4cm}
+
+En primer lugar, se revisan los Sistemas Aéreos no Tripulados, analizando su clasificación actual y cómo su evolución ha permitido que su utilización se extienda globalmente, pasando de aplicaciones militares a complejas tareas de investigación y servicios civiles \cite{chavez2024emulating}.
+
+\vspace{0.4cm}
+
+El bloque de Percepción Visual aborda el uso de Deep Learning para la detección de objetos. Aquí se analiza la arquitectura YOLO, justificando su selección por su capacidad para operar en tiempo real bajo las restricciones computacionales de un sistema embarcado \cite{ zheng2021air}.
+
+\vspace{0.4cm}
+
+El núcleo estratégico del proyecto se desarrolla en el Control de Navegación Visual. Se analizan los distintos tipos de navegación aérea, profundizando en el paradigma IBVS (Image-Based Visual Servoing) \cite{wikipediaVisualServoing}. Basándose en la literatura técnica consultada, se justifica el uso de IBVS como una solución más eficiente y menos costosa en términos de procesamiento y complejidad técnica que otros enfoques \cite{yang2024high, yan2024precise}. Asimismo, se exploran diversos métodos de control, fundamentando la elección del controlador PID como una herramienta clásica y eficaz para el seguimiento de objetivos dinámicos.
+
+\vspace{0.4cm}
+
+Dada la naturaleza ruidosa de las detecciones visuales, la sección de Estimación de Estado y Filtrado detalla el uso del Filtro de Kalman \cite{kalman1960new} y el filtro EMA (Exponential Moving Average). Estas herramientas son críticas para mitigar el ruido de los sensores y predecir la posición del objetivo en caso de oclusiones temporales.
+
+\vspace{0.4cm}
+  
+Para conectar el plano de la imagen con el mundo físico, se presentan los fundamentos de la Geometría Proyectiva \cite{CameraModels}. En este apartado se explica el funcionamiento de la proyección de la cámara y el uso de transformaciones de coordenadas, esenciales para traducir los errores en píxeles a comandos de movimiento en el sistema de referencia del dron \cite{asl2014adaptive}.
+
+\vspace{0.4cm}
+
+Finalmente, se describe el Stack de Software y Hardware, detallando los frameworks de comunicación robótica (ROS/Mavros) y las herramientas de simulación (Gazebo) que permiten la validación segura de los algoritmos desarrollados .
+
 \section{Sistemas Aéreos no Tripulados}
-\subsection{Clasificación y arquitecturas de control actuales}
 
+Los Sistemas Aéreos no Tripulados (UAS, por sus siglas en inglés, \textit{Unmanned Aerial Systems}) han experimentado una evolución notable en las últimas décadas. Lo que comenzó como una tecnología asociada principalmente al ámbito militar se ha transformado en una plataforma versátil con aplicaciones en ingeniería civil, agricultura de precisión, logística, inspección y vigilancia. Esta expansión ha sido posible gracias a la miniaturización de sensores y al incremento de la capacidad de cómputo embarcado, lo que ha permitido desplegar drones en escenarios complejos donde la autonomía constituye un requisito crítico .
 
-\section{Enfoques actuales para intercepción de drones}
+\vspace{0.4cm}
+
+Sin embargo, el diseño de sistemas de navegación autónoma que sean robustos, eficientes y capaces de adaptarse a entornos dinámicos y no estructurados sigue siendo uno de los principales retos actuales. Esta limitación resulta especialmente relevante en un trabajo como el presente, centrado en la intercepción visual de un objetivo aéreo en movimiento.
+\vspace{0.4cm}
+
+\subsection{Clasificación por configuración física}
+
+Atendiendo a los requisitos de maniobrabilidad y a la naturaleza de la misión, los UAS pueden clasificarse principalmente según su arquitectura de sustentación:
+\vspace{0.4cm}
+
+\begin{itemize}
+    \item \textbf{Ala fija (\textit{Fixed-wing}).} Presentan una arquitectura similar a la de la aviación convencional. Destacan por su elevada autonomía y eficiencia en vuelos de larga distancia. No obstante, su incapacidad para realizar vuelo estacionario (\textit{hover}) los hace poco adecuados para misiones de intercepción que requieran cambios bruscos de dirección o seguimiento cercano a baja velocidad. La Figura \ref{fig:dron-ala-fija} muestra un ejemplo representativo de esta configuración.
+
+    \begin{center}
+    \refstepcounter{figure}\label{fig:dron-ala-fija}
+    \includegraphics[width=0.65\textwidth]{imagenes/Dronalafija.jpeg}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Dron de ala fija. Fuente: \cite{DronFija}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron de ala fija}
+    \end{center}
+
+    \item \textbf{Multirrotores (\textit{Multi-rotors}).} Constituyen la plataforma de referencia para este Trabajo de Fin de Grado. Su configuración, habitualmente basada en cuatro motores, permite un control directo sobre los seis grados de libertad. Su capacidad de despegue y aterrizaje vertical (VTOL), junto con su elevada agilidad, resulta esencial para mantener a un objetivo móvil dentro del campo de visión de la cámara de forma continua.
+
+     \begin{center}
+    \refstepcounter{figure}\label{fig:dron-vtol}
+    \includegraphics[width=0.65\textwidth]{imagenes/DronRotores.jpeg}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Dron de multirotores. Fuente: \cite{DronMotor}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron de multirotores}
+    \end{center}
+
+    \item \textbf{Híbridos (VTOL \textit{Fixed-wing}).} Tratan de combinar la autonomía del ala fija con la versatilidad del multirrotor, aunque su mayor complejidad mecánica y de control suele traducirse en un incremento del peso, el coste y la dificultad de integración. La Figura \ref{fig:dron-vtol} presenta un ejemplo de plataforma VTOL de ala fija.
+
+    \begin{center}
+    \refstepcounter{figure}\label{fig:dron-vtol}
+    \includegraphics[width=0.65\textwidth]{imagenes/DronVtol.jpeg}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Dron VTOL de ala fija. Fuente: \cite{DronVtol}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron VTOL de ala fija}
+    \end{center}
+\end{itemize}
+
+\subsection{Aplicaciones actuales y evolución de la navegación}
+
+\vspace{0.4cm}
+
 
 \section{Percepción Visual mediante Deep Learning}
+\subsection{Paradigmas de detección de objetos}
+ One-stage vs. Two-stage detectors
 \subsection{Comparativa de modelos}
-\subsection{elección de YOLO}
+\subsection{YOLO}
+\cite{terven2023comprehensive}
+\subsection{Criterios de selección de modelos}
 
 \section{Control de Navegación Visual}
 \subsection{Tipos de control de navegación}
 \subsection{Conceptos de Visual Servoing (IBVS)}
+\subsection{Metodos de Control}
 \subsection{Controlador PID}
 
 \section{Estimación de Estado y Filtrado}
@@ -33,6 +106,7 @@ Coemnzar
 
 \section{Geometría Proyectiva}
 \subsection{Proyecciones de la Camara}
+\cite{opencvCalib3d}
 \subsection{Transformaciones de coordenadas}
 
 \section{Stack de Software y Hardware}

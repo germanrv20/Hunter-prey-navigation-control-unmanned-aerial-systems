@@ -42,8 +42,10 @@ Esta investigación se enmarca directamente en la necesidad de fortalecer la sob
 
 
 \begin{center}
+\refstepcounter{figure}
 \includegraphics[width=0.65\textwidth]{imagenes/Inta.png}\\[0.5ex]
-{\small \textbf{Figura 1.1} logo de INTA.}
+{\small \textbf{Figura \thefigure.} Logo del INTA.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Logo del INTA}
 \end{center}
 
 \vspace{0.4cm}
@@ -117,6 +119,7 @@ En la tabla que se presenta a continuación se puede apreciar claramente la orga
 \vspace{0.4cm}
 
 \begin{center}
+\refstepcounter{table}
 \renewcommand{\arraystretch}{1.25}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|p{6.2cm}|c|c|c|c|c|c|c|c|c|}
@@ -138,7 +141,8 @@ Documentación & 3 semanas &  &  &  &  &  &  &  & X \\
 \end{tabular}%
 }
 \par\vspace{0.3cm}
-{\small \textbf{Tabla 1.1}: Planificación del proyecto.}
+{\small \textbf{Tabla \thetable}: Planificación del proyecto.}
+\addcontentsline{lot}{table}{\protect\numberline{\thetable}Planificación del proyecto}
 \end{center}
 
 \subsection{Detalle de las fases}
@@ -200,6 +204,7 @@ La dedicación al proyecto se estima en 300 horas, correspondientes a los 12 cr�
 En la Tabla 1.2 se recoge el resumen de los costes estimados del proyecto.
 
 \begin{center}
+\refstepcounter{table}
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{|p{9cm}|r|}
 \hline
@@ -215,7 +220,8 @@ Horas de trabajo & 3.600,00 \\
 \hline
 \end{tabular}
 \par\vspace{0.3cm}
-{\small \textbf{Tabla 1.2}: Resumen de costes del proyecto.}
+{\small \textbf{Tabla \thetable}: Resumen de costes del proyecto.}
+\addcontentsline{lot}{table}{\protect\numberline{\thetable}Resumen de costes del proyecto}
 \end{center}
 
 Por tanto, el coste total estimado del proyecto asciende a \textbf{7693,10€}, considerando tanto los recursos materiales empleados como la valoración económica aproximada del tiempo de trabajo dedicado a su desarrollo.
