@@ -16,7 +16,7 @@ Esta sección tiene como objetivo establecer el marco teórico y tecnológico qu
 
 \vspace{0.4cm}
 
-En primer lugar, se revisan los Sistemas Aéreos no Tripulados, analizando su clasificación actual y cómo su evolución ha permitido que su utilización se extienda globalmente, pasando de aplicaciones militares a complejas tareas de investigación y servicios civiles \cite{chavez2024emulating}.
+En primer lugar, se revisan los Sistemas Aéreos no Tripulados, analizando su clasificación actual y cómo su evolución ha permitido que su utilización se extienda globalmente, pasando de aplicaciones militares a complejas tareas de investigación y servicios civiles \cite{ClasDron1,ClasDron2}.
 
 \vspace{0.4cm}
 
@@ -49,7 +49,7 @@ Sin embargo, el diseño de sistemas de navegación autónoma que sean robustos, 
 
 \subsection{Clasificación por configuración física}
 
-Atendiendo a los requisitos de maniobrabilidad y a la naturaleza de la misión, los UAS pueden clasificarse principalmente según su arquitectura de sustentación:
+Atendiendo a los requisitos de maniobrabilidad y a la naturaleza de la misión, los UAS pueden clasificarse principalmente según su estructura \cite{ClasDron1}:
 \vspace{0.4cm}
 
 \begin{itemize}
@@ -62,13 +62,13 @@ Atendiendo a los requisitos de maniobrabilidad y a la naturaleza de la misión, 
     \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron de ala fija}
     \end{center}
 
-    \item \textbf{Multirrotores (\textit{Multi-rotors}).} Constituyen la plataforma de referencia para este Trabajo de Fin de Grado. Su configuración, habitualmente basada en cuatro motores, permite un control directo sobre los seis grados de libertad. Su capacidad de despegue y aterrizaje vertical (VTOL), junto con su elevada agilidad, resulta esencial para mantener a un objetivo móvil dentro del campo de visión de la cámara de forma continua.
+    \item \textbf{Multirrotores (\textit{Multi-rotors}).} Constituyen la plataforma de referencia para este Trabajo de Fin de Grado. Su configuración, habitualmente basada en cuatro motores, permite un control directo. Su capacidad de despegue y aterrizaje vertical (VTOL), junto con su elevada agilidad, resulta esencial para mantener a un objetivo móvil dentro del campo de visión de la cámara de forma continua. La Figura \ref{fig:dron-multirrotor} presenta un ejemplo de esta configuración.
 
      \begin{center}
-    \refstepcounter{figure}\label{fig:dron-vtol}
+    \refstepcounter{figure}\label{fig:dron-multirrotor}
     \includegraphics[width=0.65\textwidth]{imagenes/DronRotores.jpeg}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Dron de multirotores. Fuente: \cite{DronMotor}.}
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron de multirotores}
+    {\small \textbf{Figura \thefigure.} Dron multirrotor. Fuente: \cite{DronMotor}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron multirrotor}
     \end{center}
 
     \item \textbf{Híbridos (VTOL \textit{Fixed-wing}).} Tratan de combinar la autonomía del ala fija con la versatilidad del multirrotor, aunque su mayor complejidad mecánica y de control suele traducirse en un incremento del peso, el coste y la dificultad de integración. La Figura \ref{fig:dron-vtol} presenta un ejemplo de plataforma VTOL de ala fija.
@@ -81,12 +81,86 @@ Atendiendo a los requisitos de maniobrabilidad y a la naturaleza de la misión, 
     \end{center}
 \end{itemize}
 
-\subsection{Aplicaciones actuales y evolución de la navegación}
+\subsection{Aplicaciones actuales}
+
+En la actualidad, los drones se utilizan en numerosos ámbitos profesionales y técnicos gracias a su capacidad para acceder a zonas complejas, captar información en tiempo real y ejecutar maniobras con precisión.
+
+\vspace{0.4cm}
+
+Entre sus distintas configuraciones, el dron multirrotor se ha consolidado como la plataforma más extendida debido a su maniobrabilidad, su facilidad de despliegue y su capacidad de vuelo estacionario, cualidades especialmente valiosas en operaciones que requieren cercanía al entorno y una respuesta rápida ante cambios del escenario.
+
+\vspace{0.4cm}
+
+Tradicionalmente, muchas de estas operaciones han dependido de un control humano directo, en el que un operador supervisa la trayectoria, corrige desviaciones y decide cada maniobra relevante. Este enfoque puede resultar suficiente en escenarios simples o muy controlados; sin embargo, pierde eficacia cuando el entorno es dinámico, cuando aparecen obstáculos imprevistos o cuando el objetivo modifica su trayectoria de forma continua.
+
+\vspace{0.4cm}
+
+En este contexto, la navegación autónoma surge como una solución tecnológica necesaria no solo para mejorar el rendimiento del sistema, sino también para reducir la carga de trabajo del operador humano. En misiones prolongadas, repetitivas o de alta exigencia, la dependencia constante del pilotaje manual incrementa el riesgo de fatiga, errores de supervisión y pérdida de eficacia operativa. La incorporación de capacidades autónomas permite automatizar tareas como el seguimiento de trayectorias, la corrección del movimiento y la respuesta ante cambios del entorno, disminuyendo la intervención continua del operador. Además, este enfoque contribuye a optimizar recursos y a abaratar costes operativos, al reducir la necesidad de control manual permanente y favorecer misiones más estables, seguras y sostenibles en el tiempo.
+
+\vspace{0.4cm}
+
+A partir de esta idea, la navegación autónoma adquiere especial relevancia en varias situaciones de uso:
+
+\vspace{0.4cm}
+
+\noindent\textbf{Utilización en agricultura:} En el ámbito de la agricultura de precisión, la navegación autónoma permite recorrer parcelas extensas, mantener trayectorias estables y adaptar el vuelo a las características del terreno o del cultivo \cite{WebDronAgri}. Esto facilita tareas como la supervisión del estado de las plantaciones, la detección de incidencias y la recopilación sistemática de información, reduciendo al mismo tiempo la intervención manual continua del operador.
+
+  \begin{center}
+    \refstepcounter{figure}\label{fig:dron-Cultivos}
+    \includegraphics[width=0.65\textwidth]{imagenes/DronRegando.jpeg}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Dron utilizado en agricultura. Fuente: \cite{ImagenDronRegando}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron monitoreando cultivos}
+    \end{center}
+
+\vspace{0.3cm}
+
+\noindent\textbf{Apoyo en emergencias y búsqueda de objetivos:} En escenarios de emergencia, catástrofe o difícil acceso, la navegación autónoma permite explorar áreas amplias, evitar obstáculos y centrar la misión en la localización de objetivos de interés, como personas, embarcaciones, vehículos o puntos críticos del terreno. Esta capacidad resulta  valiosa en operaciones de apoyo en emergencias, donde el sistema debe reaccionar, adaptarse a cambios del entorno y mantener una búsqueda continua \cite{WebDronRescate}.
+
+ \begin{center}
+    \refstepcounter{figure}\label{fig:dron-Rescate}
+    \includegraphics[width=0.65\textwidth]{imagenes/DronRescate.jpeg}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Dron utilizado en busqueda y rescate Marítimo. Fuente: \cite{ImagenDronRescate}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron utilizado en Busqueda y rescate Marítimo}
+  \end{center}
+
+
+\vspace{0.4cm}
+
+\noindent\textbf{Transporte autónomo de mercancías:} En entornos urbanos, industriales o logísticos \cite{WebDronMerca}, los UAV pueden convertirse en una alternativa eficiente para el envío de pequeñas cargas, repuestos o material de primera necesidad. En este tipo de operaciones, la navegación autónoma permite reajustar la ruta ante restricciones del entorno, variaciones en el trayecto o condiciones externas no previstas, manteniendo al mismo tiempo un vuelo estable y seguro .
+
+\vspace{0.2cm}
+    \begin{center}
+      \refstepcounter{figure}\label{fig:dron-Transporte}
+      \includegraphics[width=0.65\textwidth]{imagenes/DronMerca.jpg}\\[0.5ex]
+      {\small \textbf{Figura \thefigure.} Dron utilizado para transporte de paquetes. Fuente: \cite{ImagenDronMerca}.}
+      \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron utilizado transporte de paquetes}
+    \end{center}
+
+
+\vspace{0.4cm}
+
+\noindent\textbf{Operaciones militares y de defensa:} Este es el caso de uso más próximo al enfoque de este Trabajo de Fin de Grado. En misiones de reconocimiento, vigilancia, defensa, intercepción \cite{chavez2024emulating, WebDronDefensa} y seguimiento de UAV enemigos, la capacidad de reaccionar ante amenazas dinámicas resulta fundamental. En estos escenarios, el sistema no solo debe desplazarse, sino también detectar, seguir y mantener el objetivo dentro del campo de visión, corrigiendo su trayectoria en tiempo real incluso ante maniobras evasivas.
+
+\vspace{0.2cm}
+
+ \begin{center}
+      \refstepcounter{figure}\label{fig:dron-Defensa}
+      \includegraphics[width=0.65\textwidth]{imagenes/DronDefensa.jpeg}\\[0.5ex]
+      {\small \textbf{Figura \thefigure.} Drones utilizados para operaciones militares. Fuente: \cite{ImagenDronDefensa}.}
+      \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Drones utilizados para operaciones militares}
+    \end{center}
+
+\vspace{1cm}
+
+En consecuencia, los métodos basados exclusivamente en pilotaje humano o en trayectorias rígidamente prefijadas resultan insuficientes cuando el sistema debe desenvolverse en entornos no estructurados y frente a objetivos dinámicos. Además, este enfoque incrementa la dependencia de pilotos con un alto nivel de entrenamiento, capaces de mantener decisiones rápidas y precisas durante situaciones de elevada exigencia operativa. Por ello, este Trabajo de Fin de Grado se orienta hacia estrategias de percepción visual y control de navegación que permitan reducir esa dependencia, automatizar tareas críticas de seguimiento e intercepción y dotar al UAV cazador de una respuesta robusta, precisa y adaptable en tiempo real.
 
 \vspace{0.4cm}
 
 
 \section{Percepción Visual mediante Deep Learning}
+La percepción visual es el proceso mediante el cual el sistema extrae información semántica de las imágenes captadas por una cámara para comprender su entorno. En el contexto de la intercepción de UAVs, esta capacidad es crítica para localizar al objetivo  y calcular su posición relativa en el plano de la imagen en tiempo real.
+
+
 \subsection{Paradigmas de detección de objetos}
  One-stage vs. Two-stage detectors
 \subsection{Comparativa de modelos}
