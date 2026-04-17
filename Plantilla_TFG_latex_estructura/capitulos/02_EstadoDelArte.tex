@@ -44,7 +44,7 @@ Los Sistemas Aéreos no Tripulados (UAS, por sus siglas en inglés, \textit{Unma
 
 \vspace{0.4cm}
 
-Sin embargo, el diseño de sistemas de navegación autónoma que sean robustos, eficientes y capaces de adaptarse a entornos dinámicos y no estructurados sigue siendo uno de los principales retos actuales. Esta limitación resulta especialmente relevante en un trabajo como el presente, centrado en la intercepción visual de un objetivo aéreo en movimiento.
+Sin embargo, el diseño de sistemas de navegación autónoma que sean robustos, eficientes y capaces de adaptarse a entornos dinámicos y no estructurados sigue siendo uno de los principales retos actuales.
 \vspace{0.4cm}
 
 \subsection{Clasificación por configuración física}
@@ -83,9 +83,6 @@ Atendiendo a los requisitos de maniobrabilidad y a la naturaleza de la misión, 
 
 \subsection{Aplicaciones actuales}
 
-En la actualidad, los drones se utilizan en numerosos ámbitos profesionales y técnicos gracias a su capacidad para acceder a zonas complejas, captar información en tiempo real y ejecutar maniobras con precisión.
-
-\vspace{0.4cm}
 
 Entre sus distintas configuraciones, el dron multirrotor se ha consolidado como la plataforma más extendida debido a su maniobrabilidad, su facilidad de despliegue y su capacidad de vuelo estacionario, cualidades especialmente valiosas en operaciones que requieren cercanía al entorno y una respuesta rápida ante cambios del escenario.
 
@@ -157,21 +154,162 @@ En consecuencia, los métodos basados exclusivamente en pilotaje humano o en tra
 \vspace{0.4cm}
 
 
-\section{Percepción Visual mediante Deep Learning}
-La percepción visual es el proceso mediante el cual el sistema extrae información semántica de las imágenes captadas por una cámara para comprender su entorno. En el contexto de la intercepción de UAVs, esta capacidad es crítica para localizar al objetivo  y calcular su posición relativa en el plano de la imagen en tiempo real.
+\section{ Métodos de Control de Navegación para UAVs}
 
+Para alcanzar este nivel de autonomía, el control del vehículo no puede entenderse como una acción aislada, sino como parte de un sistema integrado de Guiado, Navegación y Control, habitualmente denominado GNC (\textit{Guidance, Navigation and Control}). Este marco organiza el comportamiento inteligente de la aeronave en tres niveles jerárquicos y complementarios: el guiado determina la estrategia de la misión y la trayectoria a seguir; la navegación estima el estado del UAV y su posición relativa respecto al entorno; y el control transforma esta información en comandos específicos de actitud y empuje. En conjunto, el sistema GNC permite cerrar el lazo entre la percepción sensorial y la respuesta dinámica del dron, un factor crítico cuando el escenario de operación cambia en tiempo real y el objetivo se mueve de forma continua .
+
+\vspace{0.3cm}
+
+Dentro de este esquema, el control de navegación actúa como el núcleo de decisión táctica. Su función principal es procesar la información proveniente del módulo de navegación para generar comandos de movimiento que permitan cumplir objetivos complejos, como la persecución de una presa. En este tipo de misiones, el éxito no depende únicamente de una detección correcta, sino de la capacidad del algoritmo para orquestar un movimiento fluido que mantenga al objetivo dentro del campo de visión sin comprometer la estabilidad del vuelo.
+
+\vspace{0.3cm}
+
+Dada la complejidad de este desafío, la literatura científica ha evolucionado hacia diversos paradigmas de control, diferenciados principalmente por la fuente de los datos y la arquitectura del procesamiento \ref{fig:esquema-Sevoing}. Estos enfoques se pueden clasificar en tres grandes categorías : los métodos basados en localización global, los enfoques fundamentados en aprendizaje profundo (\textit{Deep Learning}) y los sistemas de control basado en imagen (\textit{Visual Servoing}). Cada una de estas metodologías presenta un compromiso distinto entre precisión, coste computacional y robustez, factores que determinan su idoneidad para operar en sistemas empotrados de recursos limitados. A continuación, se describen los fundamentos y aplicaciones de estos paradigmas para contextualizar la solución técnica adoptada en este proyecto.
+
+
+\begin{center}
+      \refstepcounter{figure}\label{fig:esquema-Sevoing}
+      
+      % Aquí aplicamos el truco de la caja (\makebox) y el tamaño 1.4
+      \makebox[\textwidth][c]{\includegraphics[width=1.4\textwidth]{imagenes/TipoControles2.jpg}}\\[0.5ex]
+      
+      {\small \textbf{Figura \thefigure.} Diferencias entre los tipos de algoritmos de visual Servoing.}
+      \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Tipos de algoritmos de visual Servoing (Elaboración propia)}
+\end{center}
+
+\subsection{Tipos de control de navegación}
+
+
+
+
+Los \textbf{métodos basados en localización}, encuadrados habitualmente en el paradigma \textit{Position-Based Visual Servoing} (PBVS), tienen como objetivo reconstruir la posición y la orientación del blanco en el espacio cartesiano a partir de la información visual \cite{chaumette2006visual}. Esta estimación tridimensional permite definir trayectorias de intercepción con un mayor grado de precisión, algo especialmente útil en misiones de seguimiento e intercepción con cuadricópteros. Dentro de esta familia, algunos trabajos recurren a controladores predictivos no lineales que optimizan la acción de control en un horizonte temporal, teniendo en cuenta tanto la evolución prevista del objetivo como las restricciones dinámicas del UAV. Otros enfoques emplean lazos de control sobre velocidades angulares para hacer coincidir la línea de visión con el vector de velocidad del vehículo, o modelan la trayectoria del blanco en tres dimensiones para escoger puntos de interceptación más convenientes. De igual modo, también se han propuesto arquitecturas de doble lazo PID que aprovechan los estados tridimensionales estimados del objetivo para seguir blancos terrestres o aéreos\cite{rodriguezRamos2021autonomous}.
+
+\vspace{0.3cm}
+
+En definitiva, la principal fortaleza de PBVS radica en su capacidad para prever el movimiento del objetivo y determinar puntos de interceptación. No obstante, su rendimiento queda condicionado por una estimación fiable de la profundidad y por una calibración rigurosa de la cámara. Asimismo, una parte importante de los trabajos revisados complementa la información visual con sensores adicionales, como radares o cámaras estéreo y de profundidad, con el fin de mejorar la reconstrucción espacial y aumentar la robustez del sistema.
+
+\vspace{0.3cm}
+
+Los \textbf{métodos basados en aprendizaje} delegan una parte importante del control en modelos entrenados con datos, normalmente redes neuronales capaces de inferir comandos de navegación de forma directa a partir de la información visual. Dentro de esta familia destacan enfoques de aprendizaje supervisado y, especialmente, técnicas de aprendizaje por refuerzo, que han mostrado una notable capacidad de adaptación frente al ruido sensorial y ante entornos dinámicos o poco estructurados. Esta flexibilidad resulta especialmente atractiva en tareas de intercepción, donde el dron debe reaccionar en tiempo real a cambios imprevistos de la escena o de la trayectoria del objetivo \cite{weber2025autonomous, katkuri2024uav}. No obstante, su aplicación práctica sigue presentando dificultades relevantes: requieren grandes volúmenes de datos y tiempos de entrenamiento elevados, suelen quedar condicionados por los escenarios utilizados durante el aprendizaje y continúan arrastrando problemas importantes de transferencia entre simulación y mundo real. A ello se suma la cuestión de la generalización, ya que un modelo entrenado en condiciones concretas puede perder fiabilidad cuando cambian el entorno, la dinámica del vehículo o las perturbaciones externas \cite{guazzaloca2025learning}.
+
+\vspace{0.3cm}
+
+Por su parte, los \textbf{métodos basados en imagen}, agrupados bajo el paradigma \textit{Image-Based Visual Servoing} (IBVS), utilizan directamente el error medido en el plano imagen para generar la acción de control. En lugar de reconstruir por completo la geometría tridimensional del objetivo, estos enfoques trabajan con características visuales como el desplazamiento del blanco respecto al centro de la imagen o la variación de su tamaño aparente. Esta decisión reduce la dependencia respecto a estimaciones geométricas completas y suele favorecer soluciones más ligeras y mejor adaptadas a plataformas embarcadas con recursos limitados \cite{chaumette2006visual, yang2024high, yan2024precise}.
+
+\begin{center}
+\refstepcounter{figure}\label{fig:ibvs-esquema}
+\includegraphics[width=0.65\textwidth]{imagenes/IBVS_image.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Esquema conceptual de intercepción visual basada en visión monocular. Fuente: \cite{jana2022interception}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema conceptual de intercepción visual basada en visión monocular}
+\end{center}
+
+\vspace{0.3cm}
+
+\subsection{Conceptos de Visual Servoing (IBVS)}
+
+Dentro de IBVS pueden distinguirse, a su vez, dos enfoques. El primero corresponde a los métodos basados en modelo, que incorporan de forma explícita la dinámica del cuadricóptero y la cinemática visual en el diseño del controlador. Estos métodos permiten respuestas más predictivas, un seguimiento más preciso y, en algunos casos, garantías formales de estabilidad, pero a cambio requieren un modelado más detallado del sistema y un mayor esfuerzo de ajuste \cite{asl2014adaptive, yang2024high, yan2024precise}. El segundo enfoque es el de los métodos libres de modelo, en los que el controlador abstrae gran parte de la dinámica interna del UAV y delega la estabilización básica en el autopiloto o en los lazos de bajo nivel ya disponibles. Esta aproximación reduce la carga computacional y simplifica la integración práctica, aunque puede ofrecer una menor capacidad de respuesta ante maniobras extremadamente agresivas o escenarios muy exigentes \cite{wyder2019autonomous, lee2023air, vanDerAa2024ibvs}.
+
+\vspace{0.3cm}
+
+Por tanto, la elección entre PBVS, enfoques basados en aprendizaje e IBVS no depende únicamente de cuál resulte más sofisticado desde un punto de vista teórico, sino de cuál se adapta mejor al contexto de aplicación. PBVS aporta una representación espacial rica, pero exige una percepción 3D precisa; los métodos basados en aprendizaje ofrecen flexibilidad, aunque todavía presentan dificultades importantes de entrenamiento y transferencia al entorno real; e IBVS proporciona una relación especialmente favorable entre simplicidad, latencia y viabilidad en tiempo real. En este Trabajo de Fin de Grado, donde la percepción visual previa ya proporciona detecciones en el plano imagen mediante Deep Learning, resulta natural cerrar el lazo de navegación aprovechando directamente esa información visual. Por ello, un enfoque IBVS libre de modelo se presenta como la opción más coherente, ya que permite conectar de forma directa la detección del objetivo con la generación de consignas de control sin introducir una complejidad geométrica o computacional excesiva. Sin embargo, para que este lazo de control sea efectivo, el sistema requiere de un "sensor virtual" extremadamente fiable, capaz de identificar y localizar al objetivo en el plano imagen de forma ininterrumpida. Esta dependencia crítica entre la respuesta dinámica del dron y la calidad de la información visual es lo que motiva el desarrollo del módulo de percepción que se detalla a continuación.
+
+
+
+\section{Deep Learning}
+El \textit{Deep Learning} constituye una rama del aprendizaje automático basada en redes neuronales profundas, capaces de aproximar relaciones altamente no lineales a partir de grandes volúmenes de datos. Su rasgo distintivo es el aprendizaje jerárquico de representaciones: las primeras capas capturan regularidades elementales de la señal de entrada, mientras que las capas más profundas combinan esos patrones para construir descripciones semánticas de mayor nivel.
+
+\vspace{0.3cm}
+
+En términos formales, una neurona artificial transforma una combinación afín de sus entradas mediante una función no lineal, de acuerdo con la expresión:
+\begin{equation}
+z = \sum_{i} w_i x_i + b, \quad y = \phi(z)
+\end{equation}
+donde $w_i$ y $b$ representan los parámetros ajustables del modelo y $\phi(\cdot)$ introduce la no linealidad necesaria para que la red pueda representar funciones complejas. A partir de estas unidades básicas se construyen arquitecturas multicapa en las que la profundidad permite pasar de rasgos simples, como bordes o texturas, a representaciones cada vez más abstractas y útiles para tareas de alto nivel.
+
+\vspace{0.3cm}
+
+El entrenamiento de estas redes consiste en estimar los parámetros que minimizan una función de pérdida, es decir, una medida de la discrepancia entre la predicción del modelo y la salida deseada. Este proceso se realiza de forma iterativa mediante retropropagación, aplicando la regla de la cadena para obtener el gradiente de la pérdida respecto a cada peso:
+\begin{equation}
+\frac{\partial L}{\partial w_{ji}} = \delta_j y_i
+\end{equation}
+A partir de este gradiente, los parámetros se actualizan mediante algoritmos de optimización basados en descenso de gradiente, por ejemplo:
+\begin{equation}
+\theta \leftarrow \theta - \alpha \nabla_{\theta} L(y, \hat{y}(\theta))
+\end{equation}
+donde $\alpha$ representa la tasa de aprendizaje.
+
+\vspace{0.3cm}
+
+Sobre esta base común se han desarrollado arquitecturas especializadas según la naturaleza de los datos, como las redes recurrentes para señales secuenciales y los \textit{transformers} para modelar dependencias de largo alcance. Sin embargo, cuando la información de entrada es visual, las arquitecturas de mayor interés son las redes convolucionales (\textit{Convolutional Neural Networks}, CNN), ya que explotan la estructura espacial de la imagen mediante filtros locales y compartición de pesos. Esta formulación les permite extraer de manera eficiente bordes, texturas, contornos y patrones de alto nivel, lo que explica su papel central en tareas de clasificación, segmentación y, especialmente, detección de objetos.
+
+\begin{center}
+\refstepcounter{figure}\label{fig:capas-red-profunda}
+\includegraphics[width=0.75\textwidth]{imagenes/capasRed.jpg}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Representación esquemática de una red neuronal profunda organizada en capas. Fuente: \cite{frogames2020gradiente}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Representación esquemática de una red neuronal profunda organizada en capas}
+\end{center}
+
+\vspace{0.3cm}
+
+En este Trabajo de Fin de Grado, el interés se centra en las CNN aplicadas a detección. La intercepción visual de UAV exige transformar imágenes en estimaciones fiables y frecuentes de la posición del objetivo, incluso cuando este ocupa pocos píxeles, cambia bruscamente de escala o aparece sobre fondos complejos. Por ello, la percepción visual actúa como punto de entrada del lazo de navegación y debe proporcionar una señal estable para las etapas posteriores de filtrado, estimación de estado y control. En consecuencia, el análisis se orienta a arquitecturas convolucionales de detección, cuya formulación y variantes se presentan a continuación.
 
 \subsection{Paradigmas de detección de objetos}
- One-stage vs. Two-stage detectors
+
+La detección de objetos en Deep Learning persigue resolver simultáneamente dos tareas: determinar la clase del objeto presente en la escena y estimar su localización mediante cajas delimitadoras. Dentro de este problema, la literatura distingue principalmente entre detectores de dos etapas (\textit{two-stage}) y detectores de una sola etapa (\textit{one-stage}) \cite{terven2023comprehensive, diffTwoStage}.
+
+\vspace{0.3cm}
+
+Los métodos de dos etapas separan el proceso de detección en dos fases. En una primera etapa generan regiones candidatas donde podría encontrarse el objeto y, posteriormente, clasifican y refinan cada una de esas propuestas. Este planteamiento suele ofrecer una gran capacidad de discriminación en escenas complejas, pero introduce un coste computacional más elevado y una latencia superior, lo que limita su uso cuando el sistema debe reaccionar en fracciones de segundo\cite{FunRcnn}.
+
+ \begin{center}
+    \refstepcounter{figure}\label{fig:FunRccnn}
+    \includegraphics[width=0.65\textwidth]{imagenes/FunRcnn.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Esquema simplificado del funcionamiento de R-CNN,  \cite{FunRcnn}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del funcionamiento de R-CNN}
+ \end{center}
+
+\vspace{0.3cm}
+
+Por el contrario, los detectores de una sola etapa estiman directamente la clase y la localización del objeto en una única pasada de la red neuronal. Esta simplificación reduce la complejidad del pipeline y favorece tiempos de inferencia significativamente menores, una propiedad especialmente importante en plataformas embarcadas. En escenarios aire-aire, donde el objetivo puede ocupar pocos píxeles, cambiar rápidamente de escala y aparecer sobre fondos poco estructurados, la frecuencia de actualización del detector resulta tan importante como su precisión .
+
 \subsection{Comparativa de modelos}
+
+Desde el punto de vista de este Trabajo de Fin de Grado, la comparación entre modelos de percepción visual no debe basarse únicamente en métricas agregadas de precisión, sino en su comportamiento dentro del sistema completo. Un detector visual para intercepción de UAV debe ofrecer un equilibrio entre exactitud espacial, velocidad de inferencia y robustez frente a perturbaciones propias del vuelo, como vibraciones, desenfoque por movimiento, oclusiones parciales o cambios bruscos de perspectiva.
+
+\vspace{0.3cm}
+
+En la práctica, los modelos más precisos no siempre son los más adecuados si exigen recursos que exceden la capacidad de cómputo del vehículo. Del mismo modo, un detector extremadamente rápido pero inestable puede perjudicar el control si introduce falsas detecciones o desplazamientos espurios del centro de la caja delimitadora. Por tanto, la selección del modelo debe considerar simultáneamente la calidad de las detecciones y la viabilidad de su despliegue a bordo \cite{wyder2019autonomous, lee2023air}.
+
+\vspace{0.3cm}
+
+En este marco, la familia YOLO destaca como una alternativa especialmente competitiva. Su popularidad no se debe únicamente a su rendimiento en bancos de prueba generales, sino también a su capacidad para adaptarse a distintas restricciones de hardware mediante variantes ligeras o más complejas, manteniendo una relación favorable entre precisión y velocidad \cite{terven2023comprehensive}.
+
 \subsection{YOLO}
-\cite{terven2023comprehensive}
+
+La arquitectura YOLO (\textit{You Only Look Once}) formuló la detección de objetos como un problema unificado de regresión, en el que una sola red neuronal predice de forma conjunta las categorías y las cajas delimitadoras presentes en la imagen \cite{redmon2016yolo}. Este cambio de enfoque permitió sustituir pipelines fragmentados por una inferencia más directa y eficiente, convirtiendo a YOLO en una referencia para aplicaciones de visión en tiempo real.
+
+\vspace{0.3cm}
+
+La evolución posterior de la familia YOLO ha introducido mejoras progresivas en el extractor de características, en la fusión multiescala y en las cabezas de predicción, lo que ha incrementado su capacidad para detectar objetos pequeños sin renunciar a una latencia reducida \cite{terven2023comprehensive}. Esta característica es especialmente relevante en el problema abordado en este trabajo, ya que un UAV objetivo puede aparecer inicialmente como un blanco de tamaño muy reducido y aumentar su tamaño aparente conforme se acorta la distancia relativa.
+
+\vspace{0.3cm}
+
+Otra ventaja práctica de YOLO es que proporciona de manera directa la información necesaria para el resto del sistema: la clase detectada, la confianza asociada y las coordenadas de la caja delimitadora. A partir de estos datos es posible estimar el centro del objetivo en la imagen, calcular el error visual y alimentar las etapas posteriores de filtrado y control. Esta integración sencilla con pipelines de seguimiento e IBVS explica su presencia recurrente en trabajos de persecución, intercepción y operación autónoma de drones \cite{wyder2019autonomous, lee2023air, yang2024high}.
+
 \subsection{Criterios de selección de modelos}
 
-\section{Control de Navegación Visual}
-\subsection{Tipos de control de navegación}
-\subsection{Conceptos de Visual Servoing (IBVS)}
-\subsection{Metodos de Control}
+La elección de un modelo de percepción visual para este proyecto debe responder a criterios funcionales concretos y no únicamente a su rendimiento teórico en bases de datos genéricas. En primer lugar, el detector debe operar en tiempo real sobre hardware embarcado, de modo que su latencia sea compatible con la frecuencia del lazo de control. En segundo lugar, debe conservar un comportamiento robusto cuando el objetivo sea pequeño, esté parcialmente oculto o se desplace de forma no lineal en el campo de visión.
+
+\vspace{0.3cm}
+
+Asimismo, resultan determinantes el tamaño del modelo, su consumo de memoria, la facilidad de ajuste fino con un conjunto de datos específico y la estabilidad temporal de las detecciones. Este último aspecto es particularmente importante, ya que una señal visual muy ruidosa obliga a incrementar el filtrado y puede deteriorar la respuesta dinámica del sistema. En consecuencia, el modelo más adecuado no es necesariamente el de mayor precisión absoluta, sino aquel que ofrezca el mejor compromiso entre robustez, coste computacional e integración con el controlador visual \cite{zheng2021air, terven2023comprehensive}.
+
+\vspace{0.3cm}
+
+Bajo estos criterios, la selección de una arquitectura de la familia YOLO queda justificada como solución de percepción principal para el UAV cazador. Su equilibrio entre velocidad, precisión, flexibilidad de despliegue y madurez tecnológica la convierte en una base sólida para extraer en tiempo real la información visual necesaria para las etapas posteriores de estimación y control.
+
+
+\section{Metodos de Control}
 \subsection{Controlador PID}
 
 \section{Estimación de Estado y Filtrado}
@@ -189,8 +327,5 @@ La percepción visual es el proceso mediante el cual el sistema extrae informaci
 \subsection{Simulación}
 \subsection{Simulador Seleccionado}
 \subsection{Representación Gráfica}
-
-
-
 
 
