@@ -12,7 +12,7 @@
 \vspace*{0.8cm} % El asterisco fuerza un espacio rígido de 0.8cm
 \section{Introducción al Estado del Arte}
 
-Esta sección tiene como objetivo establecer el marco teórico y tecnológico que sustenta el desarrollo de este proyecto. Dado que el control de navegación para la intercepción de vehículos aéreos no tripulados (UAV) constituye un campo multidisciplinar, resulta necesario revisar las principales tecnologías empleadas para abordar este problema \cite{yang2024high} y fundamentar la solución propuesta.
+Esta sección tiene como objetivo establecer el marco teórico y tecnológico que sustenta el desarrollo de este proyecto. Dado que el control de navegación para el seguimiento a cortas distancias de vehículos aéreos no tripulados (UAV) constituye un campo multidisciplinar, resulta necesario revisar las principales tecnologías empleadas para abordar este problema \cite{yang2024high} y fundamentar la solución propuesta.
 
 \vspace{0.4cm}
 
@@ -196,12 +196,7 @@ Los \textbf{métodos basados en aprendizaje} delegan una parte importante del co
 
 Por su parte, los \textbf{métodos basados en imagen}, agrupados bajo el paradigma \textit{Image-Based Visual Servoing} (IBVS), utilizan directamente el error medido en el plano imagen para generar la acción de control. En lugar de reconstruir por completo la geometría tridimensional del objetivo, estos enfoques trabajan con características visuales como el desplazamiento del blanco respecto al centro de la imagen o la variación de su tamaño aparente. Esta decisión reduce la dependencia respecto a estimaciones geométricas completas y suele favorecer soluciones más ligeras y mejor adaptadas a plataformas embarcadas con recursos limitados \cite{chaumette2006visual, yang2024high, yan2024precise}.
 
-\begin{center}
-\refstepcounter{figure}\label{fig:ibvs-esquema}
-\includegraphics[width=0.65\textwidth]{imagenes/IBVS_image.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Esquema conceptual de intercepción visual basada en visión monocular. Fuente: \cite{jana2022interception}.}
-\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema conceptual de intercepción visual basada en visión monocular}
-\end{center}
+
 
 \vspace{0.3cm}
 
@@ -215,52 +210,51 @@ Por tanto, la elección entre PBVS, enfoques basados en aprendizaje e IBVS no de
 
 
 
-\section{Deep Learning}
-El \textit{Deep Learning} constituye una rama del aprendizaje automático basada en redes neuronales profundas, capaces de aproximar relaciones altamente no lineales a partir de grandes volúmenes de datos. Su rasgo distintivo es el aprendizaje jerárquico de representaciones: las primeras capas capturan regularidades elementales de la señal de entrada, mientras que las capas más profundas combinan esos patrones para construir descripciones semánticas de mayor nivel.
+\section{Visión por computador y detección de objetos}
+
+La visión por computador es la disciplina que estudia cómo extraer información significativa a partir de imágenes y secuencias de vídeo para que un sistema automático pueda interpretar su entorno. Su finalidad no es únicamente capturar datos visuales, sino transformarlos en descripciones útiles sobre la presencia, posición, forma o movimiento de los elementos observados. Por ello, constituye uno de los pilares de los sistemas autónomos modernos, especialmente cuando la cámara actúa como sensor principal del proceso de percepción.
 
 \vspace{0.3cm}
 
-En términos formales, una neurona artificial transforma una combinación afín de sus entradas mediante una función no lineal, de acuerdo con la expresión:
-\begin{equation}
-z = \sum_{i} w_i x_i + b, \quad y = \phi(z)
-\end{equation}
-donde $w_i$ y $b$ representan los parámetros ajustables del modelo y $\phi(\cdot)$ introduce la no linealidad necesaria para que la red pueda representar funciones complejas. A partir de estas unidades básicas se construyen arquitecturas multicapa en las que la profundidad permite pasar de rasgos simples, como bordes o texturas, a representaciones cada vez más abstractas y útiles para tareas de alto nivel.
+A lo largo de su evolución, la visión por computador ha encontrado aplicaciones en ámbitos muy diversos, entre ellos la inspección industrial, la medicina, la videovigilancia, la conducción autónoma, la robótica móvil, la agricultura de precisión y la navegación de UAV. En todos estos escenarios, su papel consiste en convertir la información visual en variables utilizables por módulos de estimación, planificación o control. En el caso de este Trabajo de Fin de Grado, esa función adquiere una importancia central, ya que la detección visual del objetivo constituye la entrada directa del lazo de navegación.
 
 \vspace{0.3cm}
 
-El entrenamiento de estas redes consiste en estimar los parámetros que minimizan una función de pérdida, es decir, una medida de la discrepancia entre la predicción del modelo y la salida deseada. Este proceso se realiza de forma iterativa mediante retropropagación, aplicando la regla de la cadena para obtener el gradiente de la pérdida respecto a cada peso:
-\begin{equation}
-\frac{\partial L}{\partial w_{ji}} = \delta_j y_i
-\end{equation}
-A partir de este gradiente, los parámetros se actualizan mediante algoritmos de optimización basados en descenso de gradiente, por ejemplo:
-\begin{equation}
-\theta \leftarrow \theta - \alpha \nabla_{\theta} L(y, \hat{y}(\theta))
-\end{equation}
-donde $\alpha$ representa la tasa de aprendizaje.
+Desde un punto de vista histórico, los primeros avances del campo se apoyaron en técnicas de procesamiento digital de imágenes, geometría proyectiva y reconocimiento de patrones. Durante esa etapa, buena parte de los algoritmos dependía de reglas diseñadas manualmente, detectores de bordes, umbrales, filtros y descriptores geométricos. Aunque estos enfoques resultaron fundamentales para establecer las bases de la disciplina, su rendimiento tendía a degradarse cuando aumentaba la variabilidad de la escena o cuando el sistema debía operar en entornos complejos, dinámicos y poco estructurados.
 
 \vspace{0.3cm}
 
-Sobre esta base común se han desarrollado arquitecturas especializadas según la naturaleza de los datos, como las redes recurrentes para señales secuenciales y los \textit{transformers} para modelar dependencias de largo alcance. Sin embargo, cuando la información de entrada es visual, las arquitecturas de mayor interés son las redes convolucionales (\textit{Convolutional Neural Networks}, CNN), ya que explotan la estructura espacial de la imagen mediante filtros locales y compartición de pesos. Esta formulación les permite extraer de manera eficiente bordes, texturas, contornos y patrones de alto nivel, lo que explica su papel central en tareas de clasificación, segmentación y, especialmente, detección de objetos.
+La irrupción de las redes convolucionales (\textit{Convolutional Neural Networks}, CNN) modificó de forma decisiva este panorama al permitir el aprendizaje automático de representaciones visuales directamente a partir de los datos. Frente a los descriptores diseñados manualmente, las CNN aprenden jerarquías de características cada vez más abstractas y han demostrado una alta eficacia en tareas como clasificación, segmentación, seguimiento y, de manera muy destacada, detección de objetos. En la actualidad, estas arquitecturas constituyen el núcleo de muchos sistemas de percepción embarcada porque combinan capacidad de representación, robustez ante variaciones visuales y posibilidad de ejecución en tiempo real sobre hardware especializado.
 
-\begin{center}
-\refstepcounter{figure}\label{fig:capas-red-profunda}
-\includegraphics[width=0.75\textwidth]{imagenes/capasRed.jpg}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Representación esquemática de una red neuronal profunda organizada en capas. Fuente: \cite{frogames2020gradiente}.}
-\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Representación esquemática de una red neuronal profunda organizada en capas}
-\end{center}
+
+
+
 
 \vspace{0.3cm}
-
-En este Trabajo de Fin de Grado, el interés se centra en las CNN aplicadas a detección. La intercepción visual de UAV exige transformar imágenes en estimaciones fiables y frecuentes de la posición del objetivo, incluso cuando este ocupa pocos píxeles, cambia bruscamente de escala o aparece sobre fondos complejos. Por ello, la percepción visual actúa como punto de entrada del lazo de navegación y debe proporcionar una señal estable para las etapas posteriores de filtrado, estimación de estado y control. En consecuencia, el análisis se orienta a arquitecturas convolucionales de detección, cuya formulación y variantes se presentan a continuación.
 
 \subsection{Paradigmas de detección de objetos}
 
-La detección de objetos en Deep Learning persigue resolver simultáneamente dos tareas: determinar la clase del objeto presente en la escena y estimar su localización mediante cajas delimitadoras. Dentro de este problema, la literatura distingue principalmente entre detectores de dos etapas (\textit{two-stage}) y detectores de una sola etapa (\textit{one-stage}) \cite{terven2023comprehensive, diffTwoStage}.
+El objetivo fundamental de la detección de objetos consiste en localizar y clasificar regiones de interés dentro de una imagen, normalmente representadas mediante cajas delimitadoras. A diferencia de la clasificación convencional, donde se asume una única categoría dominante en la escena, la detección debe resolver simultáneamente qué objetos aparecen y dónde se encuentran. Por ello, se trata de un problema más exigente desde el punto de vista computacional y metodológico, ya que combina percepción semántica y localización espacial en una misma tarea \cite{terven2023comprehensive, diffTwoStage}.
+
+
+
+\begin{center}
+\refstepcounter{figure}\label{fig:detecion-objetos-ejemplo}
+\includegraphics[width=0.78\textwidth]{imagenes/detecionObj.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Ejemplo ilustrativo de detección de objetos mediante cajas delimitadoras. Fuente: \cite{innovatiana2024objectdetection}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Ejemplo ilustrativo de detección de objetos mediante cajas delimitadoras}
+\end{center}
+\vspace{0.3cm}
+
+
+
+Antes de la consolidación de los enfoques basados en redes profundas, una parte importante de los métodos de detección se apoyaba en estrategias de ventana deslizante. En ese marco, modelos como \textit{Deformable Parts Model} (DPM) recorrían la imagen evaluando un gran número de subregiones candidatas, lo que permitía detectar objetos a distintas escalas y posiciones, pero a costa de una carga computacional muy elevada. Aunque estos enfoques marcaron una etapa importante en la evolución de la detección de objetos, su coste de inferencia y su limitada capacidad de adaptación a escenas complejas hicieron evidente la necesidad de arquitecturas más eficientes \cite{felzenszwalb2010dpm}.
 
 \vspace{0.3cm}
 
-Los métodos de dos etapas separan el proceso de detección en dos fases. En una primera etapa generan regiones candidatas donde podría encontrarse el objeto y, posteriormente, clasifican y refinan cada una de esas propuestas. Este planteamiento suele ofrecer una gran capacidad de discriminación en escenas complejas, pero introduce un coste computacional más elevado y una latencia superior, lo que limita su uso cuando el sistema debe reaccionar en fracciones de segundo\cite{FunRcnn}.
+La transición hacia el \textit{Deep Learning} se consolidó con la familia R-CNN, que introdujo un esquema de dos etapas. En su formulación original, R-CNN generaba primero un conjunto de regiones potencialmente relevantes mediante búsqueda selectiva, después extraía características con una red convolucional para cada una de esas regiones y, finalmente, realizaba la clasificación. Este planteamiento supuso un avance decisivo en precisión, pero seguía penalizado por el hecho de procesar cada región de manera separada y por depender de un mecanismo externo de propuesta de regiones \cite{FunRcnn}. Faster R-CNN mejoró este pipeline al integrar la generación de propuestas dentro de la propia red mediante una \textit{Region Proposal Network} (RPN). Sobre el mapa de características se definen anclas con distintas escalas y proporciones, y la red predice para cada una de ellas tanto la probabilidad de contener un objeto como el ajuste geométrico de la caja delimitadora. Con ello, el sistema gana coherencia y velocidad respecto a R-CNN, aunque sigue siendo un detector de dos etapas y, por tanto, mantiene una latencia relativamente mayor que otras alternativas \cite{FunRcnn, diffTwoStage}.
 
+\vspace{0.3cm}
  \begin{center}
     \refstepcounter{figure}\label{fig:FunRccnn}
     \includegraphics[width=0.65\textwidth]{imagenes/FunRcnn.png}\\[0.5ex]
@@ -270,56 +264,310 @@ Los métodos de dos etapas separan el proceso de detección en dos fases. En una
 
 \vspace{0.3cm}
 
-Por el contrario, los detectores de una sola etapa estiman directamente la clase y la localización del objeto en una única pasada de la red neuronal. Esta simplificación reduce la complejidad del pipeline y favorece tiempos de inferencia significativamente menores, una propiedad especialmente importante en plataformas embarcadas. En escenarios aire-aire, donde el objetivo puede ocupar pocos píxeles, cambiar rápidamente de escala y aparecer sobre fondos poco estructurados, la frecuencia de actualización del detector resulta tan importante como su precisión .
+Frente a esta familia de detectores, los métodos de una sola etapa reformulan la detección como un problema unificado de predicción directa. En lugar de separar explícitamente la propuesta de regiones y la clasificación, una única red procesa la imagen completa y estima de forma simultánea las categorías, las puntuaciones de confianza y las coordenadas de las cajas delimitadoras. Dentro de este grupo, YOLO representa el ejemplo más influyente, ya que divide implícitamente la escena en regiones de predicción y produce en una sola pasada la información necesaria para localizar los objetos presentes. Esta simplificación reduce la complejidad del pipeline y favorece tiempos de inferencia mucho menores, una propiedad especialmente relevante en plataformas embarcadas y en escenarios dinámicos como la intercepción aire-aire, donde la frecuencia de actualización del detector resulta tan importante como su precisión \cite{redmon2016yolo, terven2023comprehensive}.
 
-\subsection{Comparativa de modelos}
+\vspace{0.3cm}
+\subsection{YOLO (You Only Look Once)}
 
-Desde el punto de vista de este Trabajo de Fin de Grado, la comparación entre modelos de percepción visual no debe basarse únicamente en métricas agregadas de precisión, sino en su comportamiento dentro del sistema completo. Un detector visual para intercepción de UAV debe ofrecer un equilibrio entre exactitud espacial, velocidad de inferencia y robustez frente a perturbaciones propias del vuelo, como vibraciones, desenfoque por movimiento, oclusiones parciales o cambios bruscos de perspectiva.
+La arquitectura YOLO (\textit{You Only Look Once}) supuso un cambio de paradigma en la visión artificial al reformular la detección de objetos como un problema de regresión unificada. A diferencia de los métodos tradicionales basados en regiones (\textit{region-based}), que aplican clasificadores a múltiples propuestas de localización, YOLO procesa la imagen completa mediante una única red neuronal convolucional (CNN) en una sola pasada. Este enfoque permite predecir simultáneamente las cajas delimitadoras (\textit{bounding boxes}) y las probabilidades de clase, optimizando drásticamente la velocidad de inferencia \cite{datacamp2024yolo}.
+\vspace{0.3cm}
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:yolo-funcionamiento}
+    \includegraphics[width=0.65\textwidth]{imagenes/yolo-esquema.jpeg}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Esquema simplificado del funcionamiento de Yolo,  \cite{aiknow2024yolo}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del funcionamiento de Yolo}
+ \end{center}
+
+\vspace{0.3cm}
+El funcionamiento de este algoritmo se articula a través de un proceso estructurado en las siguientes etapas lógicas \cite{aiknow2024yolo}:
 
 \vspace{0.3cm}
 
-En la práctica, los modelos más precisos no siempre son los más adecuados si exigen recursos que exceden la capacidad de cómputo del vehículo. Del mismo modo, un detector extremadamente rápido pero inestable puede perjudicar el control si introduce falsas detecciones o desplazamientos espurios del centro de la caja delimitadora. Por tanto, la selección del modelo debe considerar simultáneamente la calidad de las detecciones y la viabilidad de su despliegue a bordo \cite{wyder2019autonomous, lee2023air}.
+\begin{enumerate}
+\item \textbf{División en cuadrícula:} El sistema particiona la imagen de entrada en una rejilla de SxS celdas. Si el centro de un objeto en este caso, el UAV presa se sitúa dentro de una celda específica, dicha celda asume la responsabilidad de detectar dicho objeto.
 
 \vspace{0.3cm}
 
-En este marco, la familia YOLO destaca como una alternativa especialmente competitiva. Su popularidad no se debe únicamente a su rendimiento en bancos de prueba generales, sino también a su capacidad para adaptarse a distintas restricciones de hardware mediante variantes ligeras o más complejas, manteniendo una relación favorable entre precisión y velocidad \cite{terven2023comprehensive}.
-
-\subsection{YOLO}
-
-La arquitectura YOLO (\textit{You Only Look Once}) formuló la detección de objetos como un problema unificado de regresión, en el que una sola red neuronal predice de forma conjunta las categorías y las cajas delimitadoras presentes en la imagen \cite{redmon2016yolo}. Este cambio de enfoque permitió sustituir pipelines fragmentados por una inferencia más directa y eficiente, convirtiendo a YOLO en una referencia para aplicaciones de visión en tiempo real.
+\item \textbf{Codificación y vectores de predicción:} Para cada celda, YOLO estima los atributos de los recuadros delimitadores utilizando un modelo de regresión. La representación matemática de cada predicción se estructura en un vector de salida Y con el siguiente formato:
 
 \vspace{0.3cm}
 
-La evolución posterior de la familia YOLO ha introducido mejoras progresivas en el extractor de características, en la fusión multiescala y en las cabezas de predicción, lo que ha incrementado su capacidad para detectar objetos pequeños sin renunciar a una latencia reducida \cite{terven2023comprehensive}. Esta característica es especialmente relevante en el problema abordado en este trabajo, ya que un UAV objetivo puede aparecer inicialmente como un blanco de tamaño muy reducido y aumentar su tamaño aparente conforme se acorta la distancia relativa.
+\begin{equation}
+Y = [p_c, b_x, b_y, b_h, b_w, c_1, c_2, \dots, c_n]
+\end{equation}
+
+\vspace{0.3cm}
+Donde los componentes se definen de la siguiente manera:
+\begin{itemize}
+\item pc: Corresponde a la puntuación de confianza (\textit{confidence score}) o probabilidad de que la celda contenga un objeto.
+\item bx, by: Representan las coordenadas del centro del cuadro delimitador relativas a los límites de la celda.
+\item bh, bw: Indican la altura y la anchura del cuadro delimitador en relación con la dimensión total de la celda o de la imagen.
+\item c1, c2, ..., cn: Representan las probabilidades condicionales para cada clase de interés . El modelo asignará la etiqueta cuya probabilidad sea mayor dentro de este conjunto.
+\end{itemize}
+
+\vspace{0.3cm}
+\item \textbf{Intersección sobre Unión (IoU):} Debido a que un mismo objeto puede generar múltiples cajas candidatas en celdas adyacentes, se emplea la métrica IoU para evaluar la precisión de la localización y filtrar predicciones irrelevantes. El IoU arroja un valor entre 0 y 1 mediante la siguiente relación:
 
 \vspace{0.3cm}
 
-Otra ventaja práctica de YOLO es que proporciona de manera directa la información necesaria para el resto del sistema: la clase detectada, la confianza asociada y las coordenadas de la caja delimitadora. A partir de estos datos es posible estimar el centro del objetivo en la imagen, calcular el error visual y alimentar las etapas posteriores de filtrado y control. Esta integración sencilla con pipelines de seguimiento e IBVS explica su presencia recurrente en trabajos de persecución, intercepción y operación autónoma de drones \cite{wyder2019autonomous, lee2023air, yang2024high}.
-
-\subsection{Criterios de selección de modelos}
-
-La elección de un modelo de percepción visual para este proyecto debe responder a criterios funcionales concretos y no únicamente a su rendimiento teórico en bases de datos genéricas. En primer lugar, el detector debe operar en tiempo real sobre hardware embarcado, de modo que su latencia sea compatible con la frecuencia del lazo de control. En segundo lugar, debe conservar un comportamiento robusto cuando el objetivo sea pequeño, esté parcialmente oculto o se desplace de forma no lineal en el campo de visión.
+\begin{equation}
+IoU = \frac{\mbox{Área de Intersección}}{\mbox{Área de Unión}}
+\end{equation}
 
 \vspace{0.3cm}
 
-Asimismo, resultan determinantes el tamaño del modelo, su consumo de memoria, la facilidad de ajuste fino con un conjunto de datos específico y la estabilidad temporal de las detecciones. Este último aspecto es particularmente importante, ya que una señal visual muy ruidosa obliga a incrementar el filtrado y puede deteriorar la respuesta dinámica del sistema. En consecuencia, el modelo más adecuado no es necesariamente el de mayor precisión absoluta, sino aquel que ofrezca el mejor compromiso entre robustez, coste computacional e integración con el controlador visual \cite{zheng2021air, terven2023comprehensive}.
+El sistema utiliza un umbral de selección. Si el IoU calculado es inferior a dicho umbral, la predicción se descarta, conservando únicamente aquellas que presentan un solapamiento significativo con el objeto real.
+\end{enumerate}
 
 \vspace{0.3cm}
 
-Bajo estos criterios, la selección de una arquitectura de la familia YOLO queda justificada como solución de percepción principal para el UAV cazador. Su equilibrio entre velocidad, precisión, flexibilidad de despliegue y madurez tecnológica la convierte en una base sólida para extraer en tiempo real la información visual necesaria para las etapas posteriores de estimación y control.
+Tras la fase de inferencia, el modelo aplica la técnica de \textit{Non-Maximum Suppression} (NMS) para refinar los resultados. Este proceso filtra las cajas cuya confianza pc es insuficiente y agrupa aquellas que presentan un alto solapamiento, conservando exclusivamente la predicción con la mayor puntuación de confianza. Este mecanismo es vital para evitar detecciones duplicadas de un mismo UAV presa durante el seguimiento.
+\vspace{0.3cm}
+
+Este diseño de regresión  aporta ventajas críticas para el problema de intercepción abordado. Al procesar la imagen como un todo, el modelo codifica información contextual sobre la escena, lo que reduce los falsos positivos en el fondo y permite alcanzar las altas tasas de fotogramas por segundo (FPS) necesarias para una respuesta reactiva en tiempo real. Además, la capacidad de detección multiescala resulta esencial en escenarios aire-aire, donde el objetivo puede variar drásticamente de tamaño conforme cambia la distancia relativa entre el cazador y la presa .
+
+\vspace{0.3cm}
+\section{Geometría Proyectiva}
+
+\vspace{0.3cm}
+La salida del detector visual permite localizar al UAV objetivo en la imagen mediante una caja delimitadora y un centro expresados en píxeles. Sin embargo, esa información todavía pertenece al plano imagen y no describe de manera directa la posición espacial del blanco ni la relación entre el error visual y el movimiento que debe ejecutar el dron. Por ello, entre la percepción y el control es necesario introducir un modelo geométrico de la cámara que explique cómo un punto tridimensional del entorno se proyecta sobre una imagen bidimensional \cite{CameraModels, uvaPinholeCamera, bergamasco2019pinhole}.
+
+\vspace{0.3cm}
+
+\subsection{Funcionamiento de la cámara y modelo estenopeico}
 
 
-\section{Metodos de Control}
+\vspace{0.3cm}
+El modelo de cámara estenopeica (\textit{pinhole camera model}) idealiza la formación de la imagen suponiendo que todos los rayos de luz atraviesan un único punto, denominado centro óptico o centro de proyección, antes de alcanzar el plano imagen. Esta simplificación elimina el comportamiento complejo de las lentes reales y permite describir la proyección mediante relaciones geométricas limpias y fácilmente interpretables \cite{wikipediaCamaraEstenopeica, uvaPinholeCamera, bergamasco2019pinhole}.
+
+\vspace{0.3cm}
+
+En una cámara física, la imagen se forma invertida sobre el sensor. No obstante, en visión por computador suele emplearse un plano imagen virtual situado delante del centro óptico para evitar inversiones de signo y hacer más intuitiva la interpretación matemática del modelo. Esta convención no altera la geometría del problema, pero simplifica el análisis de la proyección y la definición de los errores visuales \cite{uvaPinholeCamera, CameraModels}.
+
+\vspace{0.3cm}
+
+Si un punto del entorno se expresa en el sistema de referencia de la cámara como $P_c = (X_c, Y_c, Z_c)$, su proyección ideal sobre el plano imagen métrico viene dada por:
+
+\vspace{0.3cm}
+
+\begin{equation}
+x = f \frac{X_c}{Z_c}, \quad y = f \frac{Y_c}{Z_c}
+\end{equation}
+
+\vspace{0.3cm}
+
+En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ es su profundidad o distancia a lo largo del eje de visión, $f$ es la distancia focal y $(x, y)$ son las coordenadas proyectadas sobre el plano imagen ideal. La ecuación pone de manifiesto el comportamiento esencial de la perspectiva: cuanto mayor es $Z_c$, menor es la proyección del objeto en la imagen, haciendo que los objetos lejanos aparecen más pequeños y los cercanos ocupan más píxeles \cite{bergamasco2019pinhole, CameraModels}.
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:ibvs-esquema}
+\includegraphics[width=0.65\textwidth]{imagenes/pinholeCameramodel2.jpeg}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Esquema simplificado del modelo de cámara estenopeica. Fuente: \cite{opencvCalib3d}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del modelo de cámara estenopeica}
+\end{center}
+
+\vspace{0.3cm}
+
+\subsection{Fundamentos de la Geometría Proyectiva}
+
+Para trabajar de forma práctica con imágenes digitales, la proyección anterior se expresa normalmente en coordenadas normalizadas y, posteriormente, en coordenadas de píxel. Las coordenadas normalizadas vienen dadas por:
+
+\vspace{0.3cm}
+
+\begin{equation}
+x_n = \frac{X_c}{Z_c}, \quad y_n = \frac{Y_c}{Z_c}
+\end{equation}
+
+\vspace{0.3cm}
+
+Estas variables recogen la parte puramente proyectiva del problema: dependen de la dirección del punto respecto a la cámara, pero no del tamaño físico del sensor. A partir de ellas, el paso a píxeles se modela como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+u = f_x x_n + c_x, \quad v = f_y y_n + c_y
+\end{equation}
+
+\vspace{0.3cm}
+
+Aquí, $f_x$ y $f_y$ son las distancias focales expresadas en píxeles en las direcciones horizontal y vertical, mientras que $c_x$ y $c_y$ definen el punto principal, es decir, la proyección del eje óptico sobre la imagen. En una cámara ideal, este punto suele estar cerca del centro del sensor, aunque en la práctica puede aparecer ligeramente desplazado por el montaje o la calibración \cite{CameraModels, opencvCalib3d}.
+
+\vspace{0.3cm}
+
+La formulación completa en coordenadas homogéneas se resume mediante la ecuación:
+
+\begin{equation}
+s \left[\begin{array}{c}
+u \\ v \\ 1\end{array}\right] = K \cdot [R|t] \cdot \left[\begin{array}{c}X_w \\ Y_w \\ Z_w \\ 1\end{array}\right]
+\end{equation}
+
+\vspace{0.3cm}
+
+En esta relación, $(X_w, Y_w, Z_w)$ son las coordenadas del punto en el sistema de referencia del mundo, $[R|t]$ describe la transformación extrínseca que lleva ese punto al sistema de referencia de la cámara, $K$ es la matriz de parámetros intrínsecos y $s$ es un factor de escala propio de las coordenadas homogéneas. La matriz intrínseca se suele escribir como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+K = \left[\begin{array}{ccc}
+f_x & \gamma & c_x \\
+0 & f_y & c_y \\
+0 & 0 & 1
+\end{array}\right]
+\end{equation}
+
+\vspace{0.3cm}
+
+Cada término tiene una interpretación física clara: $f_x$ y $f_y$ convierten coordenadas geométricas en coordenadas de píxel, $c_x$ y $c_y$ fijan el punto principal y $\gamma$ representa el sesgo o \textit{skew} entre ejes de píxel, normalmente nulo o despreciable en cámaras modernas. Esta descomposición es importante porque separa dos preguntas distintas: dónde está la cámara respecto al mundo (parámetros extrínsecos) y cómo proyecta la cámara lo que ve (parámetros intrínsecos) \cite{CameraModels, uvaPinholeCamera}.
+
+\vspace{0.3cm}
+
+\subsection{Parámetros intrínsecos, FOV y distorsión}
+
+\vspace{0.3cm}
+
+Otro concepto fundamental es el campo de visión o \textit{Field of View} (FOV), que puede entenderse como la amplitud angular de la escena que la cámara es capaz de cubrir. Si $d_x$ y $d_y$ representan el tamaño del sensor en horizontal y vertical, entonces el FOV puede aproximarse mediante:
+
+\vspace{0.3cm}
+
+\begin{equation}
+FOV_x = 2 \arctan \left( \frac{d_x}{2f} \right), \quad FOV_y = 2 \arctan \left( \frac{d_y}{2f} \right)
+\end{equation}
+
+\vspace{0.3cm}
+
+Estas expresiones pueden interpretarse de forma sencilla. Para un mismo sensor, una distancia focal pequeña genera un FOV amplio: la cámara ve una porción mayor de la escena, pero cada objeto ocupa menos píxeles. En cambio, una distancia focal grande produce un FOV más estrecho: la cámara cubre menos escena, aunque el objetivo aparece con mayor tamaño aparente en la imagen. En tareas de seguimiento, este comportamiento introduce un compromiso claro entre cobertura y detalle: un FOV amplio ayuda a no perder el blanco durante maniobras bruscas, mientras que un FOV estrecho permite medir con más precisión sus desplazamientos cuando se encuentra lejos \cite{bergamasco2019pinhole, CameraModels}.
+
+\vspace{0.3cm}
+
+Hasta aquí se ha descrito una cámara ideal. Sin embargo, una cámara real no proyecta la escena de manera perfectamente geométrica, porque la lente introduce pequeñas deformaciones. Las más relevantes en visión por computador son la distorsión radial y la distorsión tangencial. La distorsión radial depende sobre todo de la distancia al centro de la imagen: cuanto más se aleja un punto de esa zona central, mayor puede ser su desplazamiento aparente, lo que hace que las rectas se curven cerca de los bordes. La distorsión tangencial, por su parte, aparece cuando la lente y el sensor no están perfectamente alineados y produce desplazamientos asimétricos de los puntos observados \cite{opencvCalib3d, uvaPinholeCamera}.
+
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:Camera-distorsion}
+    \includegraphics[width=0.85\textwidth]{imagenes/distosionCamera.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Imágenes de una pantalla de objeto rectangular mostradas con (a) ninguna distorsión; (b) distorsión radial; (c) distorsión tangencial.,  \cite{ImgDistorsion}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} sDistorsion Camera pinhole}
+ \end{center}
+
+\vspace{0.3cm}
+
+En coordenadas normalizadas, una forma habitual de modelar esta distorsión es la siguiente:
+
+\vspace{0.3cm}
+
+\begin{equation}
+r^2 = x_n^2 + y_n^2
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+x_d = x_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + 2 p_1 x_n y_n + p_2 \left(r^2 + 2 x_n^2\right)
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+y_d = y_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + p_1 \left(r^2 + 2 y_n^2\right) + 2 p_2 x_n y_n
+\end{equation}
+
+\vspace{0.3cm}
+
+
+En estas ecuaciones, $r$ mide la distancia del punto al centro de la imagen normalizada; los coeficientes $k_1$, $k_2$ y $k_3$ describen la parte radial de la deformación, mientras que $p_1$ y $p_2$ describen la parte tangencial. Los puntos $(x_d, y_d)$ representan, por tanto, la posición finalmente observada tras el efecto de la lente. La consecuencia práctica es directa: una misma distancia física en la escena no siempre se traduce en la misma distancia en píxeles si la medida se toma en regiones distintas de la imagen \cite{opencvCalib3d}.
+
+\vspace{0.3cm}
+
+Desde el punto de vista del control, la distorsión introduce una dispersión en la medida visual: un mismo movimiento real puede producir errores distintos según la zona de la imagen en la que aparezca el objetivo. Por ello, para alimentar al controlador PID conviene trabajar con puntos sin distorsión o con coordenadas normalizadas obtenidas tras calibrar la cámara \cite{opencvCalib3d, CameraModels}.
+
+\vspace{0.3cm}
+
+En este trabajo, corregir esos puntos permite estimar mejor las distancias aparentes y generar una señal de error más estable para el lazo de control. Esta idea enlaza con la sección siguiente, dedicada a cómo el controlador PID transforma ese error visual en comandos de movimiento del UAV cazador.
+
+\vspace{0.3cm}
+
+\section{Métodos de Control}
+
+En robótica aérea, el control puede definirse como el conjunto de algoritmos encargados de manipular las variables de entrada del sistema, como la velocidad de los motores o las consignas de actitud, para lograr que las variables de salida del vehículo, entre ellas su posición, velocidad y orientación, sigan un comportamiento deseado. Su papel es fundamental para mantener la estabilidad frente a perturbaciones externas y para garantizar que el UAV cumpla de forma autónoma los objetivos de la misión .
+
+\vspace{0.3cm}
+
+\subsection{Sistemas de Lazo Abierto vs. Lazo Cerrado}
+
+La clasificación más básica de los sistemas de control depende de la existencia o no de retroalimentación entre la salida y la acción de control \cite{DewesoftPID, WikipediaControladorPID}.
+
+\vspace{0.3cm}
+
+\begin{itemize}
+    \item \textbf{Control de lazo abierto (\textit{open-loop}).} La señal de control se genera sin tener en cuenta el estado real de la salida. En un UAV, esto equivaldría a enviar una orden de movimiento sin verificar si el vehículo ha respondido realmente como se esperaba. Este enfoque resulta poco adecuado para navegación autónoma, ya que no corrige errores ni compensa perturbaciones como el viento o pequeñas variaciones dinámicas del sistema.
+
+    \item \textbf{Control de lazo cerrado (\textit{closed-loop}).} El sistema mide continuamente la salida, la compara con una referencia deseada y calcula un error a partir de esa diferencia. A continuación, el controlador actualiza la acción de mando para reducir dicho error. Este es el paradigma empleado en este proyecto, ya que permite cerrar el lazo entre la percepción visual y la respuesta dinámica del dron. En este caso, la referencia puede asociarse, por ejemplo, a mantener el objetivo centrado en la imagen, mientras que la salida medida corresponde a la posición observada del blanco en el plano imagen.
+\end{itemize}
+
+\vspace{0.3cm}
+
 \subsection{Controlador PID}
+\vspace{0.3cm}
+
+Dentro de los mecanismos de control por retroalimentación, el controlador PID (\textit{Proportional-Integral-Derivative}) destaca como una de las soluciones clásicas más utilizadas por su sencillez, su bajo coste computacional y su eficacia práctica en numerosos sistemas dinámicos. Su idea central consiste en calcular la acción de control a partir de la evolución temporal del error entre una referencia deseada y la salida medida del sistema \cite{DewesoftPID, WikipediaControladorPID}.
+
+\vspace{0.3cm}
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:Esquema-PID}
+    \includegraphics[width=0.85\textwidth]{imagenes/PID-esquema.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Esquema del funcionamiento de un PID.,  \cite{ImgEsquemaPID}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Esquema de un PID}
+ \end{center}
+
+\vspace{0.3cm}
+
+Si se define el error como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+e(t) = r(t) - y(t)
+\end{equation}
+
+\vspace{0.3cm}
+
+donde $r(t)$ es la referencia deseada y $y(t)$ es la salida observada, entonces la señal de control generada por un PID puede expresarse como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+u(t) = K_p e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt}
+\end{equation}
+
+\vspace{0.3cm}
+
+Esta formulación combina tres contribuciones complementarias:
+
+\begin{itemize}
+    \item \textbf{Término proporcional ($K_p$).} Proporciona una respuesta inmediata en función del error actual. Si el objetivo está alejado de la referencia, la acción de control aumenta de forma proporcional para corregir esa desviación con rapidez.
+
+    \item \textbf{Término integral ($K_i$).} Acumula el error a lo largo del tiempo. Su función principal es eliminar el error residual o estático, de modo que el sistema no se quede permanentemente cerca de la referencia sin llegar a alcanzarla completamente.
+
+    \item \textbf{Término derivativo ($K_d$).} Actúa sobre la velocidad de cambio del error. Su efecto puede interpretarse como un amortiguamiento que anticipa la tendencia del sistema y ayuda a reducir oscilaciones o respuestas demasiado bruscas.
+\end{itemize}
+
+\vspace{0.3cm}
+
+Desde un punto de vista funcional, el término proporcional aporta rapidez de reacción, el integral mejora la precisión final y el derivativo contribuye a suavizar la dinámica transitoria. La combinación adecuada de estas tres acciones permite construir un controlador que responda con suficiente rapidez sin comprometer la estabilidad del sistema.
+
+\vspace{0.3cm}
+
+La adopción del PID en este Trabajo de Fin de Grado responde, además, a una razón práctica importante. El sistema debe ejecutarse sobre una plataforma embarcada que también dedica recursos al procesamiento visual y a la inferencia en tiempo real. En este contexto, un controlador PID ofrece una solución eficiente y menos costosa en términos computacionales que otros enfoques más complejos, manteniendo al mismo tiempo una respuesta reactiva robusta y una integración sencilla con los lazos internos del autopiloto. Por ello, resulta una elección especialmente adecuada para transformar el error visual del objetivo en comandos de movimiento del UAV cazador.
+
+\vspace{0.3cm}
 
 \section{Estimación de Estado y Filtrado}
 \subsection{Filtro de Kalman}
 \subsection{Filtro EMA}
 
-\section{Geometría Proyectiva}
-\subsection{Proyecciones de la Camara}
-\cite{opencvCalib3d}
-\subsection{Transformaciones de coordenadas}
 
 \section{Stack de Software y Hardware}
 \subsection{Frameworks de Comunicación Distribuida en Robótica}
