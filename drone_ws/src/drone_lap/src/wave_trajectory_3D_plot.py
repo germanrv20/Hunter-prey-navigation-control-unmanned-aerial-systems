@@ -2,102 +2,85 @@
 
 import rospy
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D # Necesario para 3D
-from geometry_msgs.msg import PoseStamped
+from mpl_toolkits.mplot3d import Axes3D
+from gazebo_msgs.msg import ModelStates
 from collections import deque
 import numpy as np
 
 # --- CONFIGURACIÓN ---
-WINDOW_SIZE = 400     # Historial de puntos
+# 5000 puntos es perfecto para ver todo el recorrido sin borrar rápido
+WINDOW_SIZE = 5000 
 # ---------------------
 
-# Buffers Drone 2 (Presa)
-ref2_x = deque(maxlen=WINDOW_SIZE)
-ref2_y = deque(maxlen=WINDOW_SIZE)
-ref2_z = deque(maxlen=WINDOW_SIZE)
+class VisualizadorRobusto:
+    def __init__(self):
+        rospy.init_node('plotter_trayectoria_larga', anonymous=True)
 
-act2_x = deque(maxlen=WINDOW_SIZE)
-act2_y = deque(maxlen=WINDOW_SIZE)
-act2_z = deque(maxlen=WINDOW_SIZE)
+        self.d1_x, self.d1_y, self.d1_z = deque(maxlen=WINDOW_SIZE), deque(maxlen=WINDOW_SIZE), deque(maxlen=WINDOW_SIZE)
+        self.d2_x, self.d2_y, self.d2_z = deque(maxlen=WINDOW_SIZE), deque(maxlen=WINDOW_SIZE), deque(maxlen=WINDOW_SIZE)
 
-# Buffers Drone 1 (Cazador)
-act1_x = deque(maxlen=WINDOW_SIZE)
-act1_y = deque(maxlen=WINDOW_SIZE)
-act1_z = deque(maxlen=WINDOW_SIZE)
+        plt.ion()
+        self.fig = plt.figure(figsize=(10, 8))
+        self.ax = self.fig.add_subplot(111, projection='3d')
+        
+        self.linea_c1, = self.ax.plot([], [], [], 'g-', linewidth=1.5, label='Cazador')
+        self.linea_p2, = self.ax.plot([], [], [], 'r-', linewidth=1.5, label='Presa')
+        self.dot_c1, = self.ax.plot([], [], [], 'go', markersize=7)
+        self.dot_p2, = self.ax.plot([], [], [], 'ro', markersize=7)
 
-# --- CALLBACKS ---
-def setpoint_d2_cb(msg):
-    ref2_x.append(msg.pose.position.x)
-    ref2_y.append(msg.pose.position.y)
-    ref2_z.append(msg.pose.position.z)
+        self.ax.set_xlim(-15, 15)
+        self.ax.set_ylim(-15, 15)
+        self.ax.set_zlim(0, 12)
+        self.ax.legend()
 
-def local_pose_d2_cb(msg):
-    act2_x.append(msg.pose.position.x)
-    act2_y.append(msg.pose.position.y)
-    act2_z.append(msg.pose.position.z)
+        rospy.Subscriber("/gazebo/model_states", ModelStates, self.callback)
+        rospy.loginfo("Visualizador listo. Capturando trayectoria larga...")
 
-def local_pose_d1_cb(msg):
-    act1_x.append(msg.pose.position.x)
-    act1_y.append(msg.pose.position.y)
-    act1_z.append(msg.pose.position.z)
+    def callback(self, msg):
+        try:
+            idx1, idx2 = msg.name.index("drone1"), msg.name.index("drone2")
+            # Drone 1
+            p1 = msg.pose[idx1].position
+            self.d1_x.append(p1.x); self.d1_y.append(p1.y); self.d1_z.append(p1.z)
+            # Drone 2
+            p2 = msg.pose[idx2].position
+            self.d2_x.append(p2.x); self.d2_y.append(p2.y); self.d2_z.append(p2.z)
+        except: pass
 
-# --- BUCLE PRINCIPAL ---
-def live_plotter_3d():
-    rospy.init_node('live_3d_plotter_dual', anonymous=True)
-    
-    # Suscripciones Drone 2 (Presa)
-    rospy.Subscriber("/drone2/mavros/setpoint_position/local", PoseStamped, setpoint_d2_cb)
-    rospy.Subscriber("/drone2/mavros/local_position/pose", PoseStamped, local_pose_d2_cb)
-    
-    # Suscripción Drone 1 (Cazador)
-    rospy.Subscriber("/drone1/mavros/local_position/pose", PoseStamped, local_pose_d1_cb)
-    
-    plt.ion()
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d') 
-    
-    rospy.loginfo("Iniciando ploteo 3D DUAL: Cazador (Dron 1) vs Presa (Dron 2)...")
-    
-    rate = rospy.Rate(10) # 10 Hz
-    
-    while not rospy.is_shutdown():
-        # Esperamos a tener datos de ambos drones
-        if len(ref2_x) > 0 and len(act2_x) > 0 and len(act1_x) > 0:
-            
-            ax.clear()
-            
-            # --- PLOTEAR DATOS ---
-            # Setpoint Drone 2 (Ideal) - Azul Punteado
-            ax.plot(ref2_x, ref2_y, ref2_z, 'b--', label='Setpoint Dron 2', linewidth=1)
-            
-            # Realidad Drone 2 (Presa) - Rojo Sólido
-            ax.plot(act2_x, act2_y, act2_z, 'r-', label='Dron 2 (Presa)', linewidth=2)
-            
-            # Realidad Drone 1 (Cazador) - Verde Sólido
-            ax.plot(act1_x, act1_y, act1_z, 'g-', label='Dron 1 (Cazador)', linewidth=2)
-            
-            # --- CONFIGURACIÓN DE EJES ---
-            ax.set_title("Trayectoria 3D de Persecución", fontweight='bold')
-            ax.set_xlabel("X (m)")
-            ax.set_ylabel("Y (m)")
-            ax.set_zlabel("Z (Altura - m)")
-            
-            # 🚧 LÍMITES AMPLIADOS 🚧
-            # He ampliado los límites para asegurarme de que el Dron 1 (que suele empezar en 0,0) también se vea.
-            # Ajústalos si ves que se salen del marco.
-            ax.set_xlim(-10, 10)
-            ax.set_ylim(-15, 5)
-            ax.set_zlim(0, 15)
-            
-            ax.legend(loc='upper right')
-            
-            fig.canvas.draw()
-            fig.canvas.flush_events()
-            
-        rate.sleep()
+    def actualizar_plot(self):
+        # --- SOLUCIÓN AL ERROR DE BROADCAST ---
+        # Convertimos a lista y tomamos el tamaño mínimo actual para asegurar consistencia
+        x1, y1, z1 = list(self.d1_x), list(self.d1_y), list(self.d1_z)
+        x2, y2, z2 = list(self.d2_x), list(self.d2_y), list(self.d2_z)
+        
+        n1 = min(len(x1), len(y1), len(z1))
+        n2 = min(len(x2), len(y2), len(z2))
+
+        if n1 > 1:
+            # Dibujamos solo hasta n1 para que X, Y y Z midan lo mismo
+            self.linea_c1.set_data(x1[:n1], y1[:n1])
+            self.linea_c1.set_3d_properties(z1[:n1])
+            self.dot_c1.set_data([x1[n1-1]], [y1[n1-1]])
+            self.dot_c1.set_3d_properties([z1[n1-1]])
+
+        if n2 > 1:
+            self.linea_p2.set_data(x2[:n2], y2[:n2])
+            self.linea_p2.set_3d_properties(z2[:n2])
+            self.dot_p2.set_data([x2[n2-1]], [y2[n2-1]])
+            self.dot_p2.set_3d_properties([z2[n2-1]])
+
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+
+    def run(self):
+        # Bajamos un poco la frecuencia de dibujo para no saturar la CPU con 5000 puntos
+        rate = rospy.Rate(8) 
+        while not rospy.is_shutdown():
+            self.actualizar_plot()
+            rate.sleep()
 
 if __name__ == '__main__':
     try:
-        live_plotter_3d()
+        VisualizadorRobusto().run()
     except rospy.ROSInterruptException:
         pass

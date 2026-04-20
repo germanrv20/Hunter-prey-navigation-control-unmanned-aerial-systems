@@ -33,7 +33,7 @@ const double MAX_VERT_VEL = 1.0;  // rad/s
 const double Kp_dist = 0.27; //0.01; // valores sin modelo regresion
 const double Ki_dist = 0.000;
 const double Kd_dist = 0.014; //0.0014; 
-const double MAX_LINEAR_X = 1.4; // m/s
+const double MAX_LINEAR_X = 1.8; // m/s
 
 
 
