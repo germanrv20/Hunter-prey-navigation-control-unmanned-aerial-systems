@@ -560,14 +560,227 @@ Desde un punto de vista funcional, el término proporcional aporta rapidez de re
 
 \vspace{0.3cm}
 
-La adopción del PID en este Trabajo de Fin de Grado responde, además, a una razón práctica importante. El sistema debe ejecutarse sobre una plataforma embarcada que también dedica recursos al procesamiento visual y a la inferencia en tiempo real. En este contexto, un controlador PID ofrece una solución eficiente y menos costosa en términos computacionales que otros enfoques más complejos, manteniendo al mismo tiempo una respuesta reactiva robusta y una integración sencilla con los lazos internos del autopiloto. Por ello, resulta una elección especialmente adecuada para transformar el error visual del objetivo en comandos de movimiento del UAV cazador.
+La adopción del PID en este Trabajo de Fin de Grado responde, además, a una razón práctica importante. El sistema debe ejecutarse sobre una plataforma embebida que también dedica recursos al procesamiento visual y a la inferencia en tiempo real. En este contexto, un controlador PID ofrece una solución eficiente y menos costosa en términos computacionales que otros enfoques más complejos, manteniendo al mismo tiempo una respuesta reactiva robusta y una integración sencilla con los lazos internos del autopiloto. Por ello, resulta una elección especialmente adecuada para transformar el error visual del objetivo en comandos de movimiento del UAV cazador.
 
 \vspace{0.3cm}
 
 \section{Estimación de Estado y Filtrado}
+
+El rendimiento del controlador descrito en la sección anterior depende directamente de la calidad de la señal visual que recibe. En navegación basada en visión, la posición observada del objetivo no constituye una medida exacta, sino una estimación afectada por ruido, discretización, pérdidas ocasionales y variaciones entre fotogramas. Si estas observaciones se introducen de forma directa en el lazo de control, pueden provocar acciones de mando erráticas y reducir la estabilidad del seguimiento.
+
+\vspace{0.3cm}
+
+En este contexto, la estimación de estado y el filtrado actúan como un bloque intermedio entre la percepción y el control. Su función es obtener una representación temporal más consistente del movimiento del blanco, atenuar fluctuaciones  y proporcionar una señal de error más robusta para el controlador PID. De este modo, el sistema no solo reacciona a lo que la cámara mide en cada instante, sino también a una versión depurada  de dicha información. En los apartados siguientes se presentarán dos herramientas especialmente relevantes para este propósito: el filtro de Kalman, orientado a la estimación y predicción del estado, y el filtro EMA, empleado como mecanismo sencillo de suavizado temporal.
+
 \subsection{Filtro de Kalman}
+
+El filtro de Kalman es un método de estimación recursiva empleado para obtener una aproximación del estado de un sistema dinámico cuando las medidas disponibles contienen ruido. Su utilidad, en este trabajo, reside en que permite combinar la información procedente del modelo con la medida visual del objetivo, generando una estimación más estable y más útil para el controlador PID \cite{kalman1960new, kalmanfilterNetES, wikipediaFiltroKalman}.
+
+\vspace{0.3cm}
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:Filtro-kalman}
+    \includegraphics[width=1\textwidth]{imagenes/KalmanYolo2.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.}Ejemplo uso de Filtro de Kalman. }
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Ejemplo uso del Filtro de Kalman en dron real , en modo predición (Elaboración propia)}
+\end{center}
+
+\vspace{0.3cm}
+
+En primer lugar, conviene aclarar qué se entiende por \textbf{vector de estado}. El vector de estado es el conjunto de variables que describen la situación del sistema en un instante dado. En un problema de seguimiento visual, este vector puede incluir, por ejemplo, la posición del objetivo en la imagen y su velocidad aparente. Una forma podría ser:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{x}_k = \left[ \begin{array}{cccc} x_k & y_k & \dot{x}_k & \dot{y}_k \end{array} \right]^{T}
+\end{equation}
+
+\vspace{0.3cm}
+
+En este caso, $x_k$ e $y_k$ representan la posición del objetivo en el plano imagen, mientras que $\dot{x}_k$ y $\dot{y}_k$ representan su velocidad aparente. A partir de este vector, el modelo describe tanto la evolución temporal del sistema como la relación entre el estado interno y la medida observada \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+
+\vspace{0.3cm}
+
+El sistema dinámico lineal discreto puede escribirse mediante las ecuaciones:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{x}_k = \mathbf{F}_k \mathbf{x}_{k-1} + \mathbf{B}_k \mathbf{u}_k + \mathbf{w}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{z}_k = \mathbf{H}_k \mathbf{x}_k + \mathbf{v}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+En estas expresiones, la matriz $\mathbf{F}_k$ corresponde a la \textbf{matriz de transición de estado}, encargada de modelar la evolución del sistema entre dos instantes consecutivos. Por su parte, la matriz $\mathbf{H}_k$ corresponde a la \textbf{matriz de observación}, cuya función es relacionar el vector de estado con la magnitud efectivamente medida por el sensor. En términos conceptuales, $\mathbf{F}_k$ describe la dinámica del sistema, mientras que $\mathbf{H}_k$ determina qué componentes de dicho estado son accesibles a través de la cámara o del sensor empleado \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+
+\vspace{0.3cm}
+
+Por ejemplo, si se adopta un modelo bidimensional de velocidad constante con periodo de muestreo $\Delta t$, y la cámara mide únicamente la posición del objetivo, unas elecciones habituales son:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{F}_k = \left[ \begin{array}{cccc}
+1 & 0 & \Delta t & 0 \\
+0 & 1 & 0 & \Delta t \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
+\end{array} \right], \quad
+\mathbf{H}_k = \left[ \begin{array}{cccc}
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0
+\end{array} \right]
+\end{equation}
+
+\vspace{0.3cm}
+
+Otro aspecto fundamental es el papel de las matrices de covarianza $\mathbf{Q}_k$ y $\mathbf{R}_k$. La matriz $\mathbf{Q}_k$ representa la incertidumbre asociada al modelo dinámico, es decir, cuánto puede desviarse la evolución real del sistema respecto a la predicción teórica. La matriz $\mathbf{R}_k$, en cambio, representa la incertidumbre de la medida, es decir, el nivel de ruido presente en la observación del sensor. En términos prácticos, $\mathbf{Q}_k$ expresa cuánto se confía en el modelo y $\mathbf{R}_k$ cuánto se confía en la medida \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+
+\vspace{0.3cm}
+
+En el mismo ejemplo anterior, una forma sencilla de representar ambas matrices sería:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{Q}_k = \left[ \begin{array}{cccc}
+\sigma_x^2 & 0 & 0 & 0 \\
+0 & \sigma_y^2 & 0 & 0 \\
+0 & 0 & \sigma_{\dot{x}}^2 & 0 \\
+0 & 0 & 0 & \sigma_{\dot{y}}^2
+\end{array} \right], \quad
+\mathbf{R}_k = \left[ \begin{array}{cc}
+\sigma_{mx}^2 & 0 \\
+0 & \sigma_{my}^2
+\end{array} \right]
+\end{equation}
+
+\vspace{0.3cm}
+
+Aquí, los términos de $\mathbf{Q}_k$ recogen la incertidumbre asociada a la posición y a la velocidad del modelo, mientras que los términos de $\mathbf{R}_k$ representan el ruido de la medida en los ejes horizontal y vertical de la imagen.
+
+\vspace{0.3cm}
+
+Antes de iniciar el proceso iterativo del filtro, también es necesario fijar unas \textbf{condiciones iniciales}. En concreto, se requiere una estimación inicial del estado, denotada por $\hat{\mathbf{x}}_{0|0}$, y una estimación inicial de la incertidumbre asociada, representada por la matriz $\mathbf{P}_{0|0}$. Si se dispone de poca información inicial, la covarianza inicial suele elegirse grande; si, por el contrario, el estado inicial es relativamente conocido, esa covarianza puede fijarse con valores menores. Estas condiciones iniciales determinan el punto de partida a partir del cual el filtro comienza a refinar sus estimaciones.
+
+\vspace{0.3cm}
+
+Una vez definidos el estado, el modelo y las incertidumbres, el filtro opera en dos fases: \textbf{predicción} y \textbf{actualización}. En la fase de predicción, se calcula cuál debería ser el estado del sistema en el instante siguiente y cuál es la incertidumbre asociada a esa predicción:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\hat{\mathbf{x}}_{k|k-1} = \mathbf{F}_k \hat{\mathbf{x}}_{k-1|k-1} + \mathbf{B}_k \mathbf{u}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{P}_{k|k-1} = \mathbf{F}_k \mathbf{P}_{k-1|k-1} \mathbf{F}_k^{T} + \mathbf{Q}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+La primera ecuación proporciona la predicción del estado y la segunda actualiza la incertidumbre de dicha predicción. En esta etapa, el filtro todavía no ha incorporado la medida real del instante $k$.
+
+\vspace{0.3cm}
+
+Posteriormente, en la fase de actualización, la predicción se compara con la medida observada. La diferencia entre ambas se denomina \textbf{innovación} y se expresa como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\tilde{\mathbf{y}}_k = \mathbf{z}_k - \mathbf{H}_k \hat{\mathbf{x}}_{k|k-1}
+\end{equation}
+
+\vspace{0.3cm}
+
+A partir de esta diferencia, se calcula la ganancia de Kalman:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{K}_k = \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} \left( \mathbf{H}_k \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} + \mathbf{R}_k \right)^{-1}
+\end{equation}
+
+\vspace{0.3cm}
+
+Esta ganancia determina cuánto peso debe darse a la medida y cuánto a la predicción. Con ella, se actualiza el estado estimado y su covarianza:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\hat{\mathbf{x}}_{k|k} = \hat{\mathbf{x}}_{k|k-1} + \mathbf{K}_k \tilde{\mathbf{y}}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{P}_{k|k} = \left( \mathbf{I} - \mathbf{K}_k \mathbf{H}_k \right) \mathbf{P}_{k|k-1}
+\end{equation}
+
+\vspace{0.3cm}
+
+La lógica del método es sencilla: si la medida es poco fiable, el filtro confía más en la predicción del modelo; si la observación es consistente, la corrección adquiere mayor peso. Como resultado, se obtiene una estimación más suave y más coherente del movimiento del objetivo, lo que resulta especialmente útil cuando existen maniobras rápidas, pequeñas oclusiones o fluctuaciones en la detección visual \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+
 \subsection{Filtro EMA}
 
+El filtro EMA (\textit{Exponential Moving Average}), también denominado suavizado exponencial, es un método recursivo de suavizado utilizado para reducir las fluctuaciones rápidas de una señal sin necesidad de almacenar un gran número de muestras previas. Su interés principal reside en que requiere muy poca memoria y un coste computacional muy bajo, por lo que resulta especialmente adecuado para sistemas embebidos y aplicaciones de control en tiempo real \cite{industrialEma, wikipediaSuavizamientoExponencial, mciEma}.
+
+\vspace{0.3cm}
+
+Desde un punto de vista funcional, el EMA actúa como un filtro paso bajo: atenúa las variaciones de alta frecuencia asociadas al ruido y conserva la tendencia general de la señal. Por este motivo, se utiliza de forma habitual cuando se desea reducir la sensibilidad de una señal frente a pequeñas oscilaciones entre muestras consecutivas \cite{industrialEma, mciEma}.
+
+\vspace{0.3cm}
+
+La formulación discreta del filtro EMA es la siguiente:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\hat{x}_k = \alpha x_k + (1-\alpha) \hat{x}_{k-1}
+\end{equation}
+
+\vspace{0.3cm}
+
+donde $x_k$ representa la medida actual, $\hat{x}_k$ la salida filtrada y $\hat{x}_{k-1}$ el valor filtrado del instante anterior. El parámetro $\alpha$, con $0 < \alpha \leq 1$, determina el peso relativo entre la muestra nueva y el historial previo \cite{industrialEma, mciEma}.
+
+\vspace{0.3cm}
+
+Esta expresión también puede escribirse como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\hat{x}_k = \hat{x}_{k-1} + \alpha \left(x_k - \hat{x}_{k-1}\right)
+\end{equation}
+
+\vspace{0.3cm}
+
+Esta segunda forma resulta útil para interpretar el funcionamiento del filtro: la nueva salida se obtiene corrigiendo el valor filtrado anterior en función de la diferencia entre la medida actual y la estimación previa. Si $\alpha$ toma valores pequeños, el suavizado es mayor y la respuesta del filtro es más lenta; si $\alpha$ se aproxima a 1, la salida sigue más de cerca la medida y el efecto de suavizado disminuye \cite{industrialEma, mciEma, wikipediaSuavizamientoExponencial}.
+
+\vspace{0.3cm}
+
+La Figura \ref{fig:ema-suavizado} ilustra este comportamiento sobre una señal ruidosa. En ella puede apreciarse cómo la salida filtrada atenúa las oscilaciones rápidas de la señal original y conserva su tendencia global.
+
+\vspace{0.3cm}
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:ema-suavizado}
+    \includegraphics[width=0.58\textwidth]{imagenes/EMA.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Efecto del filtro EMA sobre una señal ruidosa. Fuente: \cite{mciEma}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Efecto del filtro EMA sobre una señal ruidosa}
+\end{center}
+
+\vspace{0.3cm}
+
+En consecuencia, el EMA constituye una técnica de suavizado sencilla, ligera y eficiente para señales discretas. Su bajo coste computacional y su formulación recursiva hacen que resulte especialmente útil en aplicaciones donde se requiere atenuar ruido de alta frecuencia sin introducir una complejidad elevada \cite{industrialEma, mciEma}.
 
 \section{Stack de Software y Hardware}
 \subsection{Frameworks de Comunicación Distribuida en Robótica}
@@ -575,5 +788,4 @@ La adopción del PID en este Trabajo de Fin de Grado responde, además, a una ra
 \subsection{Simulación}
 \subsection{Simulador Seleccionado}
 \subsection{Representación Gráfica}
-
 
