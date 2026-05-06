@@ -95,11 +95,11 @@ Desarrollar e implementar un sistema robusto de control de navegación autónoma
 \vspace{0.6cm}
 
 \subsection{Objetivos Específicos}
-Para alcanzar el objetivo general, se proponen los siguientes hitos técnicos:
+Para alcanzar el objetivo general, se proponen los siguientes objetivos específicos:
 \begin{itemize}
     \item \textbf{OE1: Evaluar y optimizar modelos de percepción visual para sistemas empotrados}.Entrenar y comparar distintas arquitecturas de detección de objetos de última generación (familia YOLO) evaluando el equilibrio (trade-off) entre precisión matemática (mAP) , tiempo de inferencia y tamaño del modelo para seleccionar el modelo óptimo que garantice un seguimiento fluido en tiempo real.
     \item \textbf{OE2: Diseñar e implementar el lazo de control de navegación visual}.Desarrollar el algoritmo encargado de traducir las detecciones 2D de la cámara en comandos de vuelo 3D. Esto implicará el uso de transformaciones geométricas de coordenadas y la sintonización de un controlador reactivo (PID) para mantener a la presa centrada en el campo de visión.
-    \item \textbf{OE3: Integrar la arquitectura software en un entorno de simulación de alta fidelidad}.Implementar el sistema completo utilizando ROS como middleware de comunicación, acoplando los nodos de visión y control con el simulador físico 3D Gazebo y la pila de vuelo ArduPilot mediante simulaciones SITL (Software In The Loop).
+    \item \textbf{OE3: Integrar la arquitectura software en un entorno de simulación realista}.Implementar el sistema completo utilizando ROS como middleware de comunicación, acoplando los nodos de visión y control con el simulador físico 3D Gazebo y ArduPilot mediante simulaciones SITL (Software In The Loop).
     \item \textbf{OE4: Validar la robustez del sistema frente a maniobras evasivas}.Diseñar y ejecutar una batería de pruebas automatizadas donde el UAV objetivo (presa) realice diferentes perfiles de vuelo dinámicos (slalom, espirales, frenadas de emergencia) para cuantificar el error de seguimiento y los tiempos de respuesta del cazador.
     \item \textbf{OE5: Desplegar y evaluar la viabilidad computacional en una plataforma empotrada real}. Migrar el stack de software desarrollado a un hardware de recursos limitados para verificar que el sistema es capaz de mantener la tasa de procesamiento necesaria (FPS) sin comprometer la latencia ni la seguridad del vuelo.
 \end{itemize}
@@ -191,10 +191,10 @@ La implementación del sistema embebido en el UAV real supuso un coste total de 
 
 \subsubsection{Horas de trabajo}
 
-La dedicación al proyecto se estima en 300 horas, correspondientes a los 12 créditos ECTS asignados. Para realizar una valoración económica orientativa del trabajo desarrollado, se considera una tarifa de 12€ por hora, representativa de un perfil junior de ingeniería \cite{jobted2025}. Bajo esta hipótesis, el coste asociado a la dedicación personal asciende a:
+La dedicación al proyecto se estima en 300 horas, correspondientes a los 12 créditos ECTS asignados. Para realizar una valoración económica orientativa del trabajo desarrollado, se considera una tarifa de 20€ por hora, representativa de un perfil junior de ingeniería \cite{jobted2025}. Bajo esta hipótesis, el coste asociado a la dedicación personal asciende a:
 
 \begin{center}
-300 horas $\times$ 12€ / hora = 3.600€
+300 horas $\times$ 20c€ / hora = 6000€
 \end{center}
 
 \vspace{0.4cm}
@@ -214,9 +214,9 @@ Ordenador personal para simulaciones & 1.400,00 \\
 \hline
 Materiales para la implementación del sistema embebido & 2.693,10 \\
 \hline
-Horas de trabajo & 3.600,00 \\
+Horas de trabajo & 6.000,00 \\
 \hline
-\textbf{Total estimado del proyecto} & \textbf{7693,10} \\
+\textbf{Total estimado del proyecto} & \textbf{10.093,10} \\
 \hline
 \end{tabular}
 \par\vspace{0.3cm}
@@ -224,4 +224,4 @@ Horas de trabajo & 3.600,00 \\
 \addcontentsline{lot}{table}{\protect\numberline{\thetable}Resumen de costes del proyecto}
 \end{center}
 
-Por tanto, el coste total estimado del proyecto asciende a \textbf{7693,10€}, considerando tanto los recursos materiales empleados como la valoración económica aproximada del tiempo de trabajo dedicado a su desarrollo.
+Por tanto, el coste total estimado del proyecto asciende a \textbf{10.093,10€}, considerando tanto los recursos materiales empleados como la valoración económica aproximada del tiempo de trabajo dedicado a su desarrollo.

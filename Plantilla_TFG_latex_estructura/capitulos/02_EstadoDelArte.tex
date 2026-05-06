@@ -10,7 +10,7 @@
 
 % --- EL TRUCO ESTÁ AQUÍ ---
 \vspace*{0.8cm} % El asterisco fuerza un espacio rígido de 0.8cm
-\section{Introducción al Estado del Arte}
+\section{Introducción}
 
 Esta sección tiene como objetivo establecer el marco teórico y tecnológico que sustenta el desarrollo de este proyecto. Dado que el control de navegación para el seguimiento a cortas distancias de vehículos aéreos no tripulados (UAV) constituye un campo multidisciplinar, resulta necesario revisar las principales tecnologías empleadas para abordar este problema \cite{yang2024high} y fundamentar la solución propuesta.
 
@@ -20,7 +20,7 @@ En primer lugar, se revisan los Sistemas Aéreos no Tripulados, analizando su cl
 
 \vspace{0.4cm}
 
-El bloque de Percepción Visual aborda el uso de Deep Learning para la detección de objetos. Aquí se analiza la arquitectura YOLO, justificando su selección por su capacidad para operar en tiempo real bajo las restricciones computacionales de un sistema embarcado \cite{ zheng2021air}.
+El bloque de percepción visual introduce, en primer lugar, los fundamentos del \textit{Deep Learning} y de los modelos de regresión, para después enmarcarlos dentro de la visión por computador y de la detección de objetos. En este contexto, se analiza la familia YOLO como uno de los enfoques más extendidos para percepción visual en tiempo real sobre plataformas embarcadas \cite{zheng2021air}.
 
 \vspace{0.4cm}
 
@@ -164,7 +164,7 @@ Dentro de este esquema, el control de navegación actúa como el núcleo de deci
 
 \vspace{0.3cm}
 
-Dada la complejidad de este desafío, la literatura científica ha evolucionado hacia diversos paradigmas de control, diferenciados principalmente por la fuente de los datos y la arquitectura del procesamiento \ref{fig:esquema-Sevoing}. Estos enfoques se pueden clasificar en tres grandes categorías : los métodos basados en localización global, los enfoques fundamentados en aprendizaje profundo (\textit{Deep Learning}) y los sistemas de control basado en imagen (\textit{Visual Servoing}). Cada una de estas metodologías presenta un compromiso distinto entre precisión, coste computacional y robustez, factores que determinan su idoneidad para operar en sistemas empotrados de recursos limitados. A continuación, se describen los fundamentos y aplicaciones de estos paradigmas para contextualizar la solución técnica adoptada en este proyecto.
+Dada la complejidad de este desafío, la literatura científica ha evolucionado hacia diversos paradigmas de control, diferenciados principalmente por la fuente de los datos y la arquitectura del procesamiento \ref{fig:esquema-Sevoing}. Estos enfoques se pueden clasificar en tres grandes categorías : los métodos basados en localización global, los enfoques fundamentados en aprendizaje profundo (\textit{Deep Learning}) y los sistemas de control basado en imagen (\textit{Visual Servoing}). Cada una de estas metodologías presenta un compromiso distinto entre precisión, coste computacional y robustez, factores que determinan su idoneidad para operar en sistemas empotrados de recursos limitados. A continuación, se describen los fundamentos y aplicaciones de estos paradigmas para situar las soluciones propuestas en la literatura y preparar el marco metodológico del trabajo.
 
 
 \begin{center}
@@ -173,7 +173,7 @@ Dada la complejidad de este desafío, la literatura científica ha evolucionado 
       % Aquí aplicamos el truco de la caja (\makebox) y el tamaño 1.4
       \makebox[\textwidth][c]{\includegraphics[width=1.4\textwidth]{imagenes/TipoControles2.jpg}}\\[0.5ex]
       
-      {\small \textbf{Figura \thefigure.} Diferencias entre los tipos de algoritmos de visual Servoing.}
+      {\small \textbf{Figura \thefigure.} Diferencias entre los tipos de algoritmos de visual Servoing(Elaboración propia).}
       \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Tipos de algoritmos de visual Servoing (Elaboración propia)}
 \end{center}
 
@@ -206,37 +206,83 @@ Dentro de IBVS pueden distinguirse, a su vez, dos enfoques. El primero correspon
 
 \vspace{0.3cm}
 
-Por tanto, la elección entre PBVS, enfoques basados en aprendizaje e IBVS no depende únicamente de cuál resulte más sofisticado desde un punto de vista teórico, sino de cuál se adapta mejor al contexto de aplicación. PBVS aporta una representación espacial rica, pero exige una percepción 3D precisa; los métodos basados en aprendizaje ofrecen flexibilidad, aunque todavía presentan dificultades importantes de entrenamiento y transferencia al entorno real; e IBVS proporciona una relación especialmente favorable entre simplicidad, latencia y viabilidad en tiempo real. En este Trabajo de Fin de Grado, donde la percepción visual previa ya proporciona detecciones en el plano imagen mediante Deep Learning, resulta natural cerrar el lazo de navegación aprovechando directamente esa información visual. Por ello, un enfoque IBVS libre de modelo se presenta como la opción más coherente, ya que permite conectar de forma directa la detección del objetivo con la generación de consignas de control sin introducir una complejidad geométrica o computacional excesiva. Sin embargo, para que este lazo de control sea efectivo, el sistema requiere de un "sensor virtual" extremadamente fiable, capaz de identificar y localizar al objetivo en el plano imagen de forma ininterrumpida. Esta dependencia crítica entre la respuesta dinámica del dron y la calidad de la información visual es lo que motiva el desarrollo del módulo de percepción que se detalla a continuación.
+Por tanto, la elección entre PBVS, enfoques basados en aprendizaje e IBVS no depende únicamente de cuál resulte más sofisticado desde un punto de vista teórico, sino de cuál se adapta mejor al contexto de aplicación. PBVS aporta una representación espacial rica, pero exige una percepción 3D precisa; los métodos basados en aprendizaje ofrecen flexibilidad, aunque todavía presentan dificultades importantes de entrenamiento y transferencia al entorno real; e IBVS proporciona una relación especialmente favorable entre simplicidad, latencia y viabilidad en tiempo real. En problemas donde la percepción ya suministra detecciones en el plano imagen, los enfoques IBVS libres de modelo constituyen una opción especialmente coherente, ya que permiten conectar de forma directa la localización visual del objetivo con la generación de consignas de control sin introducir una complejidad geométrica o computacional excesiva. Esta observación explica que buena parte de la literatura combine percepción visual, estimación ligera y control reactivo, y sirve además como punto de partida para la metodología desarrollada posteriormente.
 
 
 
-\section{Visión por computador y detección de objetos}
+\section{Deep Learning}
 
-La visión por computador es la disciplina que estudia cómo extraer información significativa a partir de imágenes y secuencias de vídeo para que un sistema automático pueda interpretar su entorno. Su finalidad no es únicamente capturar datos visuales, sino transformarlos en descripciones útiles sobre la presencia, posición, forma o movimiento de los elementos observados. Por ello, constituye uno de los pilares de los sistemas autónomos modernos, especialmente cuando la cámara actúa como sensor principal del proceso de percepción.
-
-\vspace{0.3cm}
-
-A lo largo de su evolución, la visión por computador ha encontrado aplicaciones en ámbitos muy diversos, entre ellos la inspección industrial, la medicina, la videovigilancia, la conducción autónoma, la robótica móvil, la agricultura de precisión y la navegación de UAV. En todos estos escenarios, su papel consiste en convertir la información visual en variables utilizables por módulos de estimación, planificación o control. En el caso de este Trabajo de Fin de Grado, esa función adquiere una importancia central, ya que la detección visual del objetivo constituye la entrada directa del lazo de navegación.
+El \textit{Deep Learning} es una rama del aprendizaje automático basada en redes neuronales artificiales con múltiples capas, capaces de aprender representaciones jerárquicas directamente a partir de los datos. A diferencia de otros enfoques más tradicionales, reduce la necesidad de diseñar manualmente las características de entrada, ya que el propio modelo ajusta internamente niveles sucesivos de abstracción durante el proceso de entrenamiento \cite{goodfellow2016deep}.
 
 \vspace{0.3cm}
 
-Desde un punto de vista histórico, los primeros avances del campo se apoyaron en técnicas de procesamiento digital de imágenes, geometría proyectiva y reconocimiento de patrones. Durante esa etapa, buena parte de los algoritmos dependía de reglas diseñadas manualmente, detectores de bordes, umbrales, filtros y descriptores geométricos. Aunque estos enfoques resultaron fundamentales para establecer las bases de la disciplina, su rendimiento tendía a degradarse cuando aumentaba la variabilidad de la escena o cuando el sistema debía operar en entornos complejos, dinámicos y poco estructurados.
+El desarrollo de esta disciplina ha estado impulsado por la disponibilidad de grandes volúmenes de datos, el aumento de la capacidad de cómputo y la mejora de los métodos de entrenamiento. Gracias a ello, el \textit{Deep Learning} se ha consolidado como un enfoque general para abordar tareas de clasificación, regresión, predicción y generación de datos en contextos muy diversos. Esta flexibilidad explica su relevancia dentro del aprendizaje automático actual y justifica su presencia como base conceptual en numerosos sistemas inteligentes \cite{goodfellow2016deep}.
+
+
+
+\begin{center}
+      \refstepcounter{figure}\label{fig:red-neuronal-multicapa}
+      \includegraphics[width=0.82\textwidth]{imagenes/capasRed.jpg}\\[0.5ex]
+      {\small \textbf{Figura \thefigure.} Esquema general de una red neuronal multicapa. Fuente: \cite{stalearning2018gradiente}.}
+      \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema general de una red neuronal multicapa}
+\end{center}
+
+
 
 \vspace{0.3cm}
 
-La irrupción de las redes convolucionales (\textit{Convolutional Neural Networks}, CNN) modificó de forma decisiva este panorama al permitir el aprendizaje automático de representaciones visuales directamente a partir de los datos. Frente a los descriptores diseñados manualmente, las CNN aprenden jerarquías de características cada vez más abstractas y han demostrado una alta eficacia en tareas como clasificación, segmentación, seguimiento y, de manera muy destacada, detección de objetos. En la actualidad, estas arquitecturas constituyen el núcleo de muchos sistemas de percepción embarcada porque combinan capacidad de representación, robustez ante variaciones visuales y posibilidad de ejecución en tiempo real sobre hardware especializado.
+\section{Modelos de regresión}
 
+En aprendizaje automático, un modelo de regresión es aquel que estima variables continuas a partir de una entrada dada. A diferencia de los modelos de clasificación, cuyo objetivo es asignar una etiqueta discreta, la regresión predice magnitudes numéricas, como una posición, una velocidad, una distancia, una temperatura o cualquier otra cantidad medible \cite{goodfellow2016deep}.
 
+\vspace{0.3cm}
 
+Desde un punto de vista funcional, un modelo de regresión recibe un conjunto de variables de entrada y aprende una función que relaciona esas entradas con una salida continua. Durante el entrenamiento, el modelo ajusta sus parámetros para reducir el error entre la predicción y el valor real observado. Una forma general de expresar este comportamiento es la siguiente:
 
+\vspace{0.3cm}
+
+\begin{equation}
+\hat{y} = f_{\theta}(x)
+\end{equation}
+
+\vspace{0.3cm}
+
+donde $x$ representa la información de entrada, $f_{\theta}$ el modelo parametrizado y $\hat{y}$ el valor continuo estimado. Una vez entrenado, el modelo puede utilizar la relación aprendida para predecir valores sobre datos no vistos previamente \cite{goodfellow2016deep}.
+
+\vspace{0.3cm}
+
+Por tanto, los modelos de regresión sirven para estimar magnitudes de interés, cuantificar relaciones entre variables y apoyar la toma de decisiones en problemas donde la salida no es una clase, sino un valor numérico. Se emplean, por ejemplo, para prever tendencias, estimar estados físicos, calcular distancias o aproximar parámetros que no se observan de forma directa.
+
+\vspace{0.3cm}
+
+En este contexto, la regresión aporta la información geométrica necesaria para localizar el objeto en la imagen, lo que enlaza de forma natural con la detección de objetos, tratada en el apartado siguiente.
+\vspace{0.3cm}
+
+\section{Visión por Computador}
+
+La visión por computador, también conocida como visión artificial o visión computarizada, es una rama de la inteligencia artificial que agrupa técnicas y herramientas orientadas a adquirir, procesar e interpretar información visual procedente del entorno. A partir de imágenes o secuencias de vídeo, estos sistemas pueden extraer características relevantes que facilitan la detección, la clasificación y el análisis de objetos, escenas y movimientos.
+
+\vspace{0.3cm}
+
+Este campo integra conocimientos de procesamiento digital de imágenes, estadística, aprendizaje automático y robótica con el propósito de desarrollar sistemas capaces de comprender el contenido visual y actuar a partir de él, de forma autónoma o asistida. En este sentido, la visión por computador busca dotar a las máquinas de capacidades de percepción útiles para interpretar su entorno y apoyar procesos posteriores de decisión y control.
+
+\vspace{0.3cm}
+
+Sus orígenes suelen situarse en la década de 1960, cuando comenzaron a explorarse métodos para que los ordenadores reconocieran formas sencillas en imágenes bidimensionales. En aquella etapa inicial, las aplicaciones se centraban en tareas relativamente básicas, como la detección de bordes o el reconocimiento de patrones geométricos, debido tanto a las limitaciones del hardware disponible como a la escasez de datos con los que entrenar y validar los modelos.
+
+\vspace{0.3cm}
+
+En las últimas décadas, el incremento de la capacidad de cómputo, la disponibilidad de grandes conjuntos de datos y el desarrollo de arquitecturas basadas en redes neuronales convolucionales (CNN) han impulsado notablemente la evolución del área. Gracias a ello, hoy es posible abordar tareas complejas como la detección de objetos en tiempo real, la segmentación semántica, el reconocimiento facial o el seguimiento automático, y han surgido detectores especialmente influyentes como Faster R-CNN y la familia YOLO \cite{FunRcnn}.
+
+\vspace{0.3cm}
+
+Entre sus aplicaciones destacan la conducción autónoma, la videovigilancia, la robótica, la inspección automática y la interacción persona-máquina. En el contexto de este trabajo, la visión por computador se empleará como base perceptiva para la detección y el seguimiento visual del dron objetivo, lo que enlaza de forma natural con la detección de objetos tratada en el apartado siguiente .
 
 \vspace{0.3cm}
 
 \subsection{Paradigmas de detección de objetos}
 
-El objetivo fundamental de la detección de objetos consiste en localizar y clasificar regiones de interés dentro de una imagen, normalmente representadas mediante cajas delimitadoras. A diferencia de la clasificación convencional, donde se asume una única categoría dominante en la escena, la detección debe resolver simultáneamente qué objetos aparecen y dónde se encuentran. Por ello, se trata de un problema más exigente desde el punto de vista computacional y metodológico, ya que combina percepción semántica y localización espacial en una misma tarea \cite{terven2023comprehensive, diffTwoStage}.
-
-
+El objetivo fundamental de la detección de objetos consiste en localizar y clasificar regiones de interés dentro de una imagen, normalmente representadas mediante cajas delimitadoras. La detección debe resolver simultáneamente qué objetos aparecen y dónde se encuentran. Por ello, se trata de un problema más exigente desde el punto de vista computacional y metodológico, ya que combina percepción semántica y localización espacial en una misma tarea.
 
 \begin{center}
 \refstepcounter{figure}\label{fig:detecion-objetos-ejemplo}
@@ -246,248 +292,117 @@ El objetivo fundamental de la detección de objetos consiste en localizar y clas
 \end{center}
 \vspace{0.3cm}
 
-
-
 Antes de la consolidación de los enfoques basados en redes profundas, una parte importante de los métodos de detección se apoyaba en estrategias de ventana deslizante. En ese marco, modelos como \textit{Deformable Parts Model} (DPM) recorrían la imagen evaluando un gran número de subregiones candidatas, lo que permitía detectar objetos a distintas escalas y posiciones, pero a costa de una carga computacional muy elevada. Aunque estos enfoques marcaron una etapa importante en la evolución de la detección de objetos, su coste de inferencia y su limitada capacidad de adaptación a escenas complejas hicieron evidente la necesidad de arquitecturas más eficientes \cite{felzenszwalb2010dpm}.
 
 \vspace{0.3cm}
 
-La transición hacia el \textit{Deep Learning} se consolidó con la familia R-CNN, que introdujo un esquema de dos etapas. En su formulación original, R-CNN generaba primero un conjunto de regiones potencialmente relevantes mediante búsqueda selectiva, después extraía características con una red convolucional para cada una de esas regiones y, finalmente, realizaba la clasificación. Este planteamiento supuso un avance decisivo en precisión, pero seguía penalizado por el hecho de procesar cada región de manera separada y por depender de un mecanismo externo de propuesta de regiones \cite{FunRcnn}. Faster R-CNN mejoró este pipeline al integrar la generación de propuestas dentro de la propia red mediante una \textit{Region Proposal Network} (RPN). Sobre el mapa de características se definen anclas con distintas escalas y proporciones, y la red predice para cada una de ellas tanto la probabilidad de contener un objeto como el ajuste geométrico de la caja delimitadora. Con ello, el sistema gana coherencia y velocidad respecto a R-CNN, aunque sigue siendo un detector de dos etapas y, por tanto, mantiene una latencia relativamente mayor que otras alternativas \cite{FunRcnn, diffTwoStage}.
+La transición hacia el \textit{Deep Learning} se consolidó con la familia R-CNN, que introdujo un esquema de dos etapas. En su formulación original, R-CNN generaba primero un conjunto de regiones potencialmente relevantes mediante búsqueda selectiva, después extraía características con una red convolucional para cada una de esas regiones y, finalmente, realizaba la clasificación. Este planteamiento supuso un avance decisivo en precisión, pero seguía penalizado por el hecho de procesar cada región de manera separada y por depender de un mecanismo externo de propuesta de regiones. Faster R-CNN mejoró este pipeline al integrar la generación de propuestas dentro de la propia red mediante una \textit{Region Proposal Network} (RPN). Con ello, el sistema gana coherencia y velocidad respecto a R-CNN, aunque sigue siendo un detector de dos etapas y, por tanto, mantiene una latencia relativamente mayor que otras alternativas \cite{FunRcnn, diffTwoStage}.
 
 \vspace{0.3cm}
- \begin{center}
+\begin{center}
     \refstepcounter{figure}\label{fig:FunRccnn}
     \includegraphics[width=0.65\textwidth]{imagenes/FunRcnn.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Esquema simplificado del funcionamiento de R-CNN,  \cite{FunRcnn}.}
+    {\small \textbf{Figura \thefigure.} Esquema simplificado del funcionamiento de R-CNN, \cite{FunRcnn}.}
     \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del funcionamiento de R-CNN}
- \end{center}
+\end{center}
 
 \vspace{0.3cm}
 
-Frente a esta familia de detectores, los métodos de una sola etapa reformulan la detección como un problema unificado de predicción directa. En lugar de separar explícitamente la propuesta de regiones y la clasificación, una única red procesa la imagen completa y estima de forma simultánea las categorías, las puntuaciones de confianza y las coordenadas de las cajas delimitadoras. Dentro de este grupo, YOLO representa el ejemplo más influyente, ya que divide implícitamente la escena en regiones de predicción y produce en una sola pasada la información necesaria para localizar los objetos presentes. Esta simplificación reduce la complejidad del pipeline y favorece tiempos de inferencia mucho menores, una propiedad especialmente relevante en plataformas embarcadas y en escenarios dinámicos como la intercepción aire-aire, donde la frecuencia de actualización del detector resulta tan importante como su precisión \cite{redmon2016yolo, terven2023comprehensive}.
+Frente a esta familia de detectores, los métodos de una sola etapa reformulan la detección como un problema unificado de predicción directa. En lugar de separar explícitamente la propuesta de regiones y la clasificación, una única red procesa la imagen completa y estima de forma simultánea las categorías, las puntuaciones de confianza y las coordenadas de las cajas delimitadoras. Esta simplificación reduce la complejidad del pipeline y favorece tiempos de inferencia mucho menores, una propiedad especialmente relevante en plataformas embarcadas y en escenarios dinámicos como la intercepción aire-aire, donde la frecuencia de actualización del detector resulta tan importante como su precisión.
 
 \vspace{0.3cm}
-\subsection{YOLO (You Only Look Once)}
 
-La arquitectura YOLO (\textit{You Only Look Once}) supuso un cambio de paradigma en la visión artificial al reformular la detección de objetos como un problema de regresión unificada. A diferencia de los métodos tradicionales basados en regiones (\textit{region-based}), que aplican clasificadores a múltiples propuestas de localización, YOLO procesa la imagen completa mediante una única red neuronal convolucional (CNN) en una sola pasada. Este enfoque permite predecir simultáneamente las cajas delimitadoras (\textit{bounding boxes}) y las probabilidades de clase, optimizando drásticamente la velocidad de inferencia \cite{datacamp2024yolo}.
+\subsection{YOLO}
+
+La familia YOLO (\textit{You Only Look Once}) constituye el ejemplo más influyente de detector de una sola etapa basado en regresión unificada. Su aportación principal consiste en reformular la detección de objetos como un problema de predicción directa sobre la imagen completa, evitando la separación explícita entre propuesta de regiones y clasificación. De este modo, la red estima de forma conjunta la localización de las cajas delimitadoras y la probabilidad de las clases presentes en la escena.
 \vspace{0.3cm}
+
+
+Desde un punto de vista operativo, estos detectores combinan tres ideas fundamentales: una partición implícita de la escena en regiones de predicción, la estimación directa de cajas delimitadoras y puntuaciones de confianza mediante regresión, y una etapa final de depuración basada en métricas de solapamiento como la intersección sobre unión (IoU) y en procedimientos como \textit{Non-Maximum Suppression} (NMS). Esta formulación permite generar detecciones con latencias reducidas y con una frecuencia de actualización compatible con aplicaciones de tiempo real.
+
+\vspace{0.3cm}
+
 
 \begin{center}
     \refstepcounter{figure}\label{fig:yolo-funcionamiento}
     \includegraphics[width=0.65\textwidth]{imagenes/yolo-esquema.jpeg}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Esquema simplificado del funcionamiento de Yolo,  \cite{aiknow2024yolo}.}
+    {\small \textbf{Figura \thefigure.} Esquema simplificado del funcionamiento de Yolo, \cite{aiknow2024yolo}.}
     \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del funcionamiento de Yolo}
- \end{center}
-
-\vspace{0.3cm}
-El funcionamiento de este algoritmo se articula a través de un proceso estructurado en las siguientes etapas lógicas \cite{aiknow2024yolo}:
+\end{center}
 
 \vspace{0.3cm}
 
-\begin{enumerate}
-\item \textbf{División en cuadrícula:} El sistema particiona la imagen de entrada en una rejilla de SxS celdas. Si el centro de un objeto en este caso, el UAV presa se sitúa dentro de una celda específica, dicha celda asume la responsabilidad de detectar dicho objeto.
-
-\vspace{0.3cm}
-
-\item \textbf{Codificación y vectores de predicción:} Para cada celda, YOLO estima los atributos de los recuadros delimitadores utilizando un modelo de regresión. La representación matemática de cada predicción se estructura en un vector de salida Y con el siguiente formato:
-
-\vspace{0.3cm}
-
-\begin{equation}
-Y = [p_c, b_x, b_y, b_h, b_w, c_1, c_2, \dots, c_n]
-\end{equation}
-
-\vspace{0.3cm}
-Donde los componentes se definen de la siguiente manera:
-\begin{itemize}
-\item pc: Corresponde a la puntuación de confianza (\textit{confidence score}) o probabilidad de que la celda contenga un objeto.
-\item bx, by: Representan las coordenadas del centro del cuadro delimitador relativas a los límites de la celda.
-\item bh, bw: Indican la altura y la anchura del cuadro delimitador en relación con la dimensión total de la celda o de la imagen.
-\item c1, c2, ..., cn: Representan las probabilidades condicionales para cada clase de interés . El modelo asignará la etiqueta cuya probabilidad sea mayor dentro de este conjunto.
-\end{itemize}
-
-\vspace{0.3cm}
-\item \textbf{Intersección sobre Unión (IoU):} Debido a que un mismo objeto puede generar múltiples cajas candidatas en celdas adyacentes, se emplea la métrica IoU para evaluar la precisión de la localización y filtrar predicciones irrelevantes. El IoU arroja un valor entre 0 y 1 mediante la siguiente relación:
-
-\vspace{0.3cm}
-
-\begin{equation}
-IoU = \frac{\mbox{Área de Intersección}}{\mbox{Área de Unión}}
-\end{equation}
-
-\vspace{0.3cm}
-
-El sistema utiliza un umbral de selección. Si el IoU calculado es inferior a dicho umbral, la predicción se descarta, conservando únicamente aquellas que presentan un solapamiento significativo con el objeto real.
-\end{enumerate}
-
-\vspace{0.3cm}
-
-Tras la fase de inferencia, el modelo aplica la técnica de \textit{Non-Maximum Suppression} (NMS) para refinar los resultados. Este proceso filtra las cajas cuya confianza pc es insuficiente y agrupa aquellas que presentan un alto solapamiento, conservando exclusivamente la predicción con la mayor puntuación de confianza. Este mecanismo es vital para evitar detecciones duplicadas de un mismo UAV presa durante el seguimiento.
-\vspace{0.3cm}
-
-Este diseño de regresión  aporta ventajas críticas para el problema de intercepción abordado. Al procesar la imagen como un todo, el modelo codifica información contextual sobre la escena, lo que reduce los falsos positivos en el fondo y permite alcanzar las altas tasas de fotogramas por segundo (FPS) necesarias para una respuesta reactiva en tiempo real. Además, la capacidad de detección multiescala resulta esencial en escenarios aire-aire, donde el objetivo puede variar drásticamente de tamaño conforme cambia la distancia relativa entre el cazador y la presa .
+La literatura reciente ha consolidado a YOLO como una de las familias más extendidas en visión embarcada gracias a su equilibrio entre precisión, velocidad y facilidad de despliegue. En problemas de detección aérea, seguimiento e intercepción, este compromiso resulta especialmente valioso porque la utilidad del detector depende no solo de su exactitud espacial, sino también de su capacidad para suministrar observaciones consistentes a alta frecuencia. Además, al predecir directamente magnitudes continuas asociadas a la localización del blanco, estos modelos proporcionan una base adecuada para etapas posteriores de seguimiento visual, estimación geométrica e inferencia de distancia relativa \cite{terven2023comprehensive}.
 
 \vspace{0.3cm}
 \section{Geometría Proyectiva}
 
 \vspace{0.3cm}
-La salida del detector visual permite localizar al UAV objetivo en la imagen mediante una caja delimitadora y un centro expresados en píxeles. Sin embargo, esa información todavía pertenece al plano imagen y no describe de manera directa la posición espacial del blanco ni la relación entre el error visual y el movimiento que debe ejecutar el dron. Por ello, entre la percepción y el control es necesario introducir un modelo geométrico de la cámara que explique cómo un punto tridimensional del entorno se proyecta sobre una imagen bidimensional \cite{CameraModels, uvaPinholeCamera, bergamasco2019pinhole}.
+Una vez presentadas las técnicas de percepción visual y detección de objetos, resulta necesario introducir el marco geométrico que permite interpretar esa información en términos espaciales y relacionarla con el movimiento del dron. En este contexto, la geometría proyectiva constituye la base teórica que conecta los puntos del espacio tridimensional con su representación en el plano imagen. En navegación visual, esta disciplina resulta esencial porque la cámara no proporciona directamente una posición 3D del objetivo, sino una proyección bidimensional condicionada por la perspectiva, la orientación de la cámara y sus parámetros internos \cite{CameraModels, uvaPinholeCamera, bergamasco2019pinhole}. Antes de introducir el modelo geométrico de la cámara, conviene partir de la cámara estenopeica o modelo \textit{pinhole}, ya que constituye la aproximación más simple y utilizada para explicar cómo se forma una imagen.
 
 \vspace{0.3cm}
 
-\subsection{Funcionamiento de la cámara y modelo estenopeico}
+\subsection{Cámara estenopeica}
 
-
-\vspace{0.3cm}
-El modelo de cámara estenopeica (\textit{pinhole camera model}) idealiza la formación de la imagen suponiendo que todos los rayos de luz atraviesan un único punto, denominado centro óptico o centro de proyección, antes de alcanzar el plano imagen. Esta simplificación elimina el comportamiento complejo de las lentes reales y permite describir la proyección mediante relaciones geométricas limpias y fácilmente interpretables \cite{wikipediaCamaraEstenopeica, uvaPinholeCamera, bergamasco2019pinhole}.
+La cámara estenopeica, también conocida como modelo \textit{pinhole}, es una idealización geométrica utilizada para describir cómo se forma una imagen a partir de la luz procedente del entorno. En este modelo, los rayos luminosos atraviesan un único orificio y se proyectan sobre un plano imagen, lo que permite relacionar de forma sencilla el espacio tridimensional con su representación bidimensional.
 
 \vspace{0.3cm}
 
-En una cámara física, la imagen se forma invertida sobre el sensor. No obstante, en visión por computador suele emplearse un plano imagen virtual situado delante del centro óptico para evitar inversiones de signo y hacer más intuitiva la interpretación matemática del modelo. Esta convención no altera la geometría del problema, pero simplifica el análisis de la proyección y la definición de los errores visuales \cite{uvaPinholeCamera, CameraModels}.
+Sus antecedentes históricos se asocian a la cámara oscura y a las primeras observaciones sobre la propagación rectilínea de la luz.  desde la Antigüedad se estudiaron fenómenos de proyección similares, y con el tiempo estos principios dieron lugar a dispositivos estenopeicos cada vez más elaborados, primero con fines de observación y más adelante también con aplicaciones fotográficas y didácticas \cite{wikipediaCamaraEstenopeica}.
 
 \vspace{0.3cm}
 
-Si un punto del entorno se expresa en el sistema de referencia de la cámara como $P_c = (X_c, Y_c, Z_c)$, su proyección ideal sobre el plano imagen métrico viene dada por:
+Desde un punto de vista funcional, su funcionamiento se basa en que solo una pequeña fracción de la luz procedente de cada punto de la escena atraviesa el orificio, lo que genera una imagen invertida sobre el plano de proyección. Así, el sistema no mide directamente la profundidad ni las coordenadas espaciales del entorno, sino su proyección en la imagen. Esta idea resulta fundamental para comprender cómo la posición, el tamaño aparente y la perspectiva de los objetos quedan codificados visualmente .
+
+\vspace{0.3cm}
+
+Tradicionalmente, la cámara estenopeica se construía de forma muy simple, mediante una caja opaca, un pequeño estenopo y una superficie fotosensible, como papel o película fotográfica, por lo que las exposiciones solían ser largas y el control de entrada de luz era manual. En la actualidad, ese mismo principio puede aplicarse también sobre dispositivos con sensores digitales, como los CCD, y sigue utilizándose con fines educativos, artísticos y experimentales. De este modo, puede compararse una versión histórica basada en captura analógica con variantes modernas apoyadas en tecnología digital \cite{wikipediaCamaraEstenopeica}.
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:camara-estenopeica-funcionamiento}
+\includegraphics[width=0.78\textwidth]{imagenes/pinhole-camera-wikipedia-adaptada.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Funcionamiento simplificado de una cámara estenopeica. Fuente: \cite{commonsPinholeCameraSvg}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Funcionamiento simplificado de una cámara estenopeica}
+\end{center}
+
+\vspace{0.3cm}
+
+\subsection{Modelo geométrico de la cámara}
+
+A partir de esta idealización, la proyección de un punto del mundo puede representarse de forma compacta mediante la relación entre parámetros extrínsecos, parámetros intrínsecos y coordenadas del punto observado. En forma homogénea, esta idea suele resumirse como:
 
 \vspace{0.3cm}
 
 \begin{equation}
-x = f \frac{X_c}{Z_c}, \quad y = f \frac{Y_c}{Z_c}
+s \left[\begin{array}{c}u \\ v \\ 1\end{array}\right] = K \cdot [R|t] \cdot \left[\begin{array}{c}X_w \\ Y_w \\ Z_w \\ 1\end{array}\right]
 \end{equation}
 
 \vspace{0.3cm}
 
-En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ es su profundidad o distancia a lo largo del eje de visión, $f$ es la distancia focal y $(x, y)$ son las coordenadas proyectadas sobre el plano imagen ideal. La ecuación pone de manifiesto el comportamiento esencial de la perspectiva: cuanto mayor es $Z_c$, menor es la proyección del objeto en la imagen, haciendo que los objetos lejanos aparecen más pequeños y los cercanos ocupan más píxeles \cite{bergamasco2019pinhole, CameraModels}.
+donde la matriz intrínseca recoge parámetros como la distancia focal y el punto principal, mientras que la transformación extrínseca describe la posición y orientación de la cámara respecto al entorno. Aunque se trata de un modelo idealizado, resulta suficientemente expresivo para describir la mayor parte de los fenómenos geométricos relevantes en visión por computador \cite{opencvCalib3d}.
 
 \vspace{0.3cm}
 
 \begin{center}
 \refstepcounter{figure}\label{fig:ibvs-esquema}
-\includegraphics[width=0.65\textwidth]{imagenes/pinholeCameramodel2.jpeg}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Esquema simplificado del modelo de cámara estenopeica. Fuente: \cite{opencvCalib3d}.}
+\includegraphics[width=0.65\textwidth]{imagenes/pinholeCamera2.jpeg}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Esquema simplificado del modelo de cámara estenopeica. Fuente: \cite{openMVGCameras}.}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del modelo de cámara estenopeica}
 \end{center}
 
 \vspace{0.3cm}
 
-\subsection{Fundamentos de la Geometría Proyectiva}
+\subsection{Usos en navegación visual}
 
-Para trabajar de forma práctica con imágenes digitales, la proyección anterior se expresa normalmente en coordenadas normalizadas y, posteriormente, en coordenadas de píxel. Las coordenadas normalizadas vienen dadas por:
-
-\vspace{0.3cm}
-
-\begin{equation}
-x_n = \frac{X_c}{Z_c}, \quad y_n = \frac{Y_c}{Z_c}
-\end{equation}
+En la literatura sobre \textit{visual servoing} y seguimiento de UAV, la geometría proyectiva se emplea principalmente con tres objetivos. En primer lugar, permite calibrar el sistema de visión y caracterizar propiedades como el campo de visión, el punto principal o las distorsiones introducidas por la óptica. En segundo lugar, proporciona la base para relacionar variables medidas en píxeles con magnitudes útiles para estimación y control, como la dirección de visión, la escala aparente del objetivo o su posición relativa. En tercer lugar, sirve de soporte para compensar el efecto de la actitud del vehículo y para diseñar controladores que actúan a partir del error visual observado \cite{asl2014adaptive, yang2024high}.
 
 \vspace{0.3cm}
 
-Estas variables recogen la parte puramente proyectiva del problema: dependen de la dirección del punto respecto a la cámara, pero no del tamaño físico del sensor. A partir de ellas, el paso a píxeles se modela como:
+Por ello, incluso en enfoques IBVS que evitan una reconstrucción tridimensional completa, la geometría proyectiva sigue siendo una herramienta conceptual relevante. Más que un bloque aislado de reconstrucción 3D, actúa como un lenguaje común que conecta calibración, percepción y control dentro de los sistemas de navegación guiados por cámara \cite{vanDerAa2024ibvs}.
 
 \vspace{0.3cm}
-
-\begin{equation}
-u = f_x x_n + c_x, \quad v = f_y y_n + c_y
-\end{equation}
-
-\vspace{0.3cm}
-
-Aquí, $f_x$ y $f_y$ son las distancias focales expresadas en píxeles en las direcciones horizontal y vertical, mientras que $c_x$ y $c_y$ definen el punto principal, es decir, la proyección del eje óptico sobre la imagen. En una cámara ideal, este punto suele estar cerca del centro del sensor, aunque en la práctica puede aparecer ligeramente desplazado por el montaje o la calibración \cite{CameraModels, opencvCalib3d}.
-
-\vspace{0.3cm}
-
-La formulación completa en coordenadas homogéneas se resume mediante la ecuación:
-
-\begin{equation}
-s \left[\begin{array}{c}
-u \\ v \\ 1\end{array}\right] = K \cdot [R|t] \cdot \left[\begin{array}{c}X_w \\ Y_w \\ Z_w \\ 1\end{array}\right]
-\end{equation}
-
-\vspace{0.3cm}
-
-En esta relación, $(X_w, Y_w, Z_w)$ son las coordenadas del punto en el sistema de referencia del mundo, $[R|t]$ describe la transformación extrínseca que lleva ese punto al sistema de referencia de la cámara, $K$ es la matriz de parámetros intrínsecos y $s$ es un factor de escala propio de las coordenadas homogéneas. La matriz intrínseca se suele escribir como:
-
-\vspace{0.3cm}
-
-\begin{equation}
-K = \left[\begin{array}{ccc}
-f_x & \gamma & c_x \\
-0 & f_y & c_y \\
-0 & 0 & 1
-\end{array}\right]
-\end{equation}
-
-\vspace{0.3cm}
-
-Cada término tiene una interpretación física clara: $f_x$ y $f_y$ convierten coordenadas geométricas en coordenadas de píxel, $c_x$ y $c_y$ fijan el punto principal y $\gamma$ representa el sesgo o \textit{skew} entre ejes de píxel, normalmente nulo o despreciable en cámaras modernas. Esta descomposición es importante porque separa dos preguntas distintas: dónde está la cámara respecto al mundo (parámetros extrínsecos) y cómo proyecta la cámara lo que ve (parámetros intrínsecos) \cite{CameraModels, uvaPinholeCamera}.
-
-\vspace{0.3cm}
-
-\subsection{Parámetros intrínsecos, FOV y distorsión}
-
-\vspace{0.3cm}
-
-Otro concepto fundamental es el campo de visión o \textit{Field of View} (FOV), que puede entenderse como la amplitud angular de la escena que la cámara es capaz de cubrir. Si $d_x$ y $d_y$ representan el tamaño del sensor en horizontal y vertical, entonces el FOV puede aproximarse mediante:
-
-\vspace{0.3cm}
-
-\begin{equation}
-FOV_x = 2 \arctan \left( \frac{d_x}{2f} \right), \quad FOV_y = 2 \arctan \left( \frac{d_y}{2f} \right)
-\end{equation}
-
-\vspace{0.3cm}
-
-Estas expresiones pueden interpretarse de forma sencilla. Para un mismo sensor, una distancia focal pequeña genera un FOV amplio: la cámara ve una porción mayor de la escena, pero cada objeto ocupa menos píxeles. En cambio, una distancia focal grande produce un FOV más estrecho: la cámara cubre menos escena, aunque el objetivo aparece con mayor tamaño aparente en la imagen. En tareas de seguimiento, este comportamiento introduce un compromiso claro entre cobertura y detalle: un FOV amplio ayuda a no perder el blanco durante maniobras bruscas, mientras que un FOV estrecho permite medir con más precisión sus desplazamientos cuando se encuentra lejos \cite{bergamasco2019pinhole, CameraModels}.
-
-\vspace{0.3cm}
-
-Hasta aquí se ha descrito una cámara ideal. Sin embargo, una cámara real no proyecta la escena de manera perfectamente geométrica, porque la lente introduce pequeñas deformaciones. Las más relevantes en visión por computador son la distorsión radial y la distorsión tangencial. La distorsión radial depende sobre todo de la distancia al centro de la imagen: cuanto más se aleja un punto de esa zona central, mayor puede ser su desplazamiento aparente, lo que hace que las rectas se curven cerca de los bordes. La distorsión tangencial, por su parte, aparece cuando la lente y el sensor no están perfectamente alineados y produce desplazamientos asimétricos de los puntos observados \cite{opencvCalib3d, uvaPinholeCamera}.
-
-
-\begin{center}
-    \refstepcounter{figure}\label{fig:Camera-distorsion}
-    \includegraphics[width=0.85\textwidth]{imagenes/distosionCamera.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Imágenes de una pantalla de objeto rectangular mostradas con (a) ninguna distorsión; (b) distorsión radial; (c) distorsión tangencial.,  \cite{ImgDistorsion}.}
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} sDistorsion Camera pinhole}
- \end{center}
-
-\vspace{0.3cm}
-
-En coordenadas normalizadas, una forma habitual de modelar esta distorsión es la siguiente:
-
-\vspace{0.3cm}
-
-\begin{equation}
-r^2 = x_n^2 + y_n^2
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-x_d = x_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + 2 p_1 x_n y_n + p_2 \left(r^2 + 2 x_n^2\right)
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-y_d = y_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + p_1 \left(r^2 + 2 y_n^2\right) + 2 p_2 x_n y_n
-\end{equation}
-
-\vspace{0.3cm}
-
-
-En estas ecuaciones, $r$ mide la distancia del punto al centro de la imagen normalizada; los coeficientes $k_1$, $k_2$ y $k_3$ describen la parte radial de la deformación, mientras que $p_1$ y $p_2$ describen la parte tangencial. Los puntos $(x_d, y_d)$ representan, por tanto, la posición finalmente observada tras el efecto de la lente. La consecuencia práctica es directa: una misma distancia física en la escena no siempre se traduce en la misma distancia en píxeles si la medida se toma en regiones distintas de la imagen \cite{opencvCalib3d}.
-
-\vspace{0.3cm}
-
-Desde el punto de vista del control, la distorsión introduce una dispersión en la medida visual: un mismo movimiento real puede producir errores distintos según la zona de la imagen en la que aparezca el objetivo. Por ello, para alimentar al controlador PID conviene trabajar con puntos sin distorsión o con coordenadas normalizadas obtenidas tras calibrar la cámara \cite{opencvCalib3d, CameraModels}.
-
-\vspace{0.3cm}
-
-En este trabajo, corregir esos puntos permite estimar mejor las distancias aparentes y generar una señal de error más estable para el lazo de control. Esta idea enlaza con la sección siguiente, dedicada a cómo el controlador PID transforma ese error visual en comandos de movimiento del UAV cazador.
-
-\vspace{0.3cm}
-
 \section{Métodos de Control}
 
 En robótica aérea, el control puede definirse como el conjunto de algoritmos encargados de manipular las variables de entrada del sistema, como la velocidad de los motores o las consignas de actitud, para lograr que las variables de salida del vehículo, entre ellas su posición, velocidad y orientación, sigan un comportamiento deseado. Su papel es fundamental para mantener la estabilidad frente a perturbaciones externas y para garantizar que el UAV cumpla de forma autónoma los objetivos de la misión .
@@ -503,7 +418,7 @@ La clasificación más básica de los sistemas de control depende de la existenc
 \begin{itemize}
     \item \textbf{Control de lazo abierto (\textit{open-loop}).} La señal de control se genera sin tener en cuenta el estado real de la salida. En un UAV, esto equivaldría a enviar una orden de movimiento sin verificar si el vehículo ha respondido realmente como se esperaba. Este enfoque resulta poco adecuado para navegación autónoma, ya que no corrige errores ni compensa perturbaciones como el viento o pequeñas variaciones dinámicas del sistema.
 
-    \item \textbf{Control de lazo cerrado (\textit{closed-loop}).} El sistema mide continuamente la salida, la compara con una referencia deseada y calcula un error a partir de esa diferencia. A continuación, el controlador actualiza la acción de mando para reducir dicho error. Este es el paradigma empleado en este proyecto, ya que permite cerrar el lazo entre la percepción visual y la respuesta dinámica del dron. En este caso, la referencia puede asociarse, por ejemplo, a mantener el objetivo centrado en la imagen, mientras que la salida medida corresponde a la posición observada del blanco en el plano imagen.
+    \item \textbf{Control de lazo cerrado (\textit{closed-loop}).} El sistema mide continuamente la salida, la compara con una referencia deseada y calcula un error a partir de esa diferencia. A continuación, el controlador actualiza la acción de mando para reducir dicho error. Este es el paradigma predominante en navegación autónoma basada en visión, ya que permite cerrar el lazo entre la percepción visual y la respuesta dinámica del dron. En este contexto, la referencia puede asociarse, por ejemplo, a mantener el objetivo centrado en la imagen, mientras que la salida medida corresponde a la posición observada del blanco en el plano imagen.
 \end{itemize}
 
 \vspace{0.3cm}
@@ -536,13 +451,13 @@ e(t) = r(t) - y(t)
 
 donde $r(t)$ es la referencia deseada y $y(t)$ es la salida observada, entonces la señal de control generada por un PID puede expresarse como:
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
 \begin{equation}
 u(t) = K_p e(t) + K_i \int_{0}^{t} e(\tau) d\tau + K_d \frac{de(t)}{dt}
 \end{equation}
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
 Esta formulación combina tres contribuciones complementarias:
 
@@ -554,188 +469,87 @@ Esta formulación combina tres contribuciones complementarias:
     \item \textbf{Término derivativo ($K_d$).} Actúa sobre la velocidad de cambio del error. Su efecto puede interpretarse como un amortiguamiento que anticipa la tendencia del sistema y ayuda a reducir oscilaciones o respuestas demasiado bruscas.
 \end{itemize}
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
 Desde un punto de vista funcional, el término proporcional aporta rapidez de reacción, el integral mejora la precisión final y el derivativo contribuye a suavizar la dinámica transitoria. La combinación adecuada de estas tres acciones permite construir un controlador que responda con suficiente rapidez sin comprometer la estabilidad del sistema.
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
-La adopción del PID en este Trabajo de Fin de Grado responde, además, a una razón práctica importante. El sistema debe ejecutarse sobre una plataforma embebida que también dedica recursos al procesamiento visual y a la inferencia en tiempo real. En este contexto, un controlador PID ofrece una solución eficiente y menos costosa en términos computacionales que otros enfoques más complejos, manteniendo al mismo tiempo una respuesta reactiva robusta y una integración sencilla con los lazos internos del autopiloto. Por ello, resulta una elección especialmente adecuada para transformar el error visual del objetivo en comandos de movimiento del UAV cazador.
+Por estas razones, el PID sigue siendo una elección frecuente en plataformas embebidas que deben compartir recursos con módulos de percepción e inferencia en tiempo real. Frente a enfoques de control más complejos, ofrece una implementación ligera y una integración sencilla con los lazos internos del autopiloto, lo que explica su amplia presencia en aplicaciones de seguimiento visual de UAV.
 
-\vspace{0.3cm}
+\vspace{0.4cm}
+
 
 \section{Estimación de Estado y Filtrado}
 
-El rendimiento del controlador descrito en la sección anterior depende directamente de la calidad de la señal visual que recibe. En navegación basada en visión, la posición observada del objetivo no constituye una medida exacta, sino una estimación afectada por ruido, discretización, pérdidas ocasionales y variaciones entre fotogramas. Si estas observaciones se introducen de forma directa en el lazo de control, pueden provocar acciones de mando erráticas y reducir la estabilidad del seguimiento.
+En sistemas de navegación visual, las observaciones extraídas por el detector suelen estar afectadas por ruido, retardos y pérdidas puntuales. Por ello, la literatura incorpora con frecuencia técnicas de estimación y filtrado que aportan coherencia temporal a la información perceptiva antes de utilizarla en el lazo de control. Entre las soluciones más extendidas destacan el filtro de Kalman y los métodos de suavizado recursivo, como el EMA, por su equilibrio entre coste computacional y capacidad para atenuar fluctuaciones de la señal.
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
-En este contexto, la estimación de estado y el filtrado actúan como un bloque intermedio entre la percepción y el control. Su función es obtener una representación temporal más consistente del movimiento del blanco, atenuar fluctuaciones  y proporcionar una señal de error más robusta para el controlador PID. De este modo, el sistema no solo reacciona a lo que la cámara mide en cada instante, sino también a una versión depurada  de dicha información. En los apartados siguientes se presentarán dos herramientas especialmente relevantes para este propósito: el filtro de Kalman, orientado a la estimación y predicción del estado, y el filtro EMA, empleado como mecanismo sencillo de suavizado temporal.
+\subsection{Origen y Evolución del Filtro de Kalman}
 
-\subsection{Filtro de Kalman}
+El filtro de Kalman es un método de estimación recursiva formulado por Rudolf E. Kalman en 1960 para inferir el estado de sistemas dinámicos lineales a partir de medidas afectadas por ruido. Su interés radica en que combina la predicción proporcionada por un modelo dinámico con la información de los sensores, obteniendo estimaciones más estables y consistentes que las medidas directas por sí solas \cite{kalman1960new, kalmanfilterNetES, wikipediaFiltroKalman}.
 
-El filtro de Kalman es un método de estimación recursiva empleado para obtener una aproximación del estado de un sistema dinámico cuando las medidas disponibles contienen ruido. Su utilidad, en este trabajo, reside en que permite combinar la información procedente del modelo con la medida visual del objetivo, generando una estimación más estable y más útil para el controlador PID \cite{kalman1960new, kalmanfilterNetES, wikipediaFiltroKalman}.
+\vspace{0.4cm}
 
-\vspace{0.3cm}
+Con el tiempo, esta formulación se ha extendido a variantes no lineales, como el filtro de Kalman extendido (EKF), muy utilizadas en robótica móvil y aérea. En navegación visual con UAV, además, el filtrado suele integrarse con modelos dinámicos y estrategias predictivas para compensar retardos de percepción, suavizar detecciones y mantener la coherencia temporal del seguimiento.
 
-\begin{center}
-    \refstepcounter{figure}\label{fig:Filtro-kalman}
-    \includegraphics[width=1\textwidth]{imagenes/KalmanYolo2.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.}Ejemplo uso de Filtro de Kalman. }
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Ejemplo uso del Filtro de Kalman en dron real , en modo predición (Elaboración propia)}
-\end{center}
+\vspace{0.4cm}
 
-\vspace{0.3cm}
+\subsection{Fundamentos y Mecanismo Recursivo}
 
-En primer lugar, conviene aclarar qué se entiende por \textbf{vector de estado}. El vector de estado es el conjunto de variables que describen la situación del sistema en un instante dado. En un problema de seguimiento visual, este vector puede incluir, por ejemplo, la posición del objetivo en la imagen y su velocidad aparente. Una forma podría ser:
+Desde un punto de vista operativo, el filtro funciona de manera recursiva y en tiempo real. En cada instante combina una etapa de predicción, basada en el modelo del sistema, con una etapa de actualización, en la que incorpora la nueva medida disponible. Esta estructura lo hace especialmente apropiado para plataformas embebidas, donde interesa limitar el coste computacional y no almacenar todo el historial de observaciones.
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
-\begin{equation}
-\mathbf{x}_k = \left[ \begin{array}{cccc} x_k & y_k & \dot{x}_k & \dot{y}_k \end{array} \right]^{T}
-\end{equation}
+El sistema se representa mediante un modelo de espacio de estados:
 
-\vspace{0.3cm}
-
-En este caso, $x_k$ e $y_k$ representan la posición del objetivo en el plano imagen, mientras que $\dot{x}_k$ y $\dot{y}_k$ representan su velocidad aparente. A partir de este vector, el modelo describe tanto la evolución temporal del sistema como la relación entre el estado interno y la medida observada \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
-
-\vspace{0.3cm}
-
-El sistema dinámico lineal discreto puede escribirse mediante las ecuaciones:
-
-\vspace{0.3cm}
+\vspace{0.4cm}
 
 \begin{equation}
 \mathbf{x}_k = \mathbf{F}_k \mathbf{x}_{k-1} + \mathbf{B}_k \mathbf{u}_k + \mathbf{w}_k
 \end{equation}
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
 \begin{equation}
 \mathbf{z}_k = \mathbf{H}_k \mathbf{x}_k + \mathbf{v}_k
 \end{equation}
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
-En estas expresiones, la matriz $\mathbf{F}_k$ corresponde a la \textbf{matriz de transición de estado}, encargada de modelar la evolución del sistema entre dos instantes consecutivos. Por su parte, la matriz $\mathbf{H}_k$ corresponde a la \textbf{matriz de observación}, cuya función es relacionar el vector de estado con la magnitud efectivamente medida por el sensor. En términos conceptuales, $\mathbf{F}_k$ describe la dinámica del sistema, mientras que $\mathbf{H}_k$ determina qué componentes de dicho estado son accesibles a través de la cámara o del sensor empleado \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+En estas ecuaciones, $\mathbf{x}_k$ representa el estado del sistema, $\mathbf{z}_k$ la observación disponible, $\mathbf{F}_k$ la dinámica del modelo y $\mathbf{H}_k$ la relación entre el estado y la medida. Los términos $\mathbf{w}_k$ y $\mathbf{v}_k$ modelan, respectivamente, el ruido del proceso y el ruido de medida.
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
-Por ejemplo, si se adopta un modelo bidimensional de velocidad constante con periodo de muestreo $\Delta t$, y la cámara mide únicamente la posición del objetivo, unas elecciones habituales son:
+\subsection{Aplicación en Persecución Visual y Alta Velocidad}
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
-\begin{equation}
-\mathbf{F}_k = \left[ \begin{array}{cccc}
-1 & 0 & \Delta t & 0 \\
-0 & 1 & 0 & \Delta t \\
-0 & 0 & 1 & 0 \\
-0 & 0 & 0 & 1
-\end{array} \right], \quad
-\mathbf{H}_k = \left[ \begin{array}{cccc}
-1 & 0 & 0 & 0 \\
-0 & 1 & 0 & 0
-\end{array} \right]
-\end{equation}
+En sistemas de persecución visual, el filtrado de Kalman aporta continuidad temporal a las detecciones, atenúa el ruido de la medida y permite anticipar a corto plazo el movimiento del objetivo. Estas propiedades resultan especialmente relevantes cuando la información visual llega con retardos, presenta oclusiones parciales o debe combinarse con la dinámica del interceptor dentro del lazo de control.
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
-Otro aspecto fundamental es el papel de las matrices de covarianza $\mathbf{Q}_k$ y $\mathbf{R}_k$. La matriz $\mathbf{Q}_k$ representa la incertidumbre asociada al modelo dinámico, es decir, cuánto puede desviarse la evolución real del sistema respecto a la predicción teórica. La matriz $\mathbf{R}_k$, en cambio, representa la incertidumbre de la medida, es decir, el nivel de ruido presente en la observación del sensor. En términos prácticos, $\mathbf{Q}_k$ expresa cuánto se confía en el modelo y $\mathbf{R}_k$ cuánto se confía en la medida \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+En la literatura reciente, este tipo de estimación se integra con estrategias de navegación visual para fusionar la información procedente de la cámara con el modelo dinámico del vehículo, lo que contribuye a mantener trayectorias de seguimiento más estables y a reducir el efecto de fluctuaciones rápidas en la percepción. De este modo, el filtrado no sustituye al controlador, sino que mejora la calidad de la señal sobre la que este actúa.
 
-\vspace{0.3cm}
+\vspace{0.4cm}
 
-En el mismo ejemplo anterior, una forma sencilla de representar ambas matrices sería:
+Entre sus aportaciones más relevantes en este contexto pueden destacarse las siguientes:
+
+\begin{itemize}
+    \item \textbf{Continuidad temporal}: ayuda a mantener una estimación coherente del objetivo incluso ante pérdidas puntuales de detección.
+    \item \textbf{Fusión entre modelo y medida}: combina la información visual con la predicción dinámica del sistema para reducir la sensibilidad al ruido.
+    \item \textbf{Predicción a corto plazo}: facilita anticipar la evolución inmediata del blanco, algo especialmente útil en maniobras rápidas o agresivas.
+\end{itemize}
 
 \vspace{0.3cm}
-
-\begin{equation}
-\mathbf{Q}_k = \left[ \begin{array}{cccc}
-\sigma_x^2 & 0 & 0 & 0 \\
-0 & \sigma_y^2 & 0 & 0 \\
-0 & 0 & \sigma_{\dot{x}}^2 & 0 \\
-0 & 0 & 0 & \sigma_{\dot{y}}^2
-\end{array} \right], \quad
-\mathbf{R}_k = \left[ \begin{array}{cc}
-\sigma_{mx}^2 & 0 \\
-0 & \sigma_{my}^2
-\end{array} \right]
-\end{equation}
-
-\vspace{0.3cm}
-
-Aquí, los términos de $\mathbf{Q}_k$ recogen la incertidumbre asociada a la posición y a la velocidad del modelo, mientras que los términos de $\mathbf{R}_k$ representan el ruido de la medida en los ejes horizontal y vertical de la imagen.
-
-\vspace{0.3cm}
-
-Antes de iniciar el proceso iterativo del filtro, también es necesario fijar unas \textbf{condiciones iniciales}. En concreto, se requiere una estimación inicial del estado, denotada por $\hat{\mathbf{x}}_{0|0}$, y una estimación inicial de la incertidumbre asociada, representada por la matriz $\mathbf{P}_{0|0}$. Si se dispone de poca información inicial, la covarianza inicial suele elegirse grande; si, por el contrario, el estado inicial es relativamente conocido, esa covarianza puede fijarse con valores menores. Estas condiciones iniciales determinan el punto de partida a partir del cual el filtro comienza a refinar sus estimaciones.
-
-\vspace{0.3cm}
-
-Una vez definidos el estado, el modelo y las incertidumbres, el filtro opera en dos fases: \textbf{predicción} y \textbf{actualización}. En la fase de predicción, se calcula cuál debería ser el estado del sistema en el instante siguiente y cuál es la incertidumbre asociada a esa predicción:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\hat{\mathbf{x}}_{k|k-1} = \mathbf{F}_k \hat{\mathbf{x}}_{k-1|k-1} + \mathbf{B}_k \mathbf{u}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{P}_{k|k-1} = \mathbf{F}_k \mathbf{P}_{k-1|k-1} \mathbf{F}_k^{T} + \mathbf{Q}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-La primera ecuación proporciona la predicción del estado y la segunda actualiza la incertidumbre de dicha predicción. En esta etapa, el filtro todavía no ha incorporado la medida real del instante $k$.
-
-\vspace{0.3cm}
-
-Posteriormente, en la fase de actualización, la predicción se compara con la medida observada. La diferencia entre ambas se denomina \textbf{innovación} y se expresa como:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\tilde{\mathbf{y}}_k = \mathbf{z}_k - \mathbf{H}_k \hat{\mathbf{x}}_{k|k-1}
-\end{equation}
-
-\vspace{0.3cm}
-
-A partir de esta diferencia, se calcula la ganancia de Kalman:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{K}_k = \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} \left( \mathbf{H}_k \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} + \mathbf{R}_k \right)^{-1}
-\end{equation}
-
-\vspace{0.3cm}
-
-Esta ganancia determina cuánto peso debe darse a la medida y cuánto a la predicción. Con ella, se actualiza el estado estimado y su covarianza:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\hat{\mathbf{x}}_{k|k} = \hat{\mathbf{x}}_{k|k-1} + \mathbf{K}_k \tilde{\mathbf{y}}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{P}_{k|k} = \left( \mathbf{I} - \mathbf{K}_k \mathbf{H}_k \right) \mathbf{P}_{k|k-1}
-\end{equation}
-
-\vspace{0.3cm}
-
-La lógica del método es sencilla: si la medida es poco fiable, el filtro confía más en la predicción del modelo; si la observación es consistente, la corrección adquiere mayor peso. Como resultado, se obtiene una estimación más suave y más coherente del movimiento del objetivo, lo que resulta especialmente útil cuando existen maniobras rápidas, pequeñas oclusiones o fluctuaciones en la detección visual \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
-
 \subsection{Filtro EMA}
 
 El filtro EMA (\textit{Exponential Moving Average}), también denominado suavizado exponencial, es un método recursivo de suavizado utilizado para reducir las fluctuaciones rápidas de una señal sin necesidad de almacenar un gran número de muestras previas. Su interés principal reside en que requiere muy poca memoria y un coste computacional muy bajo, por lo que resulta especialmente adecuado para sistemas embebidos y aplicaciones de control en tiempo real \cite{industrialEma, wikipediaSuavizamientoExponencial, mciEma}.
 
 \vspace{0.3cm}
 
-Desde un punto de vista funcional, el EMA actúa como un filtro paso bajo: atenúa las variaciones de alta frecuencia asociadas al ruido y conserva la tendencia general de la señal. Por este motivo, se utiliza de forma habitual cuando se desea reducir la sensibilidad de una señal frente a pequeñas oscilaciones entre muestras consecutivas \cite{industrialEma, mciEma}.
+Desde un punto de vista funcional, el EMA actúa como un filtro paso bajo: atenúa las variaciones de alta frecuencia asociadas al ruido y conserva la tendencia general de la señal. Por este motivo, se utiliza de forma habitual cuando se desea reducir la sensibilidad de una señal frente a pequeñas oscilaciones entre muestras consecutivas.
 
 \vspace{0.3cm}
 
@@ -749,7 +563,7 @@ La formulación discreta del filtro EMA es la siguiente:
 
 \vspace{0.3cm}
 
-donde $x_k$ representa la medida actual, $\hat{x}_k$ la salida filtrada y $\hat{x}_{k-1}$ el valor filtrado del instante anterior. El parámetro $\alpha$, con $0 < \alpha \leq 1$, determina el peso relativo entre la muestra nueva y el historial previo \cite{industrialEma, mciEma}.
+donde $x_k$ representa la medida actual, $\hat{x}_k$ la salida filtrada y $\hat{x}_{k-1}$ el valor filtrado del instante anterior. El parámetro $\alpha$, con $0 < \alpha \leq 1$, determina el peso relativo entre la muestra nueva y el historial previo.
 
 \vspace{0.3cm}
 
@@ -763,7 +577,7 @@ Esta expresión también puede escribirse como:
 
 \vspace{0.3cm}
 
-Esta segunda forma resulta útil para interpretar el funcionamiento del filtro: la nueva salida se obtiene corrigiendo el valor filtrado anterior en función de la diferencia entre la medida actual y la estimación previa. Si $\alpha$ toma valores pequeños, el suavizado es mayor y la respuesta del filtro es más lenta; si $\alpha$ se aproxima a 1, la salida sigue más de cerca la medida y el efecto de suavizado disminuye \cite{industrialEma, mciEma, wikipediaSuavizamientoExponencial}.
+Esta segunda forma resulta útil para interpretar el funcionamiento del filtro: la nueva salida se obtiene corrigiendo el valor filtrado anterior en función de la diferencia entre la medida actual y la estimación previa. Si $\alpha$ toma valores pequeños, el suavizado es mayor y la respuesta del filtro es más lenta; si $\alpha$ se aproxima a 1, la salida sigue más de cerca la medida y el efecto de suavizado disminuye .
 
 \vspace{0.3cm}
 
@@ -780,12 +594,194 @@ La Figura \ref{fig:ema-suavizado} ilustra este comportamiento sobre una señal r
 
 \vspace{0.3cm}
 
-En consecuencia, el EMA constituye una técnica de suavizado sencilla, ligera y eficiente para señales discretas. Su bajo coste computacional y su formulación recursiva hacen que resulte especialmente útil en aplicaciones donde se requiere atenuar ruido de alta frecuencia sin introducir una complejidad elevada \cite{industrialEma, mciEma}.
+En consecuencia, el EMA constituye una técnica de suavizado sencilla, ligera y eficiente para señales discretas. Su bajo coste computacional y su formulación recursiva hacen que resulte especialmente útil en aplicaciones donde se requiere atenuar ruido de alta frecuencia sin introducir una complejidad elevada.
 
 \section{Stack de Software y Hardware}
-\subsection{Frameworks de Comunicación Distribuida en Robótica}
+
+La sofisticación de los sistemas robóticos modernos, especialmente en el ámbito de las aeronaves no tripuladas que operan en entornos dinámicos, exige infraestructuras de software que permitan la ejecución paralela de procesos heterogéneos. En este contexto, resulta imperativo emplear marcos de trabajo que actúen como capas de abstracción o middleware, garantizando la interoperabilidad entre los diferentes módulos de percepción, planificación y control mediante intercambios de datos deterministas y eficientes. Estas plataformas aseguran una comunicación estandarizada entre procesos, facilitando la integración de algoritmos complejos de navegación autónoma.
+\vspace{0.3cm}
+
+\subsection{Comunicación Distribuida en Robótica}
+
+\subsubsection{Data Distribution Service (DDS)}
+
+El estándar Data Distribution Service se define como un middleware orientado a datos, regulado por la Object Management Group, y diseñado específicamente para entornos donde la fiabilidad y el determinismo son requisitos de misión crítica. Su naturaleza descentralizada, basada en un modelo de publicación y suscripción, elimina la dependencia de un servidor central, lo que potencia la resiliencia del sistema ante fallos puntuales de red o de nodos. 
+
+\vspace{0.3cm}
+La característica más distintiva de esta tecnología es su capacidad para gestionar políticas de Calidad de Servicio (QoS). Estos parámetros permiten un control exhaustivo sobre la latencia, la prioridad de los mensajes y la persistencia de la información, adaptándose a las necesidades temporales estrictas de aplicaciones aeroespaciales y de vehículos autónomos. No obstante, su principal desventaja
+es su complejidad: requiere una configuración meticulosa de las políticas QoS y un conocimiento técnico avanzado, lo que puede dificultar su adopción en fases tempranas de desarrollo o en equipos con recursos limitados.
+
+\vspace{0.4cm}
+\subsubsection{Message Queuing Telemetry Transport (MQTT)}
+
+Como contraparte, el protocolo MQTT se presenta como una solución optimizada para la transferencia de mensajes en redes con ancho de banda limitado y recursos computacionales restringidos, condiciones habituales en el ecosistema del Internet de las Cosas (IoT). A diferencia de arquitecturas peer-to-peer, MQTT se apoya en un broker centralizado que gestiona el tráfico entre publicadores y suscriptores, simplificando la topología de la red.
+
+\vspace{0.4cm}
+
+Si bien este protocolo ofrece diferentes niveles de fiabilidad en la entrega de datos, su diseño original no contempla los requisitos de sincronización y baja latencia necesarios para el control de vuelo en tiempo real. Por esta razón, su aplicación en el desarrollo de UAVs suele quedar restringida a tareas complementarias de telemetría o interfaces de monitorización remota, resultando insuficiente para gobernar los lazos de control cerrados que exigen algoritmos de interceptación o seguimiento visual.
+
+\vspace{0.4cm}
+
+\subsubsection{Robot Operating System (ROS)}
+
+En el panorama actual de la robótica, ROS se ha consolidado como el ecosistema de desarrollo más versátil, proporcionando una capa de abstracción que convierte un sistema operativo convencional en un entorno robótico distribuido. Mediante el uso de nodos, topics y services, esta plataforma permite la creación de sistemas modulares donde la percepción visual y las leyes de control pueden interactuar de forma transparente.
+
+\vspace{0.4cm}
+
+El valor fundamental de este framework reside en su vasto repositorio de herramientas, que abarca desde la simulación en entornos de alta fidelidad como Gazebo hasta la visualización de estados internos y la gestión de sensores complejos. La transición hacia versiones más modernas ha permitido que el transporte de datos se apoye nativamente en el estándar DDS, unificando la flexibilidad del desarrollo modular con la robustez de las comunicaciones industriales. Para proyectos de navegación autónoma, esta arquitectura facilita la integración de nodos de gnc y proyección de imagen, permitiendo que el sistema responda a las exigencias de tiempo real impuestas por la dinámica de vuelo.
+
+
+
 \subsection{Computación Distribuida Seleccionada}
+
+La implementación del sistema de navegación autónoma para la interceptación de aeronaves no tripuladas requiere de una infraestructura de software capaz de gestionar procesos concurrentes con un alto grado de desacoplamiento. En este sentido, se ha seleccionado el paradigma de Robot Operating System (ROS) como el middleware central, integrando componentes críticos como MAVROS para la interfaz con el hardware de vuelo.
+
+\vspace{0.4cm}
+
+La decisión de emplear ROS frente a otras alternativas técnicas se sustenta en la versatilidad de su ecosistema y la modularidad de su arquitectura. Si bien soluciones como Data Distribution Service (DDS) ofrecen una gestión granular de las políticas de Calidad de Servicio (QoS) y un control estricto sobre el determinismo de la red, su implementación exige una especialización técnica que puede ralentizar las fases iniciales de prototipado. No obstante, la evolución hacia ROS 2 permite heredar las garantías de comunicación de DDS de forma subyacente, manteniendo una interfaz de programación de alto nivel que simplifica la integración de módulos complejos de percepción y control.
+
+\vspace{0.4cm}
+
+Esta arquitectura modular resulta fundamental para la naturaleza del proyecto, permitiendo que el nodo de proyección geométrica  pueda intercambiar información de forma eficiente con el bucle de control de guiado. A diferencia de protocolos como MQTT, que destacan por su ligereza en aplicaciones de telemetría y entornos de Internet de las Cosas (IoT), estos carecen de las capacidades necesarias para el control de actuadores en tiempo real y la sincronización de estados cinemáticos exigida en maniobras de persecución.
+
+\vspace{0.4cm}
+
+El ecosistema de ROS proporciona, además, una serie de bibliotecas  y herramientas de grabación de datos que agilizan el ciclo de validación experimental. Esta flexibilidad facilita el escalado del sistema, permitiendo la incorporación de nuevas capacidades de visión artificial o técnicas de filtrado estocástico sin comprometer la cohesión del diseño original.ROS se presenta como la opción más completa y robusta para
+implementar un sistema de navegación vectorial distribuido, garantizando tanto la
+eficiencia computacional como la cohesión arquitectónica del conjunto.
+
+\subsubsection{ROS como base de la arquitectura distribuida}
+
+La arquitectura distribuida desarrollada en este proyecto se articula sobre Robot Operating System (ROS), elegido por su capacidad para coordinar múltiples procesos concurrentes dentro de un esquema modular y escalable. Más que un sistema operativo en sentido estricto, ROS actúa como un middleware robótico que establece una capa de abstracción entre el software de alto nivel y el hardware. Gracias a ello, facilita la comunicación entre módulos, la gestión de nodos, la supervisión del sistema y el desarrollo integrado de aplicaciones, cualidades especialmente relevantes en un contexto de navegación autónoma.
+
+\vspace{0.4cm}
+
+La estructura fundamental de ROS se organiza en torno al concepto de nodo, que constituye la unidad de ejecución lógica e independiente dentro del ecosistema del robot. Estas entidades funcionan como procesos autónomos que pueden ser desarrollados en diversos lenguajes de programación, aportando una gran modularidad al sistema completo. La transferencia de datos entre estos módulos se gestiona mediante tópicos, que actúan como canales de comunicación asíncrona bajo un esquema de publicación y suscripción.
+
+\vspace{0.4cm}
+
+Además de los tópicos, ROS dispone de mecanismos de comunicación complementarios, entre los que destacan los servicios y las acciones. Los servicios resultan apropiados para intercambios puntuales de tipo petición--respuesta entre nodos, por ejemplo cuando se requiere consultar el estado actual del UAV o recuperar la configuración de un módulo concreto. Las acciones, en cambio, están orientadas a tareas de ejecución prolongada que necesitan retroalimentación continua, seguimiento del progreso o posibilidad de cancelación, como ocurre en el seguimiento de trayectorias con validación dinámica. Aun así, en este proyecto se ha priorizado una arquitectura basada exclusivamente en tópicos, ya que ofrece un comportamiento más adecuado para flujos de datos continuos y para las exigencias propias de la navegación y el control en tiempo real.
+
+
+
+\vspace{0.3cm}
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:logo-Ros}
+    \includegraphics[width=0.58\textwidth]{imagenes/ROS.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Robotics Operating System. Fuente: \cite{ROSLogo}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Logo de ROS}
+\end{center}
+
+\vspace{0.3cm}
+
+\subsubsection{Comandos Básicos de ROS}
+
+El manejo de la línea de comandos constituye una parte esencial del trabajo con ROS Noetic, ya que permite poner en marcha el sistema, supervisar su estado y depurar incidencias durante la integración de los distintos nodos. A lo largo del desarrollo de este proyecto se han utilizado de forma recurrente varios comandos básicos, cada uno con una función concreta dentro del ecosistema ROS:
+
+\vspace{0.3cm}
+
+\begin{itemize}
+    \item \texttt{roscore}. Inicia el maestro de ROS y los servicios de comunicación fundamentales del sistema, por lo que su ejecución es imprescindible para que el resto de nodos pueda registrarse e intercambiar información.
+
+    \item \texttt{rosrun nombre\_paquete nombre\_nodo}. Permite ejecutar directamente un nodo específico contenido en un paquete previamente compilado, algo especialmente útil durante tareas de prueba y depuración aislada.
+
+    \item \texttt{roslaunch nombre\_paquete archivo.launch}. Se emplea para arrancar varios nodos de forma coordinada mediante archivos \texttt{.launch}, lo que facilita la inicialización de configuraciones más complejas.
+
+    \item \texttt{rosnode list}. Muestra el conjunto de nodos activos registrados en el maestro, ofreciendo una visión rápida del estado del sistema en ejecución.
+
+    \item \texttt{rostopic list}. Enumera los tópicos disponibles en ese momento, permitiendo identificar los canales de comunicación activos entre nodos.
+
+    \item \texttt{rostopic echo nombre\_topico}. Hace posible visualizar en tiempo real el contenido de los mensajes publicados en un tópico determinado, lo que resulta de gran utilidad para verificar datos y detectar anomalías en la comunicación.
+
+    \item \texttt{rosparam list}. Permite consultar el servidor de parámetros de ROS y revisar las variables de configuración cargadas en el sistema.
+\end{itemize}
+
+\subsubsection{MavROS como puente entre ROS y el sistema UAV}
+
+MAVROS constituye la capa de integración que permite enlazar el ecosistema ROS con el protocolo MAVLink, ampliamente utilizado por autopilotos como PX4 y ArduPilot. Su papel dentro de la arquitectura no se limita a una simple pasarela de datos: actúa como un mecanismo de traducción entre los mensajes y servicios propios de ROS y las órdenes, estados y parámetros que entiende el controlador de vuelo. Gracias a esta intermediación, los módulos de percepción, estimación y control pueden operar sobre una interfaz homogénea sin depender directamente de los detalles internos del autopiloto.
+
+\vspace{0.3cm}
+
+Desde el punto de vista funcional, MAVROS habilita un canal bidireccional de comunicación entre los nodos desarrollados en ROS y el UAV, ya sea en simulación o sobre una plataforma real. A través de este canal es posible recibir telemetría relacionada con la posición, la velocidad, la actitud, el estado de vuelo o el modo de operación del vehículo, al tiempo que se pueden enviar consignas de movimiento, comandos de misión y ajustes sobre determinados parámetros del sistema. Esta capacidad resulta especialmente valiosa en aplicaciones de navegación autónoma, donde el lazo de control debe alimentarse continuamente con información del estado del vehículo y responder en tiempo real mediante nuevas referencias.
+
+\vspace{0.3cm}
+
+En el contexto de este proyecto, MAVROS se emplea como elemento de unión entre la lógica de navegación visual y el sistema de vuelo del UAV. Por un lado, permite que los algoritmos de seguimiento reciban de forma estructurada los datos necesarios para estimar el comportamiento del vehículo. Por otro, hace posible que las trayectorias o correcciones generadas por el sistema propuesto se transmitan nuevamente al autopiloto utilizando una interfaz estandarizada. Esta separación entre la lógica de alto nivel y el hardware concreto aporta una ventaja importante: favorece la reutilización del software y reduce la dependencia de una plataforma aérea específica.
+
+\vspace{0.3cm}
+
+Otro aspecto relevante de MAVROS es su integración con el sistema de transformaciones espaciales de ROS, gestionado mediante \texttt{tf}. Esto facilita la coordinación entre distintos marcos de referencia, como \texttt{map}, \texttt{odom} o \texttt{base\_link}, algo imprescindible para interpretar correctamente la información de navegación y relacionar las observaciones visuales con el movimiento real del vehículo. No obstante, esta misma gestión de referencias puede convertirse en una fuente de complejidad cuando se trabaja con varios UAV de manera simultánea. En etapas tempranas del desarrollo, uno de los retos principales consistió precisamente en evitar interferencias y superposiciones entre los datos publicados por ambos sistemas, especialmente cuando compartían marcos de referencia con nombres comunes dentro del entorno de simulación.
+
+\vspace{0.3cm}
+
+En conjunto, MAVROS no solo simplifica la comunicación con el autopiloto, sino que también proporciona una base robusta para desacoplar percepción, control y ejecución de vuelo dentro de una arquitectura distribuida. Por ello, se convierte en una herramienta esencial para trasladar la lógica desarrollada en ROS a un sistema aéreo operativo, manteniendo al mismo tiempo modularidad, escalabilidad y portabilidad entre escenarios simulados y reales.
+
+\subsubsection{Defensa de la Elección}
+
+La arquitectura distribuida seleccionada presenta una serie de ventajas que justifican su elección dentro de este proyecto:
+
+\vspace{0.15cm}
+
+\begin{itemize}
+    \item \textbf{Modularidad.} La división del sistema en nodos independientes facilita la implementación progresiva de cada bloque, así como su mantenimiento y depuración.
+
+    \item \textbf{Escalabilidad.} La arquitectura permite incorporar nuevos sensores, módulos de control o incluso múltiples UAV sin alterar de forma significativa el funcionamiento general del sistema.
+
+    \item \textbf{Portabilidad.} El uso de estándares consolidados como ROS y MAVLink hace posible reutilizar la lógica desarrollada tanto en simulación como en plataformas reales con cambios mínimos.
+
+    \item \textbf{Flexibilidad.} La integración de MAVROS con el ecosistema ROS permite trabajar con diferentes controladores de vuelo y configuraciones de vehículo de manera homogénea, tanto en pruebas simuladas como en escenarios reales.
+
+    \item \textbf{Visualización integrada.} Herramientas como RViz permiten observar el estado del sistema y su evolución en tiempo real, lo que simplifica la validación del algoritmo y mejora la interacción entre el operador y la plataforma.
+\end{itemize}
+
+En conclusión, estas ventajas permiten afirmar que la arquitectura adoptada no solo responde de manera adecuada a las exigencias técnicas del proyecto, sino que también favorece un desarrollo más ordenado, comprensible y sostenible en el tiempo. La combinación de ROS, MAVROS y herramientas de supervisión como RViz aporta un entorno de trabajo coherente para diseñar, observar y validar el comportamiento del sistema, lo que refuerza la idoneidad de esta elección tanto en simulación como en futuras aplicaciones sobre plataformas reales. Asimismo, esta arquitectura deja preparado el sistema para futuras extensiones, entre ellas la integración de sensores más avanzados, nuevos algoritmos de percepción y estrategias de cooperación entre múltiples UAV en entornos distribuidos.
+
+
+
 \subsection{Simulación}
+
+La simulación ocupa un papel central en el desarrollo de sistemas robóticos autónomos, especialmente cuando se trabaja con vehículos aéreos no tripulados. Antes de trasladar un algoritmo a una plataforma física, resulta necesario disponer de un entorno controlado que permita estudiar con rigor el comportamiento dinámico del vehículo, la estabilidad del controlador y la respuesta del sistema ante perturbaciones o cambios en las condiciones de operación. En este sentido, el entorno simulado constituye una fase intermedia esencial entre el diseño teórico y la validación sobre hardware real.
+
+\vspace{0.3cm}
+
+Los simuladores tridimensionales ofrecen, además, la posibilidad de reproducir con suficiente realismo diversos elementos del entorno físico, como la gravedad, las colisiones, la respuesta cinemática y ciertas aproximaciones de la dinámica aerodinámica, junto con la emulación de sensores virtuales. Esto permite repetir ensayos en condiciones equivalentes, ajustar parámetros de forma iterativa y someter la solución a un proceso de prueba más amplio, seguro y económicamente asumible. Gracias a ello, se reducen de manera notable los riesgos sobre la plataforma física y se acelera la depuración del sistema antes de su despliegue en escenarios reales.
+
+
+
+\subsubsection{AirSim}
+
+AirSim es un simulador concebido específicamente para vehículos autónomos, desarrollado por Microsoft sobre el motor gráfico Unreal Engine. Entre sus principales fortalezas destaca la elevada calidad visual de los escenarios que genera, así como la posibilidad de emular sensores habituales en plataformas aéreas, como cámaras RGB, LIDAR, IMU o GPS. Por ello, suele considerarse una alternativa especialmente interesante en trabajos centrados en visión por computador, aprendizaje por refuerzo o navegación guiada principalmente por percepción.
+
+\vspace{0.3cm}
+
+No obstante, en el marco de este proyecto presenta algunas limitaciones relevantes. Aunque puede conectarse con ROS, su integración no resulta tan directa ni tan madura como la de otras plataformas más orientadas a la robótica experimental, y con frecuencia requiere componentes adicionales para comunicarse con fluidez con autopilotos como PX4 o ArduPilot. A ello se suma la exigencia computacional asociada al uso de Unreal Engine, que puede dificultar la ejecución simultánea de varios UAV y hacer menos ágil el proceso de prueba.
+
+\subsubsection{Webots}
+
+Webots, desarrollado por Cyberbotics, constituye una solución de código abierto ampliamente utilizada en docencia e investigación. Ofrece una interfaz accesible, compatibilidad con distintos lenguajes de programación y soporte para una variedad amplia de sensores y actuadores. Además, dispone de integración con ROS, especialmente en entornos vinculados con ROS 2, lo que lo convierte en una plataforma versátil para numerosas tareas de robótica general.
+
+\vspace{0.3cm}
+
+Sin embargo, su idoneidad disminuye cuando se pretende reproducir con mayor fidelidad el comportamiento de un sistema UAV completo gobernado por autopilotos reales. La conexión con plataformas como PX4 o ArduPilot no alcanza el mismo grado de solidez que en otras alternativas, y su motor físico, aun siendo suficiente para muchos contextos, no siempre proporciona la precisión dinámica necesaria para analizar maniobras aéreas exigentes, control fino de trayectoria o escenarios multivehículo con un nivel más alto de realismo.
+
+\subsubsection{Gazebo}
+
+Gazebo se ha consolidado como uno de los simuladores más empleados en robótica por su equilibrio entre realismo físico, flexibilidad y facilidad de integración con el ecosistema ROS. Su arquitectura basada en plugins, la posibilidad de construir entornos modificables y su compatibilidad con múltiples sensores y modelos hacen de esta plataforma una opción especialmente adecuada para ensayar algoritmos de navegación, percepción y control en condiciones reproducibles.
+
+\vspace{0.3cm}
+
+En proyectos centrados en UAV, esta combinación de fidelidad e interoperabilidad resulta especialmente valiosa, ya que permite conectar de forma natural los nodos de control con los modelos del vehículo, automatizar experimentos y reproducir escenarios con varios agentes sin perder coherencia dentro de la arquitectura distribuida adoptada.
+
 \subsection{Simulador Seleccionado}
-\subsection{Representación Gráfica}
+
+Atendiendo a las necesidades del proyecto, Gazebo ha sido el simulador seleccionado para el desarrollo y la validación del sistema de navegación propuesto. Esta elección responde a su amplia implantación en el ámbito de la robótica y, en particular, a su buena sintonía con infraestructuras basadas en ROS. Su motor físico, su capacidad de personalización y la integración directa mediante paquetes como \texttt{gazebo\_ros} y \texttt{gazebo\_plugins} lo convierten en una herramienta especialmente adecuada para construir entornos de prueba coherentes con la arquitectura distribuida empleada en este trabajo.
+
+\vspace{0.3cm}
+
+Uno de los aspectos más relevantes de esta plataforma ha sido su integración fluida con MAVROS, lo que permite enlazar la simulación con un autopiloto virtual basado en PX4 o ArduPilot a través del protocolo MAVLink. De este modo, las consignas generadas por los nodos de control se envían al UAV virtual como si se tratara de un dron real, mientras que la telemetría producida por el autopiloto se redistribuye al resto de módulos ROS manteniendo la coherencia estructural del sistema. Esta continuidad entre percepción, control y simulación ha resultado especialmente valiosa para validar el comportamiento global de la arquitectura sin abandonar un entorno seguro y controlado.
+
+\vspace{0.3cm}
+
+En la práctica, Gazebo ha desempeñado un papel fundamental durante las fases de diseño, prueba y ajuste del sistema, ya que ha permitido analizar la respuesta del UAV ante cambios de trayectoria, maniobras de seguimiento y variaciones del entorno de forma repetible y sin riesgo para la plataforma física. Aun así, conviene recordar que la simulación no elimina por completo el denominado \textit{sim2real gap}, es decir, las diferencias inevitables entre el entorno virtual y el comportamiento real del vehículo. Factores como las latencias, el ruido sensorial o ciertas dinámicas no modeladas obligan a interpretar la simulación como una etapa crítica de validación previa, pero no como un sustituto definitivo de las pruebas experimentales sobre hardware real.
 
