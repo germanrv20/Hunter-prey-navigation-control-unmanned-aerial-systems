@@ -17,6 +17,319 @@
 \subsection{Eleccion de modelo de Yolo}
 \subsection{USo Yolo}
 \subsection{Uso de Filtro de Kalman y EMA}
+\section{Geometría Proyectiva}
+
+\vspace{0.3cm}
+El modelo de cámara estenopeica (\textit{pinhole camera model}) idealiza la formación de la imagen suponiendo que todos los rayos de luz atraviesan un único punto, denominado centro óptico o centro de proyección, antes de alcanzar el plano imagen. Esta simplificación elimina el comportamiento complejo de las lentes reales y permite describir la proyección mediante relaciones geométricas limpias y fácilmente interpretables \cite{uvaPinholeCamera, bergamasco2019pinhole}.
+
+\vspace{0.3cm}
+
+En una cámara física, la imagen se forma invertida sobre el sensor. No obstante, en visión por computador suele emplearse un plano imagen virtual situado delante del centro óptico para evitar inversiones de signo y hacer más intuitiva la interpretación matemática del modelo. Esta convención no altera la geometría del problema, pero simplifica el análisis de la proyección y la definición de los errores visuales \cite{uvaPinholeCamera, CameraModels}.
+
+\vspace{0.3cm}
+
+Si un punto del entorno se expresa en el sistema de referencia de la cámara como $P_c = (X_c, Y_c, Z_c)$, su proyección ideal sobre el plano imagen métrico viene dada por:
+
+\vspace{0.3cm}
+
+\begin{equation}
+x = f \frac{X_c}{Z_c}, \quad y = f \frac{Y_c}{Z_c}
+\end{equation}
+
+\vspace{0.3cm}
+
+En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ es su profundidad o distancia a lo largo del eje de visión, $f$ es la distancia focal y $(x, y)$ son las coordenadas proyectadas sobre el plano imagen ideal. La ecuación pone de manifiesto el comportamiento esencial de la perspectiva: cuanto mayor es $Z_c$, menor es la proyección del objeto en la imagen, haciendo que los objetos lejanos aparecen más pequeños y los cercanos ocupan más píxeles \cite{bergamasco2019pinhole, CameraModels}.
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:ibvs-esquema-metodologia}
+\includegraphics[width=0.65\textwidth]{imagenes/pinholeCameramodel2.jpeg}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Esquema simplificado del modelo de cámara estenopeica. Fuente: \cite{opencvCalib3d}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del modelo de cámara estenopeica}
+\end{center}
+
+\vspace{0.3cm}
+
+\subsection{Fundamentos de la Geometría Proyectiva}
+
+Para trabajar de forma práctica con imágenes digitales, la proyección anterior se expresa normalmente en coordenadas normalizadas y, posteriormente, en coordenadas de píxel. Las coordenadas normalizadas vienen dadas por:
+
+\vspace{0.3cm}
+
+\begin{equation}
+x_n = \frac{X_c}{Z_c}, \quad y_n = \frac{Y_c}{Z_c}
+\end{equation}
+
+\vspace{0.3cm}
+
+Estas variables recogen la parte puramente proyectiva del problema: dependen de la dirección del punto respecto a la cámara, pero no del tamaño físico del sensor. A partir de ellas, el paso a píxeles se modela como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+u = f_x x_n + c_x, \quad v = f_y y_n + c_y
+\end{equation}
+
+\vspace{0.3cm}
+
+Aquí, $f_x$ y $f_y$ son las distancias focales expresadas en píxeles en las direcciones horizontal y vertical, mientras que $c_x$ y $c_y$ definen el punto principal, es decir, la proyección del eje óptico sobre la imagen. En una cámara ideal, este punto suele estar cerca del centro del sensor, aunque en la práctica puede aparecer ligeramente desplazado por el montaje o la calibración \cite{CameraModels, opencvCalib3d}.
+
+\vspace{0.3cm}
+
+La formulación completa en coordenadas homogéneas se resume mediante la ecuación:
+
+\begin{equation}
+s \left[\begin{array}{c}
+u \\ v \\ 1\end{array}\right] = K \cdot [R|t] \cdot \left[\begin{array}{c}X_w \\ Y_w \\ Z_w \\ 1\end{array}\right]
+\end{equation}
+
+\vspace{0.3cm}
+
+En esta relación, $(X_w, Y_w, Z_w)$ son las coordenadas del punto en el sistema de referencia del mundo, $[R|t]$ describe la transformación extrínseca que lleva ese punto al sistema de referencia de la cámara, $K$ es la matriz de parámetros intrínsecos y $s$ es un factor de escala propio de las coordenadas homogéneas. La matriz intrínseca se suele escribir como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+K = \left[\begin{array}{ccc}
+f_x & \gamma & c_x \\
+0 & f_y & c_y \\
+0 & 0 & 1
+\end{array}\right]
+\end{equation}
+
+\vspace{0.3cm}
+
+Cada término tiene una interpretación física clara: $f_x$ y $f_y$ convierten coordenadas geométricas en coordenadas de píxel, $c_x$ y $c_y$ fijan el punto principal y $\gamma$ representa el sesgo o \textit{skew} entre ejes de píxel, normalmente nulo o despreciable en cámaras modernas. Esta descomposición es importante porque separa dos preguntas distintas: dónde está la cámara respecto al mundo (parámetros extrínsecos) y cómo proyecta la cámara lo que ve (parámetros intrínsecos) \cite{CameraModels, uvaPinholeCamera}.
+
+\vspace{0.3cm}
+
+\subsection{Parámetros intrínsecos, FOV y distorsión}
+
+\vspace{0.3cm}
+
+Otro concepto fundamental es el campo de visión o \textit{Field of View} (FOV), que puede entenderse como la amplitud angular de la escena que la cámara es capaz de cubrir. Si $d_x$ y $d_y$ representan el tamaño del sensor en horizontal y vertical, entonces el FOV puede aproximarse mediante:
+
+\vspace{0.3cm}
+
+\begin{equation}
+FOV_x = 2 \arctan \left( \frac{d_x}{2f} \right), \quad FOV_y = 2 \arctan \left( \frac{d_y}{2f} \right)
+\end{equation}
+
+\vspace{0.3cm}
+
+Estas expresiones pueden interpretarse de forma sencilla. Para un mismo sensor, una distancia focal pequeña genera un FOV amplio: la cámara ve una porción mayor de la escena, pero cada objeto ocupa menos píxeles. En cambio, una distancia focal grande produce un FOV más estrecho: la cámara cubre menos escena, aunque el objetivo aparece con mayor tamaño aparente en la imagen. En tareas de seguimiento, este comportamiento introduce un compromiso claro entre cobertura y detalle: un FOV amplio ayuda a no perder el blanco durante maniobras bruscas, mientras que un FOV estrecho permite medir con más precisión sus desplazamientos cuando se encuentra lejos \cite{bergamasco2019pinhole, CameraModels}.
+
+\vspace{0.3cm}
+
+Hasta aquí se ha descrito una cámara ideal. Sin embargo, una cámara real no proyecta la escena de manera perfectamente geométrica, porque la lente introduce pequeñas deformaciones. Las más relevantes en visión por computador son la distorsión radial y la distorsión tangencial. La distorsión radial depende sobre todo de la distancia al centro de la imagen: cuanto más se aleja un punto de esa zona central, mayor puede ser su desplazamiento aparente, lo que hace que las rectas se curven cerca de los bordes. La distorsión tangencial, por su parte, aparece cuando la lente y el sensor no están perfectamente alineados y produce desplazamientos asimétricos de los puntos observados \cite{opencvCalib3d, uvaPinholeCamera}.
+
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:Camera-distorsion}
+    \includegraphics[width=0.85\textwidth]{imagenes/distosionCamera.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Imágenes de una pantalla de objeto rectangular mostradas con (a) ninguna distorsión; (b) distorsión radial; (c) distorsión tangencial.,  \cite{ImgDistorsion}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} sDistorsion Camera pinhole}
+ \end{center}
+
+\vspace{0.3cm}
+
+En coordenadas normalizadas, una forma habitual de modelar esta distorsión es la siguiente:
+
+\vspace{0.3cm}
+
+\begin{equation}
+r^2 = x_n^2 + y_n^2
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+x_d = x_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + 2 p_1 x_n y_n + p_2 \left(r^2 + 2 x_n^2\right)
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+y_d = y_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + p_1 \left(r^2 + 2 y_n^2\right) + 2 p_2 x_n y_n
+\end{equation}
+
+\vspace{0.3cm}
+
+
+En estas ecuaciones, $r$ mide la distancia del punto al centro de la imagen normalizada; los coeficientes $k_1$, $k_2$ y $k_3$ describen la parte radial de la deformación, mientras que $p_1$ y $p_2$ describen la parte tangencial. Los puntos $(x_d, y_d)$ representan, por tanto, la posición finalmente observada tras el efecto de la lente. La consecuencia práctica es directa: una misma distancia física en la escena no siempre se traduce en la misma distancia en píxeles si la medida se toma en regiones distintas de la imagen \cite{opencvCalib3d}.
+
+\vspace{0.3cm}
+
+Desde el punto de vista del control, la distorsión introduce una dispersión en la medida visual: un mismo movimiento real puede producir errores distintos según la zona de la imagen en la que aparezca el objetivo. Por ello, para alimentar al controlador PID conviene trabajar con puntos sin distorsión o con coordenadas normalizadas obtenidas tras calibrar la cámara \cite{opencvCalib3d, CameraModels}.
+
+\vspace{0.3cm}
+
+En este trabajo, corregir esos puntos permite estimar mejor las distancias aparentes y generar una señal de error más estable para el lazo de control. Esta idea enlaza con la sección siguiente, dedicada a cómo el controlador PID transforma ese error visual en comandos de movimiento del UAV cazador.
+
+\vspace{0.3cm}
+
+\section{Filtro de Kalman}
+
+
+El filtro de Kalman es un método de estimación recursiva empleado para obtener una aproximación del estado de un sistema dinámico cuando las medidas disponibles contienen ruido. Su utilidad, en este trabajo, reside en que permite combinar la información procedente del modelo con la medida visual del objetivo, generando una estimación más estable y más útil para el controlador PID \cite{kalman1960new, kalmanfilterNetES, wikipediaFiltroKalman}.
+
+\vspace{0.3cm}
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:Filtro-kalman}
+    \includegraphics[width=1\textwidth]{imagenes/KalmanYolo2.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.}Ejemplo uso de Filtro de Kalman. (Elaboración propia) }
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Ejemplo uso del Filtro de Kalman en dron real , en modo predición (Elaboración propia)}
+\end{center}
+
+\vspace{0.3cm}
+
+En primer lugar, conviene aclarar qué se entiende por \textbf{vector de estado}. El vector de estado es el conjunto de variables que describen la situación del sistema en un instante dado. En un problema de seguimiento visual, este vector puede incluir, por ejemplo, la posición del objetivo en la imagen y su velocidad aparente. Una forma podría ser:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{x}_k = \left[ \begin{array}{cccc} x_k & y_k & \dot{x}_k & \dot{y}_k \end{array} \right]^{T}
+\end{equation}
+
+\vspace{0.3cm}
+
+En este caso, $x_k$ e $y_k$ representan la posición del objetivo en el plano imagen, mientras que $\dot{x}_k$ y $\dot{y}_k$ representan su velocidad aparente. A partir de este vector, el modelo describe tanto la evolución temporal del sistema como la relación entre el estado interno y la medida observada \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+
+\vspace{0.3cm}
+
+El sistema dinámico lineal discreto puede escribirse mediante las ecuaciones:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{x}_k = \mathbf{F}_k \mathbf{x}_{k-1} + \mathbf{B}_k \mathbf{u}_k + \mathbf{w}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{z}_k = \mathbf{H}_k \mathbf{x}_k + \mathbf{v}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+En estas expresiones, la matriz $\mathbf{F}_k$ corresponde a la \textbf{matriz de transición de estado}, encargada de modelar la evolución del sistema entre dos instantes consecutivos. Por su parte, la matriz $\mathbf{H}_k$ corresponde a la \textbf{matriz de observación}, cuya función es relacionar el vector de estado con la magnitud efectivamente medida por el sensor. En términos conceptuales, $\mathbf{F}_k$ describe la dinámica del sistema, mientras que $\mathbf{H}_k$ determina qué componentes de dicho estado son accesibles a través de la cámara o del sensor empleado \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+
+\vspace{0.3cm}
+
+Por ejemplo, si se adopta un modelo bidimensional de velocidad constante con periodo de muestreo $\Delta t$, y la cámara mide únicamente la posición del objetivo, unas elecciones habituales son:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{F}_k = \left[ \begin{array}{cccc}
+1 & 0 & \Delta t & 0 \\
+0 & 1 & 0 & \Delta t \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
+\end{array} \right], \quad
+\mathbf{H}_k = \left[ \begin{array}{cccc}
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0
+\end{array} \right]
+\end{equation}
+
+\vspace{0.3cm}
+
+Otro aspecto fundamental es el papel de las matrices de covarianza $\mathbf{Q}_k$ y $\mathbf{R}_k$. La matriz $\mathbf{Q}_k$ representa la incertidumbre asociada al modelo dinámico, es decir, cuánto puede desviarse la evolución real del sistema respecto a la predicción teórica. La matriz $\mathbf{R}_k$, en cambio, representa la incertidumbre de la medida, es decir, el nivel de ruido presente en la observación del sensor. En términos prácticos, $\mathbf{Q}_k$ expresa cuánto se confía en el modelo y $\mathbf{R}_k$ cuánto se confía en la medida \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+
+\vspace{0.3cm}
+
+En el mismo ejemplo anterior, una forma sencilla de representar ambas matrices sería:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{Q}_k = \left[ \begin{array}{cccc}
+\sigma_x^2 & 0 & 0 & 0 \\
+0 & \sigma_y^2 & 0 & 0 \\
+0 & 0 & \sigma_{\dot{x}}^2 & 0 \\
+0 & 0 & 0 & \sigma_{\dot{y}}^2
+\end{array} \right], \quad
+\mathbf{R}_k = \left[ \begin{array}{cc}
+\sigma_{mx}^2 & 0 \\
+0 & \sigma_{my}^2
+\end{array} \right]
+\end{equation}
+
+\vspace{0.3cm}
+
+Aquí, los términos de $\mathbf{Q}_k$ recogen la incertidumbre asociada a la posición y a la velocidad del modelo, mientras que los términos de $\mathbf{R}_k$ representan el ruido de la medida en los ejes horizontal y vertical de la imagen.
+
+\vspace{0.3cm}
+
+Antes de iniciar el proceso iterativo del filtro, también es necesario fijar unas \textbf{condiciones iniciales}. En concreto, se requiere una estimación inicial del estado, denotada por $\hat{\mathbf{x}}_{0|0}$, y una estimación inicial de la incertidumbre asociada, representada por la matriz $\mathbf{P}_{0|0}$. Si se dispone de poca información inicial, la covarianza inicial suele elegirse grande; si, por el contrario, el estado inicial es relativamente conocido, esa covarianza puede fijarse con valores menores. Estas condiciones iniciales determinan el punto de partida a partir del cual el filtro comienza a refinar sus estimaciones.
+
+\vspace{0.3cm}
+
+Una vez definidos el estado, el modelo y las incertidumbres, el filtro opera en dos fases: \textbf{predicción} y \textbf{actualización}. En la fase de predicción, se calcula cuál debería ser el estado del sistema en el instante siguiente y cuál es la incertidumbre asociada a esa predicción:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\hat{\mathbf{x}}_{k|k-1} = \mathbf{F}_k \hat{\mathbf{x}}_{k-1|k-1} + \mathbf{B}_k \mathbf{u}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{P}_{k|k-1} = \mathbf{F}_k \mathbf{P}_{k-1|k-1} \mathbf{F}_k^{T} + \mathbf{Q}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+La primera ecuación proporciona la predicción del estado y la segunda actualiza la incertidumbre de dicha predicción. En esta etapa, el filtro todavía no ha incorporado la medida real del instante $k$.
+
+\vspace{0.3cm}
+
+Posteriormente, en la fase de actualización, la predicción se compara con la medida observada. La diferencia entre ambas se denomina \textbf{innovación} y se expresa como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\tilde{\mathbf{y}}_k = \mathbf{z}_k - \mathbf{H}_k \hat{\mathbf{x}}_{k|k-1}
+\end{equation}
+
+\vspace{0.3cm}
+
+A partir de esta diferencia, se calcula la ganancia de Kalman:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{K}_k = \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} \left( \mathbf{H}_k \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} + \mathbf{R}_k \right)^{-1}
+\end{equation}
+
+\vspace{0.3cm}
+
+Esta ganancia determina cuánto peso debe darse a la medida y cuánto a la predicción. Con ella, se actualiza el estado estimado y su covarianza:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\hat{\mathbf{x}}_{k|k} = \hat{\mathbf{x}}_{k|k-1} + \mathbf{K}_k \tilde{\mathbf{y}}_k
+\end{equation}
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{P}_{k|k} = \left( \mathbf{I} - \mathbf{K}_k \mathbf{H}_k \right) \mathbf{P}_{k|k-1}
+\end{equation}
+
+\vspace{0.3cm}
+
+La lógica del método es sencilla: si la medida es poco fiable, el filtro confía más en la predicción del modelo; si la observación es consistente, la corrección adquiere mayor peso. Como resultado, se obtiene una estimación más suave y más coherente del movimiento del objetivo, lo que resulta especialmente útil cuando existen maniobras rápidas, pequeñas oclusiones o fluctuaciones en la detección visual \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+
+
+
+
 
 \section{Compensacion de Actitud y proyecccion}
 \section{Control de Seguimiento}

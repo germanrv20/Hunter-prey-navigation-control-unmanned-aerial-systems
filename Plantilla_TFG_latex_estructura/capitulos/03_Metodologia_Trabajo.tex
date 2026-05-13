@@ -1,5 +1,31 @@
 \clearpage
+% Definición de colores estilo "VS Code" o profesional
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
+% Configuración personalizada del estilo de los códigos
+\lstset{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    frame=lines, % Línea arriba y abajo del código
+    rulecolor=\color{black}
+}
 \refstepcounter{chapter}
 \chapter*{Metodología de Trabajo}
 
@@ -9,321 +35,409 @@
 
 
 \section{Configuración de ROS}
+En esta sección se describe el proceso seguido para configurar ROS Noetic \cite{Rosnoetic} como base del entorno de desarrollo del proyecto. Para ello, se detalla la creación del espacio de trabajo, la instalación de los paquetes necesarios y el uso de los comandos básicos que permiten poner en marcha, supervisar y depurar los distintos nodos del sistema.
+
+\subsection{Creación de un Espacio de Trabajo}
+Para el desarrollo e integración de paquetes propios en ROS Noetic, resulta necesario disponer de un espacio de trabajo organizado, compatible con la estructura habitual de ROS y preparado para compilar los distintos módulos del proyecto. En este caso, se ha utilizado \texttt{catkin tools} en lugar del método tradicional basado en \texttt{catkin\_make}, ya que ofrece una gestión más flexible del proceso de compilación y facilita el control del entorno de desarrollo.
+
+\begin{enumerate}
+    \item \textbf{Crear el directorio:} En primer lugar, se crea el directorio principal del espacio de trabajo, denominado \texttt{drone\_ws}, junto con la carpeta \texttt{src}, destinada a almacenar el código fuente de los paquetes desarrollados o incorporados al sistema. Posteriormente, se inicializa el espacio de trabajo mediante las siguientes instrucciones:
+
+\begin{verbatim}
+mkdir -p ~/drone_ws/src
+cd ~/drone_ws
+catkin init
+\end{verbatim}
+
+    Con este procedimiento se establece la estructura básica del entorno de desarrollo y se deja preparada para su uso con \texttt{catkin tools}.
+
+    \item \textbf{Inicializar el espacio de trabajo:} Una vez creada e inicializada la estructura del workspace, se realiza una primera compilación con el objetivo de generar las carpetas \texttt{build} y \texttt{devel}, necesarias para construir los paquetes y configurar correctamente sus dependencias. Para ello, se emplea el siguiente comando:
+
+\begin{verbatim}
+catkin build
+\end{verbatim}
+
+    Durante esta etapa se generan los archivos asociados al proceso de compilación y se prepara el entorno que permitirá ejecutar los nodos, librerías y recursos vinculados al proyecto.
+
+    \item \textbf{Configurar el espacio de trabajo en el entorno:} Finalmente, para que ROS pueda localizar automáticamente los paquetes incluidos en \texttt{drone\_ws} al abrir una nueva terminal, se añade el archivo de configuración del workspace al archivo \texttt{.bashrc} del usuario. Esta configuración se realiza mediante:
+
+\begin{verbatim}
+echo "source ~/drone_ws/devel/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+\end{verbatim}
+
+    De este modo, cada nueva sesión de terminal cargará el entorno de ROS Noetic junto con los paquetes del espacio de trabajo \texttt{drone\_ws}, evitando tener que ejecutar manualmente el comando \texttt{source} en cada ocasión.
+
+\end{enumerate}
+
+
+
+\subsection{Instalación de Paquetes}
+
+
+La correcta ejecución del sistema de navegación y seguimiento visual exige la integración de diversas bibliotecas especializadas que extienden las funcionalidades base de ROS Noetic. Para este proyecto, el entorno requiere herramientas que gestionen desde la comunicación con el hardware de vuelo hasta el procesamiento avanzado de imágenes y uso de matrices de transformación.
+
+
+\begin{enumerate}
+
+
+\item \textbf{Instalar MavROS y MavLink:}
+La instalación de \textit{MavROS} y \textit{MAVLink} permite comunicar \textit{ROS} con autopilotos como \textit{ArduPilot} o \textit{PX4}. Con ello se habilita el intercambio de telemetría, órdenes de navegación y datos de sensores dentro del sistema. El procedimiento se apoya en \texttt{wstool}, \texttt{rosdep} y \texttt{catkin build}, siguiendo la guía de \textit{Intelligent Quads} \cite{iqtutorialsros2004}:
+
+\begin{verbatim}
+cd ~/drone_ws
+wstool init ~/drone_ws/src
+
+rosinstall_generator --upstream mavros | tee /tmp/mavros.rosinstall
+rosinstall_generator mavlink | tee -a /tmp/mavros.rosinstall
+wstool merge -t src /tmp/mavros.rosinstall
+wstool update -t src
+rosdep install --from-paths src --ignore-src --rosdistro `echo $ROS_DISTRO` -y
+
+catkin build
+\end{verbatim}
+
+
+\item \textbf{Clonar el paquete \textit{iq\_sim} de \textit{ROS}:}
+El paquete \textit{iq\_sim} \cite{iqsim}, desarrollado por \textit{Intelligent Quads}, proporciona modelos y escenarios de simulación para UAVs en \textit{ROS} y \textit{Gazebo}. En este proyecto se utiliza como base para generar un entorno de prueba controlado, incluyendo datos de cámara simulada mediante mensajes \verb|sensor_msgs/Image|. Su descarga se realiza con los siguientes comandos:
+\begin{verbatim}
+cd ~/drone_ws/src
+git clone https://github.com/Intelligent-Quads/iq_sim.git
+\end{verbatim}
+
+\item \textbf{Instalar \textit{ArduPilot} y \textit{MAVProxy}:}
+\textit{ArduPilot} se emplea como plataforma de control de vuelo para reproducir en simulación el comportamiento de un autopiloto real y representar esquemas de navegación convencionales. Por su parte, \textit{MAVProxy} funciona como estación de control en terminal y permite interactuar con el UAV mediante \textit{MAVLink}. La instalación se realiza con las siguientes instrucciones:
+
+\begin{verbatim}
+cd ~
+sudo apt install git
+git clone https://github.com/ArduPilot/ardupilot.git
+cd ardupilot
+Tools/environment_install/install-prereqs-ubuntu.sh -y
+
+. ~/.profile
+
+sudo pip install future pymavlink MAVProxy
+
+export PATH=$PATH:$HOME/ardupilot/Tools/autotest
+export PATH=/usr/lib/ccache:$PATH
+. ~/.bashrc
+\end{verbatim}
+
+
+
+\item \textbf{Instalar el plugin de \textit{Gazebo} para \textit{APM}:}
+El plugin \textit{ardupilot\_gazebo} permite enlazar \textit{Gazebo} con \textit{ArduPilot} para simular el vuelo del UAV con mayor realismo físico. Esta integración facilita el intercambio de datos entre el simulador y el autopiloto durante las pruebas. Su instalación se basa en la guía de \textit{Intelligent Quads} \cite{iqtutorialsgazeboapm}:
+
+\begin{verbatim}
+cd ~
+git clone https://github.com/khancyr/ardupilot_gazebo.git
+cd ardupilot_gazebo
+mkdir -p build
+cd build
+cmake ..
+make -j4
+sudo make install
+
+echo 'source "$(pkg-config --variable=prefix gazebo)/share/gazebo/setup.sh"' >> ~/.bashrc
+echo 'export GAZEBO_MODEL_PATH=~/ardupilot_gazebo/models' >> ~/.bashrc
+. ~/.bashrc
+\end{verbatim}
+
+
+\item \textbf{Instalación de herramientas para el procesamiento de imagen y visión:}
+Para tratar las imágenes obtenidas en la simulación se incorporan \textit{cv\_bridge}, \textit{vision\_opencv} y \textit{OpenCV}. Estas herramientas permiten convertir mensajes de \textit{ROS} a estructuras de imagen procesables y aplicar operaciones básicas de visión artificial.
+
+\begin{verbatim}
+sudo apt-get install ros-noetic-cv-bridge ros-noetic-vision-opencv libopencv-dev
+\end{verbatim}
+
+
+\item \textbf{Instalación de librerías para cálculo matricial y álgebra lineal:}
+Para las operaciones matemáticas del sistema se instala \textit{Eigen}, una biblioteca ligera y eficiente para trabajar con matrices, vectores y transformaciones geométricas.
+
+\begin{verbatim}
+sudo apt-get install libeigen-dev
+\end{verbatim}
+
+\end{enumerate}
+
+
+Siguiendo estos pasos se obtiene un workspace provisto con todos los paquetes
+necesarios para el desarrollo satisfactorio del proyecto.
+
 \section{Configuración y Ejecución de la Simulación en
 Gazebo}
-\section{Configuración del Segundo UAV en Simulación}
+En esta sección se presenta el procedimiento seguido para preparar y ejecutar la simulación de los UAVs mediante \textit{Gazebo}. Este simulador físico permite representar entornos de prueba realistas e interactuar con nodos de \textit{ROS}, ofreciendo un marco seguro y repetible para evaluar algoritmos de navegación, analizar la respuesta dinámica del vehículo y comprobar la robustez del sistema ante distintas condiciones de operación.
+
+\subsection{Modelo del Vehículo Aéreo y Configuración del Entorno}
+La simulación se construye a partir del paquete \textit{iq\_sim} \cite{iqsim}, desarrollado por \textit{Intelligent Quads}, ya que proporciona modelos de UAVs, sensores virtuales y mundos de prueba preparados para trabajar con \textit{ROS} y \textit{Gazebo}. El modelo empleado recoge los elementos necesarios para representar el comportamiento del dron dentro del simulador:
+
+\begin{itemize}
+    \item \textbf{Estructura física:} define la geometría, masa, enlaces y articulaciones del vehículo, permitiendo reproducir su respuesta dinámica durante el vuelo.
+    \item \textbf{Sensores integrados:} incorpora sensores simulados, como \textit{IMU}, \textit{GPS} y barómetro, cuyas medidas se publican en tópicos de \textit{ROS} para ser utilizadas por los nodos de control.
+    \item \textbf{Plugins de control:} emplea complementos de \textit{Gazebo}, como \texttt{gazebo\_ros\_imu} o \texttt{gazebo\_ros\_control}, que facilitan la comunicación entre la física simulada y los procesos de control ejecutados en \textit{ROS}.
+\end{itemize}
+
+Además del modelo del UAV, se utiliza un archivo de mundo \texttt{.world} para definir el escenario de pruebas. En este caso, se opta por un entorno aéreo abierto y sin obstáculos fijos, de modo que las trayectorias puedan desarrollarse con mayor libertad y sea posible observar el comportamiento del sistema en condiciones controladas.
+
+\subsection{Lanzamiento y Supervisión de la Simulación}
+La ejecución de la simulación se organiza mediante archivos \texttt{.launch}, encargados de cargar el modelo del dron, iniciar el entorno de \textit{Gazebo} y activar los nodos necesarios para la comunicación con el sistema de control. Estos archivos se ajustan para incluir la carga automática del UAV, la inicialización de \textit{MAVROS} como puente de comunicación y la conexión con \textit{ArduPilot} a través de puertos \texttt{UDP} simulados.
+
+Una vez iniciado el entorno, se activa el controlador correspondiente, ya sea el esquema convencional basado en \textit{ArduPilot} o el control propuesto en el proyecto. Durante la ejecución se supervisa la respuesta del sistema mediante la visualización 3D en \textit{Gazebo}, la consulta de tópicos con herramientas como \texttt{rqt\_graph} y \texttt{rostopic echo}, y la inspección del estado de los nodos mediante \texttt{rosnode list}. Esta supervisión permite comprobar que la simulación se ejecuta correctamente y que los módulos de percepción, comunicación y control intercambian información de forma adecuada.
+
+
+\begin{listing}[language=XML,caption={Archivo \texttt{apm.launch} para la conexión de \textit{MAVROS}},label={lst:apm-launch}]
+<launch>
+    <!-- APM launch generico para multiples drones -->
+
+    <arg name="drone_id" default="1" />
+    <arg name="fcu_url" default="udp://127.0.0.1:14551@14555" />
+    <arg name="gcs_url" default="" />
+    <arg name="tgt_system" default="1" />
+    <arg name="tgt_component" default="1" />
+    <arg name="log_output" default="screen" />
+    <arg name="respawn_mavros" default="true" />
+    <arg name="mavros_ns" default="/" />
+    <arg name="config_yaml"
+         default="$(env HOME)/drone_ws/mavros/launch/apm_config_d$(arg drone_id).yaml" />
+
+    <include file="$(find iq_sim)/launch/mavros_node.launch">
+        <arg name="pluginlists_yaml"
+             value="$(find mavros)/launch/apm_pluginlists.yaml" />
+        <arg name="config_yaml" value="$(arg config_yaml)" />
+        <arg name="mavros_ns" value="$(arg mavros_ns)" />
+        <arg name="fcu_url" value="$(arg fcu_url)" />
+        <arg name="gcs_url" value="$(arg gcs_url)" />
+        <arg name="respawn_mavros" value="$(arg respawn_mavros)" />
+        <arg name="tgt_system" value="$(arg tgt_system)" />
+        <arg name="tgt_component" value="$(arg tgt_component)" />
+        <arg name="log_output" value="$(arg log_output)" />
+    </include>
+</launch>
+\end{listing}
+
+
+\section{Configuración UAVs en Simulación}
+En esta sección se aborda la configuración de los dos UAVs empleados en el entorno simulado. La separación entre ambos vehículos permite definir de forma clara sus parámetros de comunicación, identificadores, espacios de nombres y archivos de lanzamiento, evitando conflictos entre tópicos, nodos y conexiones con el autopiloto. Esta organización resulta especialmente importante cuando se trabaja con varios drones dentro de una misma instancia de \textit{Gazebo}, ya que facilita el seguimiento individual de cada plataforma y prepara el sistema para ejecutar pruebas coordinadas de navegación y control.
+
+\subsection{Configuración del Dron 1}
+Para el primer UAV se tomó como base el modelo de dron incluido en \textit{iq\_sim} y se creó una variante propia denominada \texttt{drone1}, ubicada dentro de la ruta relativa \texttt{iq\_sim/models}. Esta separación permite modificar el modelo sin alterar la plantilla original y facilita su identificación dentro del entorno de simulación. El modelo queda registrado mediante el archivo \texttt{model.config}, donde se declara el nombre \texttt{drone1} y se enlaza con el archivo principal \texttt{model.sdf}.
+
+\begin{listing}[language=XML,caption={Extracto de \texttt{model.config} para declarar el modelo \texttt{drone1}},label={lst:drone1-model-config}]
+<model>
+  <name>drone1</name>
+  <version>1.0</version>
+  <sdf version="1.6">model.sdf</sdf>
+</model>
+\end{listing}
+
+En el archivo \texttt{model.sdf} se incorporó una cámara virtual fijada al cuerpo del vehículo, configurada para publicar imágenes y metadatos de calibración mediante el plugin \textit{gazebo\_ros\_camera}.
+
+\begin{listing}[language=XML,caption={Extracto de codigo en \texttt{model.sdf},sensor de cámara incorporado  para \texttt{drone1}},label={lst:drone1-camera-sdf}]
+<sensor name="cam" type="camera">
+  <pose>0 0 0.15 0 0 0</pose>
+  <camera>
+    <horizontal_fov>1.2</horizontal_fov>
+    <image>
+      <width>640</width>
+      <height>480</height>
+    </image>
+    <clip>
+      <near>0.1</near>
+      <far>1000</far>
+    </clip>
+  </camera>
+  <always_on>1</always_on>
+  <update_rate>30</update_rate>
+  <visualize>true</visualize>
+  <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+    <always_on>true</always_on>
+    <update_rate>30</update_rate>
+    <cameraName>webcam</cameraName>
+    <imageTopicName>image_raw</imageTopicName>
+    <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+    <frameName>camera_link</frameName>
+  </plugin>
+</sensor>
+</link>
+<joint name="camera_mount" type="fixed">
+  <child>cam_link</child>
+  <parent>iris::base_link</parent>
+  <axis>
+    <xyz>0 0 1</xyz>
+    <limit>
+      <upper>0</upper>
+      <lower>0</lower>
+    </limit>
+  </axis>
+</joint>
+\end{listing}
+
+Además del modelo físico, se generó una carpeta \texttt{config} asociada a \texttt{drone1}. En ella se incluyó un archivo \texttt{.yaml} con la información de la cámara, necesario para mantener organizada su configuración dentro de \textit{ROS}. También se añadió el archivo \texttt{drone1\_params.parm}, donde se define el identificador del vehículo para que \textit{ArduPilot} pueda reconocerlo de forma independiente dentro de la simulación.
+
+\begin{listing}[caption={Identificador asignado al primer UAV en \texttt{drone1\_params.parm}},label={lst:drone1-sysid}]
+SYSID_THISMAV 1
+\end{listing}
+
+Por último, se creó el archivo \texttt{apm\_config\_d1.yaml} dentro de la ruta relativa \texttt{mavros/launch}. Este archivo es leído por \texttt{apm.launch} mediante el argumento \texttt{config\_yaml} y permite lanzar el primer dron con marcos de referencia propios. En particular, se asigna el cuerpo del UAV al marco \texttt{drone1/base\_link}, evitando solapamientos con otros vehículos simulados.
+
+\begin{listing}[caption={Fragmento principal de \texttt{apm\_config\_d1.yaml} para \texttt{drone1}},label={lst:drone1-apm-config}]
+# global_position
+global_position:
+  frame_id: "map"
+  child_frame_id: "drone1/base_link"
+  rot_covariance: 99999.0
+  gps_uere: 1.0
+  use_relative_alt: true
+  tf:
+    send: false
+    frame_id: "map"
+    global_frame_id: "earth"
+    child_frame_id: "drone1/base_link"
+
+# imu_pub
+imu:
+  frame_id: "drone1/base_link"
+  linear_acceleration_stdev: 0.0003
+  angular_velocity_stdev: 0.0003490659
+  orientation_stdev: 1.0
+  magnetic_stdev: 0.0
+
+# local_position
+local_position:
+  frame_id: "map"
+  tf:
+    send: true
+    frame_id: "map"
+    child_frame_id: "drone1/base_link"
+    send_fcu: false
+\end{listing}
+
+
+\subsection{Configuración del Dron 2}
+Para el segundo UAV se creó una nueva carpeta denominada \texttt{drone2}, tomando como referencia la estructura ya definida para \texttt{drone1}. Esta copia permitió mantener una organización homogénea entre ambos modelos, pero eliminando la cámara del segundo vehículo, ya que en esta configuración no era necesario disponer de un segundo flujo de imagen. De este modo, \texttt{drone2} conserva la estructura básica del UAV y queda preparado para ejecutarse de forma simultánea dentro de \textit{Gazebo} sin interferir con el primer dron.
+
+Al igual que en el caso anterior, el modelo se registra mediante el archivo \texttt{model.config}. En él se define el nombre del modelo como \texttt{drone2} y se indica que la descripción física del vehículo debe leerse desde el archivo \texttt{model.sdf}. Este archivo contiene la estructura del dron, sus enlaces, propiedades físicas y elementos necesarios para que \textit{Gazebo} pueda cargarlo correctamente en la simulación.
+
+\begin{listing}[language=XML,caption={Extracto de \texttt{model.config} para declarar el modelo \texttt{drone2}},label={lst:drone2-model-config}]
+<model>
+  <name>drone2</name>
+  <version>1.0</version>
+  <sdf version="1.6">model.sdf</sdf>
+</model>
+\end{listing}
+
+Asimismo, se creó un archivo de parámetros propio, denominado \texttt{drone2\_params.parm}, para asignar un identificador independiente al segundo UAV. Este valor permite que \textit{ArduPilot} distinga ambos vehículos durante la ejecución y evita conflictos en la comunicación con \textit{MAVROS}.
+
+
+\begin{listing}[caption={Identificador asignado al segundo UAV en \texttt{drone2\_params.parm}},label={lst:drone2-sysid}]
+SYSID_THISMAV 2
+\end{listing}
+
+Por último, se creó el archivo \texttt{apm\_config\_d2.yaml} dentro de la ruta relativa \texttt{mavros/launch}. Este archivo cumple la misma función que el definido para el primer UAV, pero empleando los marcos de referencia propios de \texttt{drone2}. En concreto, se asigna el cuerpo del vehículo al marco \texttt{drone2/base\_link}, permitiendo que \textit{MAVROS} publique la posición global, la información inercial y la posición local sin solaparse con los datos del primer dron.
+
+\begin{listing}[caption={Fragmento principal de \texttt{apm\_config\_d2.yaml} para \texttt{drone2}},label={lst:drone2-apm-config}]
+# global_position
+global_position:
+  frame_id: "map"             # origin frame
+  child_frame_id: "drone2/base_link" # body-fixed frame
+  rot_covariance: 99999.0   # covariance for attitude?
+  gps_uere: 1.0             # User Equivalent Range Error (UERE) of GPS sensor (m)
+  use_relative_alt: true    # use relative altitude for local coordinates
+  tf:
+    send: false               # send TF?
+    frame_id: "map"  # TF frame_id
+    global_frame_id: "earth"  # TF earth frame_id
+    child_frame_id: "drone2/base_link" # TF child_frame_id
+
+# imu_pub
+imu:
+  frame_id: "drone2/base_link"
+  # need find actual values
+  linear_acceleration_stdev: 0.0003
+  angular_velocity_stdev: 0.0003490659 // 0.02 degrees
+  orientation_stdev: 1.0
+  magnetic_stdev: 0.0
+
+# local_position
+local_position:
+  frame_id: "map"
+  tf:
+    send: true
+    frame_id: "map"
+    child_frame_id: "drone2/base_link"
+    send_fcu: false
+\end{listing}
+
+Tras definir los modelos y sus configuraciones individuales, ambos UAVs fueron añadidos al archivo de mundo \texttt{runaway.world}. En este archivo se indica a \textit{Gazebo} qué modelos deben cargarse en la escena y la posición inicial de cada uno. De esta forma, \texttt{drone1} se sitúa en el origen del entorno, mientras que \texttt{drone2} se inicializa desplazado 10 metros en el eje \textit{x}, evitando que ambos vehículos aparezcan superpuestos al comenzar la simulación.
+
+\begin{listing}[language=XML,caption={Inclusión de \texttt{drone1} y \texttt{drone2} en \texttt{runaway.world}},label={lst:runaway-world-drones}]
+<model name="drone1">
+  <pose>0 0 0 0 0 0</pose>
+  <include>
+    <uri>model://drone1</uri>
+  </include>
+</model>
+
+<model name="drone2">
+  <pose>10 0 0 0 0 0</pose>
+  <include>
+    <uri>model://drone2</uri>
+  </include>
+</model>
+\end{listing}
+
+\subsection{Ejecución Básica de la Simulación}
+Una vez definidos los modelos \texttt{drone1} y \texttt{drone2}, sus identificadores de \textit{ArduPilot}, los archivos de configuración de \textit{MAVROS} y su inclusión en el mundo de \textit{Gazebo}, la simulación básica se ejecuta mediante varias terminales simultáneas. Para organizar este proceso se empleó \textit{Terminator}, una herramienta que permite dividir una misma ventana en varios paneles de terminal. Esta característica resulta especialmente útil en entornos ROS, ya que facilita observar al mismo tiempo la salida de \textit{Gazebo}, las dos instancias SITL de \textit{ArduPilot} y los dos nodos de \textit{MAVROS}, evitando cambiar continuamente entre ventanas independientes.
+
+\begin{center}
+\refstepcounter{figure}\label{fig:panel-basico-ejecucion}
+\includegraphics[width=0.9\textwidth]{imagenes/PanelBasico.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Panel básico de ejecución con varias terminales organizadas en \textit{Terminator}. Imagen de elaboración propia.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Panel básico de ejecución con varias terminales organizadas en Terminator}
+\end{center}
+
+En la Figura \ref{fig:panel-basico-ejecucion} se muestra la disposición básica utilizada para lanzar el sistema. Cada panel corresponde a una tarea concreta y se mantiene visible durante toda la prueba, lo que permite detectar rápidamente errores de conexión, problemas en el arranque del autopiloto o fallos en la publicación de mensajes. La ejecución se organiza de la siguiente forma:
+
+\begin{verbatim}
+# Terminal 1: lanzamiento del mundo de Gazebo
+roslaunch iq_sim runway.launch
+
+# Terminal 2: instancia SITL del primer UAV
+sim_vehicle.py -v ArduCopter -f gazebo-iris --console -I0 \
+  --out=tcpin:0.0.0.0:8100 \
+  --add-param-file=$HOME/drone_ws/src/iq_sim/models/drone1/drone1_params.parm
+
+# Terminal 3: instancia SITL del segundo UAV
+sim_vehicle.py -v ArduCopter -f gazebo-iris --console -I1 \
+  --out=tcpin:0.0.0.0:8200 \
+  --add-param-file=$HOME/drone_ws/src/iq_sim/models/drone2/drone2_params.parm
+
+# Terminal 4: conexion MAVROS del primer UAV
+roslaunch iq_sim apm.launch drone_id:=1 \
+  fcu_url:=udp://127.0.0.1:14551@14555 \
+  mavros_ns:=/drone1 tgt_system:=1
+
+# Terminal 5: conexion MAVROS del segundo UAV
+roslaunch iq_sim apm.launch drone_id:=2 \
+  fcu_url:=udp://127.0.0.1:14561@14565 \
+  mavros_ns:=/drone2 tgt_system:=2
+\end{verbatim}
+
+En la primera terminal se lanza el entorno de \textit{Gazebo} mediante \texttt{runway.launch}, que carga el mundo preparado previamente y permite visualizar los modelos incorporados en \texttt{runaway.world}. Las terminales segunda y tercera arrancan dos instancias independientes de \textit{ArduPilot} en modo SITL. La opción \texttt{-I0} se asocia al primer UAV y la opción \texttt{-I1} al segundo, mientras que los archivos \texttt{drone1\_params.parm} y \texttt{drone2\_params.parm} asignan los identificadores \texttt{SYSID\_THISMAV 1} y \texttt{SYSID\_THISMAV 2}, respectivamente. De este modo, cada autopiloto virtual queda vinculado al dron configurado en las subsecciones anteriores.
+
+Las terminales cuarta y quinta ejecutan el archivo \texttt{apm.launch} para crear los dos puentes \textit{MAVROS}. En cada caso se indica el identificador del dron mediante \texttt{drone\_id}, el puerto \texttt{UDP} correspondiente mediante \texttt{fcu\_url}, el espacio de nombres \texttt{mavros\_ns} y el sistema objetivo mediante \texttt{tgt\_system}. Esta separación permite que los tópicos, servicios y marcos de referencia de \texttt{drone1} y \texttt{drone2} se mantengan diferenciados dentro de ROS, coherentemente con los archivos \texttt{apm\_config\_d1.yaml} y \texttt{apm\_config\_d2.yaml} descritos anteriormente.
+
+\begin{center}
+\refstepcounter{figure}\label{fig:rosgraph-basico}
+\includegraphics[width=0.95\textwidth]{imagenes/rosgraph_basico.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Grafo básico de nodos y tópicos ROS durante la ejecución inicial con dos UAVs. Imagen de elaboración propia.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Grafo básico de nodos y tópicos ROS durante la ejecución inicial con dos UAVs}
+\end{center}
+
+La Figura \ref{fig:rosgraph-basico} representa la salida básica obtenida con \texttt{rqt\_graph}. En ella se observa la estructura de comunicación creada tras ejecutar los comandos anteriores: el simulador proporciona el entorno físico, las instancias SITL actúan como autopilotos virtuales y \textit{MAVROS} publica la información de cada vehículo dentro de su propio espacio de nombres. Esta comprobación visual permite verificar que los nodos principales están activos, que los dos UAVs aparecen separados dentro del grafo y que la arquitectura de comunicación queda preparada para incorporar posteriormente los nodos de percepción y control propuestos.
+
 
 \section{Configuración del Control Propuesto y Ejecución en
 Gazebo}
-
-\section{Geometría Proyectiva}
-
-\vspace{0.3cm}
-El modelo de cámara estenopeica (\textit{pinhole camera model}) idealiza la formación de la imagen suponiendo que todos los rayos de luz atraviesan un único punto, denominado centro óptico o centro de proyección, antes de alcanzar el plano imagen. Esta simplificación elimina el comportamiento complejo de las lentes reales y permite describir la proyección mediante relaciones geométricas limpias y fácilmente interpretables \cite{uvaPinholeCamera, bergamasco2019pinhole}.
-
-\vspace{0.3cm}
-
-En una cámara física, la imagen se forma invertida sobre el sensor. No obstante, en visión por computador suele emplearse un plano imagen virtual situado delante del centro óptico para evitar inversiones de signo y hacer más intuitiva la interpretación matemática del modelo. Esta convención no altera la geometría del problema, pero simplifica el análisis de la proyección y la definición de los errores visuales \cite{uvaPinholeCamera, CameraModels}.
-
-\vspace{0.3cm}
-
-Si un punto del entorno se expresa en el sistema de referencia de la cámara como $P_c = (X_c, Y_c, Z_c)$, su proyección ideal sobre el plano imagen métrico viene dada por:
-
-\vspace{0.3cm}
-
-\begin{equation}
-x = f \frac{X_c}{Z_c}, \quad y = f \frac{Y_c}{Z_c}
-\end{equation}
-
-\vspace{0.3cm}
-
-En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ es su profundidad o distancia a lo largo del eje de visión, $f$ es la distancia focal y $(x, y)$ son las coordenadas proyectadas sobre el plano imagen ideal. La ecuación pone de manifiesto el comportamiento esencial de la perspectiva: cuanto mayor es $Z_c$, menor es la proyección del objeto en la imagen, haciendo que los objetos lejanos aparecen más pequeños y los cercanos ocupan más píxeles \cite{bergamasco2019pinhole, CameraModels}.
-
-\vspace{0.3cm}
-
-\begin{center}
-\refstepcounter{figure}\label{fig:ibvs-esquema-metodologia}
-\includegraphics[width=0.65\textwidth]{imagenes/pinholeCameramodel2.jpeg}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Esquema simplificado del modelo de cámara estenopeica. Fuente: \cite{opencvCalib3d}.}
-\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del modelo de cámara estenopeica}
-\end{center}
-
-\vspace{0.3cm}
-
-\subsection{Fundamentos de la Geometría Proyectiva}
-
-Para trabajar de forma práctica con imágenes digitales, la proyección anterior se expresa normalmente en coordenadas normalizadas y, posteriormente, en coordenadas de píxel. Las coordenadas normalizadas vienen dadas por:
-
-\vspace{0.3cm}
-
-\begin{equation}
-x_n = \frac{X_c}{Z_c}, \quad y_n = \frac{Y_c}{Z_c}
-\end{equation}
-
-\vspace{0.3cm}
-
-Estas variables recogen la parte puramente proyectiva del problema: dependen de la dirección del punto respecto a la cámara, pero no del tamaño físico del sensor. A partir de ellas, el paso a píxeles se modela como:
-
-\vspace{0.3cm}
-
-\begin{equation}
-u = f_x x_n + c_x, \quad v = f_y y_n + c_y
-\end{equation}
-
-\vspace{0.3cm}
-
-Aquí, $f_x$ y $f_y$ son las distancias focales expresadas en píxeles en las direcciones horizontal y vertical, mientras que $c_x$ y $c_y$ definen el punto principal, es decir, la proyección del eje óptico sobre la imagen. En una cámara ideal, este punto suele estar cerca del centro del sensor, aunque en la práctica puede aparecer ligeramente desplazado por el montaje o la calibración \cite{CameraModels, opencvCalib3d}.
-
-\vspace{0.3cm}
-
-La formulación completa en coordenadas homogéneas se resume mediante la ecuación:
-
-\begin{equation}
-s \left[\begin{array}{c}
-u \\ v \\ 1\end{array}\right] = K \cdot [R|t] \cdot \left[\begin{array}{c}X_w \\ Y_w \\ Z_w \\ 1\end{array}\right]
-\end{equation}
-
-\vspace{0.3cm}
-
-En esta relación, $(X_w, Y_w, Z_w)$ son las coordenadas del punto en el sistema de referencia del mundo, $[R|t]$ describe la transformación extrínseca que lleva ese punto al sistema de referencia de la cámara, $K$ es la matriz de parámetros intrínsecos y $s$ es un factor de escala propio de las coordenadas homogéneas. La matriz intrínseca se suele escribir como:
-
-\vspace{0.3cm}
-
-\begin{equation}
-K = \left[\begin{array}{ccc}
-f_x & \gamma & c_x \\
-0 & f_y & c_y \\
-0 & 0 & 1
-\end{array}\right]
-\end{equation}
-
-\vspace{0.3cm}
-
-Cada término tiene una interpretación física clara: $f_x$ y $f_y$ convierten coordenadas geométricas en coordenadas de píxel, $c_x$ y $c_y$ fijan el punto principal y $\gamma$ representa el sesgo o \textit{skew} entre ejes de píxel, normalmente nulo o despreciable en cámaras modernas. Esta descomposición es importante porque separa dos preguntas distintas: dónde está la cámara respecto al mundo (parámetros extrínsecos) y cómo proyecta la cámara lo que ve (parámetros intrínsecos) \cite{CameraModels, uvaPinholeCamera}.
-
-\vspace{0.3cm}
-
-\subsection{Parámetros intrínsecos, FOV y distorsión}
-
-\vspace{0.3cm}
-
-Otro concepto fundamental es el campo de visión o \textit{Field of View} (FOV), que puede entenderse como la amplitud angular de la escena que la cámara es capaz de cubrir. Si $d_x$ y $d_y$ representan el tamaño del sensor en horizontal y vertical, entonces el FOV puede aproximarse mediante:
-
-\vspace{0.3cm}
-
-\begin{equation}
-FOV_x = 2 \arctan \left( \frac{d_x}{2f} \right), \quad FOV_y = 2 \arctan \left( \frac{d_y}{2f} \right)
-\end{equation}
-
-\vspace{0.3cm}
-
-Estas expresiones pueden interpretarse de forma sencilla. Para un mismo sensor, una distancia focal pequeña genera un FOV amplio: la cámara ve una porción mayor de la escena, pero cada objeto ocupa menos píxeles. En cambio, una distancia focal grande produce un FOV más estrecho: la cámara cubre menos escena, aunque el objetivo aparece con mayor tamaño aparente en la imagen. En tareas de seguimiento, este comportamiento introduce un compromiso claro entre cobertura y detalle: un FOV amplio ayuda a no perder el blanco durante maniobras bruscas, mientras que un FOV estrecho permite medir con más precisión sus desplazamientos cuando se encuentra lejos \cite{bergamasco2019pinhole, CameraModels}.
-
-\vspace{0.3cm}
-
-Hasta aquí se ha descrito una cámara ideal. Sin embargo, una cámara real no proyecta la escena de manera perfectamente geométrica, porque la lente introduce pequeñas deformaciones. Las más relevantes en visión por computador son la distorsión radial y la distorsión tangencial. La distorsión radial depende sobre todo de la distancia al centro de la imagen: cuanto más se aleja un punto de esa zona central, mayor puede ser su desplazamiento aparente, lo que hace que las rectas se curven cerca de los bordes. La distorsión tangencial, por su parte, aparece cuando la lente y el sensor no están perfectamente alineados y produce desplazamientos asimétricos de los puntos observados \cite{opencvCalib3d, uvaPinholeCamera}.
-
-
-\begin{center}
-    \refstepcounter{figure}\label{fig:Camera-distorsion}
-    \includegraphics[width=0.85\textwidth]{imagenes/distosionCamera.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Imágenes de una pantalla de objeto rectangular mostradas con (a) ninguna distorsión; (b) distorsión radial; (c) distorsión tangencial.,  \cite{ImgDistorsion}.}
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} sDistorsion Camera pinhole}
- \end{center}
-
-\vspace{0.3cm}
-
-En coordenadas normalizadas, una forma habitual de modelar esta distorsión es la siguiente:
-
-\vspace{0.3cm}
-
-\begin{equation}
-r^2 = x_n^2 + y_n^2
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-x_d = x_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + 2 p_1 x_n y_n + p_2 \left(r^2 + 2 x_n^2\right)
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-y_d = y_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + p_1 \left(r^2 + 2 y_n^2\right) + 2 p_2 x_n y_n
-\end{equation}
-
-\vspace{0.3cm}
-
-
-En estas ecuaciones, $r$ mide la distancia del punto al centro de la imagen normalizada; los coeficientes $k_1$, $k_2$ y $k_3$ describen la parte radial de la deformación, mientras que $p_1$ y $p_2$ describen la parte tangencial. Los puntos $(x_d, y_d)$ representan, por tanto, la posición finalmente observada tras el efecto de la lente. La consecuencia práctica es directa: una misma distancia física en la escena no siempre se traduce en la misma distancia en píxeles si la medida se toma en regiones distintas de la imagen \cite{opencvCalib3d}.
-
-\vspace{0.3cm}
-
-Desde el punto de vista del control, la distorsión introduce una dispersión en la medida visual: un mismo movimiento real puede producir errores distintos según la zona de la imagen en la que aparezca el objetivo. Por ello, para alimentar al controlador PID conviene trabajar con puntos sin distorsión o con coordenadas normalizadas obtenidas tras calibrar la cámara \cite{opencvCalib3d, CameraModels}.
-
-\vspace{0.3cm}
-
-En este trabajo, corregir esos puntos permite estimar mejor las distancias aparentes y generar una señal de error más estable para el lazo de control. Esta idea enlaza con la sección siguiente, dedicada a cómo el controlador PID transforma ese error visual en comandos de movimiento del UAV cazador.
-
-\vspace{0.3cm}
-
-\section{Filtro de Kalman}
-
-
-El filtro de Kalman es un método de estimación recursiva empleado para obtener una aproximación del estado de un sistema dinámico cuando las medidas disponibles contienen ruido. Su utilidad, en este trabajo, reside en que permite combinar la información procedente del modelo con la medida visual del objetivo, generando una estimación más estable y más útil para el controlador PID \cite{kalman1960new, kalmanfilterNetES, wikipediaFiltroKalman}.
-
-\vspace{0.3cm}
-
-\begin{center}
-    \refstepcounter{figure}\label{fig:Filtro-kalman}
-    \includegraphics[width=1\textwidth]{imagenes/KalmanYolo2.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.}Ejemplo uso de Filtro de Kalman. (Elaboración propia) }
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Ejemplo uso del Filtro de Kalman en dron real , en modo predición (Elaboración propia)}
-\end{center}
-
-\vspace{0.3cm}
-
-En primer lugar, conviene aclarar qué se entiende por \textbf{vector de estado}. El vector de estado es el conjunto de variables que describen la situación del sistema en un instante dado. En un problema de seguimiento visual, este vector puede incluir, por ejemplo, la posición del objetivo en la imagen y su velocidad aparente. Una forma podría ser:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{x}_k = \left[ \begin{array}{cccc} x_k & y_k & \dot{x}_k & \dot{y}_k \end{array} \right]^{T}
-\end{equation}
-
-\vspace{0.3cm}
-
-En este caso, $x_k$ e $y_k$ representan la posición del objetivo en el plano imagen, mientras que $\dot{x}_k$ y $\dot{y}_k$ representan su velocidad aparente. A partir de este vector, el modelo describe tanto la evolución temporal del sistema como la relación entre el estado interno y la medida observada \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
-
-\vspace{0.3cm}
-
-El sistema dinámico lineal discreto puede escribirse mediante las ecuaciones:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{x}_k = \mathbf{F}_k \mathbf{x}_{k-1} + \mathbf{B}_k \mathbf{u}_k + \mathbf{w}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{z}_k = \mathbf{H}_k \mathbf{x}_k + \mathbf{v}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-En estas expresiones, la matriz $\mathbf{F}_k$ corresponde a la \textbf{matriz de transición de estado}, encargada de modelar la evolución del sistema entre dos instantes consecutivos. Por su parte, la matriz $\mathbf{H}_k$ corresponde a la \textbf{matriz de observación}, cuya función es relacionar el vector de estado con la magnitud efectivamente medida por el sensor. En términos conceptuales, $\mathbf{F}_k$ describe la dinámica del sistema, mientras que $\mathbf{H}_k$ determina qué componentes de dicho estado son accesibles a través de la cámara o del sensor empleado \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
-
-\vspace{0.3cm}
-
-Por ejemplo, si se adopta un modelo bidimensional de velocidad constante con periodo de muestreo $\Delta t$, y la cámara mide únicamente la posición del objetivo, unas elecciones habituales son:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{F}_k = \left[ \begin{array}{cccc}
-1 & 0 & \Delta t & 0 \\
-0 & 1 & 0 & \Delta t \\
-0 & 0 & 1 & 0 \\
-0 & 0 & 0 & 1
-\end{array} \right], \quad
-\mathbf{H}_k = \left[ \begin{array}{cccc}
-1 & 0 & 0 & 0 \\
-0 & 1 & 0 & 0
-\end{array} \right]
-\end{equation}
-
-\vspace{0.3cm}
-
-Otro aspecto fundamental es el papel de las matrices de covarianza $\mathbf{Q}_k$ y $\mathbf{R}_k$. La matriz $\mathbf{Q}_k$ representa la incertidumbre asociada al modelo dinámico, es decir, cuánto puede desviarse la evolución real del sistema respecto a la predicción teórica. La matriz $\mathbf{R}_k$, en cambio, representa la incertidumbre de la medida, es decir, el nivel de ruido presente en la observación del sensor. En términos prácticos, $\mathbf{Q}_k$ expresa cuánto se confía en el modelo y $\mathbf{R}_k$ cuánto se confía en la medida \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
-
-\vspace{0.3cm}
-
-En el mismo ejemplo anterior, una forma sencilla de representar ambas matrices sería:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{Q}_k = \left[ \begin{array}{cccc}
-\sigma_x^2 & 0 & 0 & 0 \\
-0 & \sigma_y^2 & 0 & 0 \\
-0 & 0 & \sigma_{\dot{x}}^2 & 0 \\
-0 & 0 & 0 & \sigma_{\dot{y}}^2
-\end{array} \right], \quad
-\mathbf{R}_k = \left[ \begin{array}{cc}
-\sigma_{mx}^2 & 0 \\
-0 & \sigma_{my}^2
-\end{array} \right]
-\end{equation}
-
-\vspace{0.3cm}
-
-Aquí, los términos de $\mathbf{Q}_k$ recogen la incertidumbre asociada a la posición y a la velocidad del modelo, mientras que los términos de $\mathbf{R}_k$ representan el ruido de la medida en los ejes horizontal y vertical de la imagen.
-
-\vspace{0.3cm}
-
-Antes de iniciar el proceso iterativo del filtro, también es necesario fijar unas \textbf{condiciones iniciales}. En concreto, se requiere una estimación inicial del estado, denotada por $\hat{\mathbf{x}}_{0|0}$, y una estimación inicial de la incertidumbre asociada, representada por la matriz $\mathbf{P}_{0|0}$. Si se dispone de poca información inicial, la covarianza inicial suele elegirse grande; si, por el contrario, el estado inicial es relativamente conocido, esa covarianza puede fijarse con valores menores. Estas condiciones iniciales determinan el punto de partida a partir del cual el filtro comienza a refinar sus estimaciones.
-
-\vspace{0.3cm}
-
-Una vez definidos el estado, el modelo y las incertidumbres, el filtro opera en dos fases: \textbf{predicción} y \textbf{actualización}. En la fase de predicción, se calcula cuál debería ser el estado del sistema en el instante siguiente y cuál es la incertidumbre asociada a esa predicción:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\hat{\mathbf{x}}_{k|k-1} = \mathbf{F}_k \hat{\mathbf{x}}_{k-1|k-1} + \mathbf{B}_k \mathbf{u}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{P}_{k|k-1} = \mathbf{F}_k \mathbf{P}_{k-1|k-1} \mathbf{F}_k^{T} + \mathbf{Q}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-La primera ecuación proporciona la predicción del estado y la segunda actualiza la incertidumbre de dicha predicción. En esta etapa, el filtro todavía no ha incorporado la medida real del instante $k$.
-
-\vspace{0.3cm}
-
-Posteriormente, en la fase de actualización, la predicción se compara con la medida observada. La diferencia entre ambas se denomina \textbf{innovación} y se expresa como:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\tilde{\mathbf{y}}_k = \mathbf{z}_k - \mathbf{H}_k \hat{\mathbf{x}}_{k|k-1}
-\end{equation}
-
-\vspace{0.3cm}
-
-A partir de esta diferencia, se calcula la ganancia de Kalman:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{K}_k = \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} \left( \mathbf{H}_k \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} + \mathbf{R}_k \right)^{-1}
-\end{equation}
-
-\vspace{0.3cm}
-
-Esta ganancia determina cuánto peso debe darse a la medida y cuánto a la predicción. Con ella, se actualiza el estado estimado y su covarianza:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\hat{\mathbf{x}}_{k|k} = \hat{\mathbf{x}}_{k|k-1} + \mathbf{K}_k \tilde{\mathbf{y}}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{P}_{k|k} = \left( \mathbf{I} - \mathbf{K}_k \mathbf{H}_k \right) \mathbf{P}_{k|k-1}
-\end{equation}
-
-\vspace{0.3cm}
-
-La lógica del método es sencilla: si la medida es poco fiable, el filtro confía más en la predicción del modelo; si la observación es consistente, la corrección adquiere mayor peso. Como resultado, se obtiene una estimación más suave y más coherente del movimiento del objetivo, lo que resulta especialmente útil cuando existen maniobras rápidas, pequeñas oclusiones o fluctuaciones en la detección visual \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
-
-
