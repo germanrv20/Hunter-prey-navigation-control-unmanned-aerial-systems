@@ -14,7 +14,7 @@ SENTINEL_VALUE = -990.0 # Consideramos todo lo menor a esto como "Objetivo Perdi
 # Buffers de datos
 error_x_data = deque(maxlen=BUFFER_SIZE) # Error Yaw
 error_y_data = deque(maxlen=BUFFER_SIZE) # Error Altura
-error_dist_data = deque(maxlen=BUFFER_SIZE) # Error Distancia (NUEVO)
+error_dist_data = deque(maxlen=BUFFER_SIZE) # Error Distancia en METROS
 time_data = deque(maxlen=BUFFER_SIZE)
 start_time = rospy.Time(0)
 
@@ -39,8 +39,8 @@ def error_callback(msg):
     else:
         error_y_data.append(np.nan)
 
-    # --- LEER ERROR DISTANCIA (AVANCE) ---
-    if msg.point.x > SENTINEL_VALUE:
+    # --- LEER ERROR DISTANCIA (AVANCE EN METROS) ---
+    if msg.point.z > SENTINEL_VALUE: # ¡Cuidado aquí! Evalúas si point.z es válido, no point.x
         error_dist_data.append(msg.point.z)
     else:
         error_dist_data.append(np.nan)
@@ -104,13 +104,13 @@ def plotter_loop():
             # GRÁFICA INFERIOR: ERROR DISTANCIA (Eje Z)
             # ==========================================
             ax3.plot(time_data, error_dist_data, label='Error Distancia (Ed)', color='orange', linewidth=2)
-            ax3.axhline(0, color='red', linestyle='--', linewidth=2, label='Objetivo (0 px)')
+            ax3.axhline(1.05, color='red', linestyle='--', linewidth=2, label='Objetivo (1.05m)')
             
             ax3.set_title('Control PID Avance (Adelante-Atrás / X)', fontweight='bold')
             ax3.set_xlabel('Tiempo (s)')
-            ax3.set_ylabel('Error (px)')
-            # Ampliamos el rango de Y porque el error de la raíz cuadrada puede ser algo mayor
-            ax3.set_ylim(-200, 200) 
+            ax3.set_ylabel('Error en Metros (m)')
+            # Ampliamos el rango de Y para metros. Un error de +-2 metros es más que suficiente.
+            ax3.set_ylim(-2.0, 2.0) 
             ax3.legend(loc='upper right')
             ax3.grid(True)
             

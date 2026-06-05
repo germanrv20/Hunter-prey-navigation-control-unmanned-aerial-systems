@@ -1,0 +1,49 @@
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:27:1: error: expected ‘,’ or ‘;’ before ‘const’
+ const double Ki_vert = 0//0.000;
+ ^~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:34:1: error: expected ‘,’ or ‘;’ before ‘const’
+ const double Ki_dist = 0//0.000;
+ ^~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:88:33: error: ‘Ki_vert’ was not declared in this scope
+ PIDController vert_pid(Kp_vert, Ki_vert, Kd_vert);
+                                 ^~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:88:33: note: suggested alternative: ‘Kp_vert’
+ PIDController vert_pid(Kp_vert, Ki_vert, Kd_vert);
+                                 ^~~~~~~
+                                 Kp_vert
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:88:42: error: ‘Kd_vert’ was not declared in this scope
+ PIDController vert_pid(Kp_vert, Ki_vert, Kd_vert);
+                                          ^~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:88:42: note: suggested alternative: ‘Kp_vert’
+ PIDController vert_pid(Kp_vert, Ki_vert, Kd_vert);
+                                          ^~~~~~~
+                                          Kp_vert
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:89:33: error: ‘Ki_dist’ was not declared in this scope
+ PIDController dist_pid(Kp_dist, Ki_dist, Kd_dist);
+                                 ^~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:89:33: note: suggested alternative: ‘Kp_dist’
+ PIDController dist_pid(Kp_dist, Ki_dist, Kd_dist);
+                                 ^~~~~~~
+                                 Kp_dist
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:89:42: error: ‘Kd_dist’ was not declared in this scope
+ PIDController dist_pid(Kp_dist, Ki_dist, Kd_dist);
+                                          ^~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:89:42: note: suggested alternative: ‘Kp_dist’
+ PIDController dist_pid(Kp_dist, Ki_dist, Kd_dist);
+                                          ^~~~~~~
+                                          Kp_dist
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp: In function ‘void error_cb(const ConstPtr&)’:
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:140:45: error: ‘MAX_VERT_VEL’ was not declared in this scope
+         cmd_z   = std::min(std::max(cmd_z, -MAX_VERT_VEL), MAX_VERT_VEL);
+                                             ^~~~~~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:141:45: error: ‘MAX_LINEAR_X’ was not declared in this scope
+         cmd_x   = std::min(std::max(cmd_x, -MAX_LINEAR_X), MAX_LINEAR_X);
+                                             ^~~~~~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:141:45: note: suggested alternative: ‘__LINE__’
+         cmd_x   = std::min(std::max(cmd_x, -MAX_LINEAR_X), MAX_LINEAR_X);
+                                             ^~~~~~~~~~~~
+                                             __LINE__
+make[2]: *** [CMakeFiles/drone1_follow_xy_pid.dir/build.make:63: CMakeFiles/drone1_follow_xy_pid.dir/src/drone1_follow_xy_pid.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:326: CMakeFiles/drone1_follow_xy_pid.dir/all] Error 2
+make[1]: *** Se espera a que terminen otras tareas....
+make: *** [Makefile:141: all] Error 2

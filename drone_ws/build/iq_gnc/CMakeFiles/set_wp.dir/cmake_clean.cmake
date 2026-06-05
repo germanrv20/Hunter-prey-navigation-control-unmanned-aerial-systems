@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/iq_gnc/set_wp"
-  "/home/germanrv/drone_ws/devel/lib/iq_gnc/set_wp.pdb"
+  "/home/germanrv/drone_ws/devel/.private/iq_gnc/lib/iq_gnc/set_wp"
+  "/home/germanrv/drone_ws/devel/.private/iq_gnc/lib/iq_gnc/set_wp.pdb"
   "CMakeFiles/set_wp.dir/src/set_wp.cpp.o"
 )
 

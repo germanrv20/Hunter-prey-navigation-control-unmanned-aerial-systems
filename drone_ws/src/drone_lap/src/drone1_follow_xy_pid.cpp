@@ -17,24 +17,23 @@ const double PIXEL_SENTINEL = -999.0;
 // --- TUNING DEL CONTROLADOR ---
 
 // 1. PID Yaw (Horizontal - Controla giro)
-const double Kp_yaw = 0.008;  
-const double Ki_yaw = 0.0000;   
-const double Kd_yaw = 0.001;
-const double MAX_YAW_RATE = 1.0; // rad/s
+const double Kp_yaw = 2.365625;
+const double Ki_yaw = 0.02; 
+const double Kd_yaw = 0.320;
+const double MAX_YAW_RATE = 20.0; // rad/s
 
 // 2. PID Altura (Vertical - Controla subida/bajada)
-const double Kp_vert = 0.009;   
-const double Ki_vert = 0.000;  
-const double Kd_vert = 0.0008;   
-const double MAX_VERT_VEL = 1.0;  // rad/s
+const double Kp_vert = 2.65; 
+const double Ki_vert = 0.02;
+const double Kd_vert = 0.192; ;
+const double MAX_VERT_VEL = 10.0; // m/s
 
 
 // 3. PID Avance (Distancia - Eje X Frontal)
-const double Kp_dist = 0.27; //0.01; // valores sin modelo regresion
-const double Ki_dist = 0.000;
-const double Kd_dist = 0.014; //0.0014; 
-const double MAX_LINEAR_X = 1.8; // m/s
-
+const double Kp_dist = 0.47;//0.47; //0.01; // valores sin modelo regresion
+const double Ki_dist = 0.02;//0.02;
+const double Kd_dist = 0.0014;//0.0014; //0.0014; 
+const double MAX_LINEAR_X = 10.0; // 
 
 
 // -----------------------------------------
@@ -130,8 +129,8 @@ void error_cb(const geometry_msgs::PointStamped::ConstPtr& msg) {
 
   
         // ZONAS MUERTAS APLICADAS A LOS MOTORES 
-        if (std::abs(err_x) < 5.0)  cmd_yaw = 0.0;
-        if (std::abs(err_y) < 5.0) cmd_z   = 0.0;
+        //if (std::abs(err_x) < 0.017)  cmd_yaw = 0.0;
+        if (std::abs(err_y) < 0.017) cmd_z   = 0.0;
         //if (std::abs(err_dist) < 10.0) cmd_x = 0.0;
 
 
@@ -169,7 +168,7 @@ void error_cb(const geometry_msgs::PointStamped::ConstPtr& msg) {
 
     // Log de depuración
     if (err_x > PIXEL_SENTINEL + 1.0) {
-        ROS_INFO_THROTTLE(0.5, "Err(X,Y,Dist): (%.1f, %.1f, %.1f) -> Cmd(Yaw,Z,X): (%.3f rad/s, %.2f m/s, %.2f m/s)", 
+        ROS_INFO_THROTTLE(0.5, "Err(X,Y,Dist): (%.3f, %.3f, %.3f) -> Cmd(Yaw,Z,X): (%.3f rad/s, %.2f m/s, %.2f m/s)", 
                           err_x, err_y, err_dist, cmd_yaw, cmd_z, cmd_x);
     } else {
         ROS_WARN_THROTTLE(2.0, "Objetivo Perdido. Esperando...");

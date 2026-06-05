@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone1_follow_xy_pid"
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone1_follow_xy_pid.pdb"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone1_follow_xy_pid"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone1_follow_xy_pid.pdb"
   "CMakeFiles/drone1_follow_xy_pid.dir/src/drone1_follow_xy_pid.cpp.o"
 )
 

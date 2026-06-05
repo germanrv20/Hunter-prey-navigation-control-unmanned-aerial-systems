@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/iq_gnc/gnc_example"
-  "/home/germanrv/drone_ws/devel/lib/iq_gnc/gnc_example.pdb"
+  "/home/germanrv/drone_ws/devel/.private/iq_gnc/lib/iq_gnc/gnc_example"
+  "/home/germanrv/drone_ws/devel/.private/iq_gnc/lib/iq_gnc/gnc_example.pdb"
   "CMakeFiles/gnc_example.dir/src/gnc_tutorial.cpp.o"
 )
 

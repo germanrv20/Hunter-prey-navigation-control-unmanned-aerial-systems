@@ -6,6 +6,12 @@ import torch.nn as nn
 from geometry_msgs.msg import Quaternion
 from std_msgs.msg import Float64
 
+
+# --- CONFIGURA TU CÁMARA AQUÍ ---
+CAM_WIDTH = 640.0
+CAM_HEIGHT = 480.0
+
+
 # 1. DEFINICIÓN DE LA RED NEURONAL
 # Tiene que ser EXACTAMENTE igual a la que usaste para entrenar
 class MlpDistance(nn.Module):
@@ -54,15 +60,21 @@ class DistanceSenderNode:
         x1, y1 = msg.x, msg.y
         x2, y2 = msg.z, msg.w
 
+    
         if x2 > x1 and y2 > y1:
-            area = (x2 - x1) * (y2 - y1)
+            # 1. Calculamos Ancho y Alto de la caja
+            box_width = x2 - x1
+            box_height = y2 - y1
+            
+            # 2. FÓRMULA DE ÁREA NORMALIZADA
+            area_norm = (box_width * box_height) / (CAM_WIDTH * CAM_HEIGHT) #(box_width * box_height)
 
-            if area > 0:
+            if area_norm > 0:
                 import math
-                # EL TRUCO MATEMÁTICO EN ROS
-                linear_size = 1.0 / math.sqrt(area)
+                # 3. El truco matemático ahora usa el área normalizada (rango 0.0 a 1.0)
+                linear_size = 1.0 / math.sqrt(area_norm)
                 
-                # ESCALAMOS
+                # ESCALAMOS (¡Ojo! El scaler antiguo ya no servirá)
                 scaled_size = (linear_size - self.scaler_mean) / self.scaler_scale
 
                 with torch.no_grad():
@@ -73,12 +85,9 @@ class DistanceSenderNode:
                 dist_msg.data = estimated_distance
                 self.dist_pub.publish(dist_msg)
         else:
-            # Si se pierde YOLO, puedes decidir qué publicar. 
-            # Mandamos un valor negativo para que C++ sepa que no hay dato válido.
             dist_msg = Float64()
             dist_msg.data = -999.0
             self.dist_pub.publish(dist_msg)
-
 if __name__ == '__main__':
     try:
         node = DistanceSenderNode()

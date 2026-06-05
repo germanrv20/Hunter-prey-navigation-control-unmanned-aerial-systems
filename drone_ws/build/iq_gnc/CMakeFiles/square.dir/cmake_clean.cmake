@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/iq_gnc/square"
-  "/home/germanrv/drone_ws/devel/lib/iq_gnc/square.pdb"
+  "/home/germanrv/drone_ws/devel/.private/iq_gnc/lib/iq_gnc/square"
+  "/home/germanrv/drone_ws/devel/.private/iq_gnc/lib/iq_gnc/square.pdb"
   "CMakeFiles/square.dir/src/square.cpp.o"
 )
 

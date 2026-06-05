@@ -1,0 +1,28 @@
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:23:1: error: expected ‘,’ or ‘;’ before ‘const’
+ const double MAX_YAW_RATE = 1.0; // rad/s
+ ^~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp: In function ‘void error_cb(const ConstPtr&)’:
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:139:47: error: ‘MAX_YAW_RATE’ was not declared in this scope
+         cmd_yaw = std::min(std::max(cmd_yaw, -MAX_YAW_RATE), MAX_YAW_RATE);
+                                               ^~~~~~~~~~~~
+make[2]: *** [CMakeFiles/drone1_follow_xy_pid.dir/build.make:63: CMakeFiles/drone1_follow_xy_pid.dir/src/drone1_follow_xy_pid.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:326: CMakeFiles/drone1_follow_xy_pid.dir/all] Error 2
+make[1]: *** Se espera a que terminen otras tareas....
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp: In function ‘int main(int, char**)’:
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:425:31: error: ‘error_x_px’ was not declared in this scope
+                     error_x = error_x_px / half_width;
+                               ^~~~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:425:31: note: suggested alternative: ‘error_x’
+                     error_x = error_x_px / half_width;
+                               ^~~~~~~~~~
+                               error_x
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:426:31: error: ‘error_y_px’ was not declared in this scope
+                     error_y = error_y_px / half_height;
+                               ^~~~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:426:31: note: suggested alternative: ‘error_y’
+                     error_y = error_y_px / half_height;
+                               ^~~~~~~~~~
+                               error_y
+make[2]: *** [CMakeFiles/drone_lap_projection.dir/build.make:63: CMakeFiles/drone_lap_projection.dir/src/drone_projectionV2.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:218: CMakeFiles/drone_lap_projection.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

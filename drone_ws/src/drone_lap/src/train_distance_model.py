@@ -79,7 +79,7 @@ def main():
     distances = data[:, 0]
     areas = data[:, 1]
 
-    valid_idx = (areas > 50) & (distances < 15.0)
+    valid_idx = (areas > 0.0005) & (distances < 15.0)
     distances = distances[valid_idx].reshape(-1, 1)
     sizes = (1.0 / np.sqrt(areas[valid_idx])).reshape(-1, 1)
 

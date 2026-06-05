@@ -68,7 +68,7 @@ set(iq_gnc_CONFIG_INCLUDED TRUE)
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
   set(iq_gnc_SOURCE_PREFIX /home/germanrv/drone_ws/src/iq_gnc)
-  set(iq_gnc_DEVEL_PREFIX /home/germanrv/drone_ws/devel)
+  set(iq_gnc_DEVEL_PREFIX /home/germanrv/drone_ws/devel/.private/iq_gnc)
   set(iq_gnc_INSTALL_PREFIX "")
   set(iq_gnc_PREFIX ${iq_gnc_DEVEL_PREFIX})
 else()

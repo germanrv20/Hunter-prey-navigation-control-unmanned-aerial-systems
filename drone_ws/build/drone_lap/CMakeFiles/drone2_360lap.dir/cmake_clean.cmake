@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone2_360lap"
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone2_360lap.pdb"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_360lap"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_360lap.pdb"
   "CMakeFiles/drone2_360lap.dir/src/drone2_360lap.cpp.o"
 )
 

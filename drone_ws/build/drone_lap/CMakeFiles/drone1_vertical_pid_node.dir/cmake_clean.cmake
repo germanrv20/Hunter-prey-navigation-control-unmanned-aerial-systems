@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone1_vertical_pid_node"
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone1_vertical_pid_node.pdb"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone1_vertical_pid_node"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone1_vertical_pid_node.pdb"
   "CMakeFiles/drone1_vertical_pid_node.dir/src/drone1_vertical_pid.cpp.o"
 )
 

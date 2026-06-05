@@ -1,0 +1,17 @@
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:22:1: error: expected primary-expression before ‘const’
+ const double Kd_yaw = //0.723725687;
+ ^~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:86:39: error: ‘Kd_yaw’ was not declared in this scope
+ PIDController yaw_pid(Kp_yaw, Ki_yaw, Kd_yaw);
+                                       ^~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:86:39: note: suggested alternative: ‘Ki_yaw’
+ PIDController yaw_pid(Kp_yaw, Ki_yaw, Kd_yaw);
+                                       ^~~~~~
+                                       Ki_yaw
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp: In function ‘void error_cb(const ConstPtr&)’:
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:138:47: error: ‘MAX_YAW_RATE’ was not declared in this scope
+         cmd_yaw = std::min(std::max(cmd_yaw, -MAX_YAW_RATE), MAX_YAW_RATE);
+                                               ^~~~~~~~~~~~
+make[2]: *** [CMakeFiles/drone1_follow_xy_pid.dir/build.make:63: CMakeFiles/drone1_follow_xy_pid.dir/src/drone1_follow_xy_pid.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:326: CMakeFiles/drone1_follow_xy_pid.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

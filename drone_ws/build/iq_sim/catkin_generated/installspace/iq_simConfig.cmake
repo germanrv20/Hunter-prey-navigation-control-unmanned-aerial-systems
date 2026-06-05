@@ -68,7 +68,7 @@ set(iq_sim_CONFIG_INCLUDED TRUE)
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
   set(iq_sim_SOURCE_PREFIX /home/germanrv/drone_ws/src/iq_sim)
-  set(iq_sim_DEVEL_PREFIX /home/germanrv/drone_ws/devel)
+  set(iq_sim_DEVEL_PREFIX /home/germanrv/drone_ws/devel/.private/iq_sim)
   set(iq_sim_INSTALL_PREFIX "")
   set(iq_sim_PREFIX ${iq_sim_DEVEL_PREFIX})
 else()

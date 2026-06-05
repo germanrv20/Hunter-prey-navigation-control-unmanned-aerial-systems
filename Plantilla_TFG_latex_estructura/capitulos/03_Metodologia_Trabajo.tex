@@ -393,7 +393,7 @@ Una vez definidos los modelos \texttt{drone1} y \texttt{drone2}, sus identificad
 
 \begin{center}
 \refstepcounter{figure}\label{fig:panel-basico-ejecucion}
-\includegraphics[width=0.9\textwidth]{imagenes/PanelBasico.png}\\[0.5ex]
+\includegraphics[width=1.0 \textwidth]{imagenes/PanelBasico.png}\\[0.5ex]
 {\small \textbf{Figura \thefigure.} Panel básico de ejecución con varias terminales organizadas en \textit{Terminator}. Imagen de elaboración propia.}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Panel básico de ejecución con varias terminales organizadas en Terminator}
 \end{center}
@@ -429,14 +429,17 @@ En la primera terminal se lanza el entorno de \textit{Gazebo} mediante \texttt{r
 
 Las terminales cuarta y quinta ejecutan el archivo \texttt{apm.launch} para crear los dos puentes \textit{MAVROS}. En cada caso se indica el identificador del dron mediante \texttt{drone\_id}, el puerto \texttt{UDP} correspondiente mediante \texttt{fcu\_url}, el espacio de nombres \texttt{mavros\_ns} y el sistema objetivo mediante \texttt{tgt\_system}. Esta separación permite que los tópicos, servicios y marcos de referencia de \texttt{drone1} y \texttt{drone2} se mantengan diferenciados dentro de ROS, coherentemente con los archivos \texttt{apm\_config\_d1.yaml} y \texttt{apm\_config\_d2.yaml} descritos anteriormente.
 
+\vspace{0.4cm}
 \begin{center}
-\refstepcounter{figure}\label{fig:rosgraph-basico}
-\includegraphics[width=0.95\textwidth]{imagenes/rosgraph_basico.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Grafo básico de nodos y tópicos ROS durante la ejecución inicial con dos UAVs. Imagen de elaboración propia.}
-\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Grafo básico de nodos y tópicos ROS durante la ejecución inicial con dos UAVs}
+\refstepcounter{figure}\label{fig:frames-basico}
+\includegraphics[width=1.0 \textwidth]{imagenes/frames.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Marcos de referencia publicados durante la ejecución inicial con dos UAVs. Imagen de elaboración propia.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Marcos de referencia publicados durante la ejecución inicial con dos UAVs}
 \end{center}
 
-La Figura \ref{fig:rosgraph-basico} representa la salida básica obtenida con \texttt{rqt\_graph}. En ella se observa la estructura de comunicación creada tras ejecutar los comandos anteriores: el simulador proporciona el entorno físico, las instancias SITL actúan como autopilotos virtuales y \textit{MAVROS} publica la información de cada vehículo dentro de su propio espacio de nombres. Esta comprobación visual permite verificar que los nodos principales están activos, que los dos UAVs aparecen separados dentro del grafo y que la arquitectura de comunicación queda preparada para incorporar posteriormente los nodos de percepción y control propuestos.
+
+\vspace{0.4cm}
+La Figura \ref{fig:frames-basico} muestra los marcos de referencia publicados tras ejecutar los comandos anteriores. Esta comprobación permite verificar que cada UAV dispone de su propio \textit{frame} asociado, como \texttt{drone1/base\_link} y \texttt{drone2/base\_link}, enlazado con el marco global \texttt{map}. De esta forma se confirma que la configuración definida en \texttt{apm\_config\_d1.yaml} y \texttt{apm\_config\_d2.yaml} separa correctamente las transformaciones de ambos vehículos y evita ambigüedades al incorporar posteriormente los nodos de percepción y control propuestos.
 
 
 \section{Configuración del Control Propuesto y Ejecución en

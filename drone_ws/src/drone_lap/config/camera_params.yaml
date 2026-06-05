@@ -1,7 +1,7 @@
 %YAML:1.0
 # --- Parámetros Nominales---
-width: 640 #346
-height: 480 #200
+width: 640 #640
+height: 480 #480
 hfov: 1.2  # Radianes (valor estándar en Gazebo para este TFG)
 
 # --- Parámetros de Calibración (Formato OpenCV) ---

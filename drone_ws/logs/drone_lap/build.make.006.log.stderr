@@ -1,0 +1,18 @@
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp: In function ‘int main(int, char**)’:
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:425:31: error: ‘error_x_px’ was not declared in this scope
+                     error_x = error_x_px / half_width;
+                               ^~~~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:425:31: note: suggested alternative: ‘error_x’
+                     error_x = error_x_px / half_width;
+                               ^~~~~~~~~~
+                               error_x
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:426:31: error: ‘error_y_px’ was not declared in this scope
+                     error_y = error_y_px / half_height;
+                               ^~~~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:426:31: note: suggested alternative: ‘error_y’
+                     error_y = error_y_px / half_height;
+                               ^~~~~~~~~~
+                               error_y
+make[2]: *** [CMakeFiles/drone_lap_projection.dir/build.make:63: CMakeFiles/drone_lap_projection.dir/src/drone_projectionV2.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:218: CMakeFiles/drone_lap_projection.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

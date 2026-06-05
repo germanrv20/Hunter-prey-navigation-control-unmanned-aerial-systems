@@ -22,8 +22,8 @@ echo_and_run mkdir -p "$DESTDIR/home/germanrv/drone_ws/install/lib/python3/dist-
 # into one location when some dependencies were installed in another
 # location, #123.
 echo_and_run /usr/bin/env \
-    PYTHONPATH="/home/germanrv/drone_ws/install/lib/python3/dist-packages:/home/germanrv/drone_ws/build/lib/python3/dist-packages:$PYTHONPATH" \
-    CATKIN_BINARY_DIR="/home/germanrv/drone_ws/build" \
+    PYTHONPATH="/home/germanrv/drone_ws/install/lib/python3/dist-packages:/home/germanrv/drone_ws/build/iq_gnc/lib/python3/dist-packages:$PYTHONPATH" \
+    CATKIN_BINARY_DIR="/home/germanrv/drone_ws/build/iq_gnc" \
     "/usr/bin/python3" \
     "/home/germanrv/drone_ws/src/iq_gnc/setup.py" \
     egg_info --egg-base /home/germanrv/drone_ws/build/iq_gnc \

@@ -1,0 +1,7 @@
+drone_projection
+/home/germanrv/drone_ws/devel/.private/drone_projection/lib/pkgconfig/drone_projection.pc /home/germanrv/drone_ws/devel/lib/pkgconfig/drone_projection.pc
+/home/germanrv/drone_ws/devel/.private/drone_projection/lib/drone_projection/drone2_vertical_square_node /home/germanrv/drone_ws/devel/lib/drone_projection/drone2_vertical_square_node
+/home/germanrv/drone_ws/devel/.private/drone_projection/lib/drone_projection/drone1_spin_up_down_node /home/germanrv/drone_ws/devel/lib/drone_projection/drone1_spin_up_down_node
+/home/germanrv/drone_ws/devel/.private/drone_projection/lib/drone_projection/drone_projection_node /home/germanrv/drone_ws/devel/lib/drone_projection/drone_projection_node
+/home/germanrv/drone_ws/devel/.private/drone_projection/share/drone_projection/cmake/drone_projectionConfig-version.cmake /home/germanrv/drone_ws/devel/share/drone_projection/cmake/drone_projectionConfig-version.cmake
+/home/germanrv/drone_ws/devel/.private/drone_projection/share/drone_projection/cmake/drone_projectionConfig.cmake /home/germanrv/drone_ws/devel/share/drone_projection/cmake/drone_projectionConfig.cmake

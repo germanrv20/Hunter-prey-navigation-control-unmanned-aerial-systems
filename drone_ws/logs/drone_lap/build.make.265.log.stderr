@@ -1,0 +1,38 @@
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp: In function ‘int main(int, char**)’:
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:380:33: error: ‘ema_x’ was not declared in this scope
+                 yolo_center.x = ema_x;
+                                 ^~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:380:33: note: suggested alternative: ‘ema_x2’
+                 yolo_center.x = ema_x;
+                                 ^~~~~
+                                 ema_x2
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:381:33: error: ‘ema_y’ was not declared in this scope
+                 yolo_center.y = ema_y;
+                                 ^~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:381:33: note: suggested alternative: ‘ema_y2’
+                 yolo_center.y = ema_y;
+                                 ^~~~~
+                                 ema_y2
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:488:33: error: ‘bbox_width’ was not declared in this scope
+                             if (bbox_width > 0.0 && bbox_height > 0.0) {
+                                 ^~~~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:488:33: note: suggested alternative: ‘half_width’
+                             if (bbox_width > 0.0 && bbox_height > 0.0) {
+                                 ^~~~~~~~~~
+                                 half_width
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:488:53: error: ‘bbox_height’ was not declared in this scope
+                             if (bbox_width > 0.0 && bbox_height > 0.0) {
+                                                     ^~~~~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:488:53: note: suggested alternative: ‘half_height’
+                             if (bbox_width > 0.0 && bbox_height > 0.0) {
+                                                     ^~~~~~~~~~~
+                                                     half_height
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:569:1: error: expected ‘}’ at end of input
+ }
+ ^
+/home/germanrv/drone_ws/src/drone_lap/src/drone_projectionV2.cpp:178:1: note: to match this ‘{’
+ {
+ ^
+make[2]: *** [CMakeFiles/drone_lap_projection.dir/build.make:63: CMakeFiles/drone_lap_projection.dir/src/drone_projectionV2.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:218: CMakeFiles/drone_lap_projection.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

@@ -68,7 +68,7 @@ set(drone_projection_CONFIG_INCLUDED TRUE)
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
   set(drone_projection_SOURCE_PREFIX /home/germanrv/drone_ws/src/drone_projection)
-  set(drone_projection_DEVEL_PREFIX /home/germanrv/drone_ws/devel)
+  set(drone_projection_DEVEL_PREFIX /home/germanrv/drone_ws/devel/.private/drone_projection)
   set(drone_projection_INSTALL_PREFIX "")
   set(drone_projection_PREFIX ${drone_projection_DEVEL_PREFIX})
 else()

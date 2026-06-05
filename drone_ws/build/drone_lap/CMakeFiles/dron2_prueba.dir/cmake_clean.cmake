@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/dron2_prueba"
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/dron2_prueba.pdb"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/dron2_prueba"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/dron2_prueba.pdb"
   "CMakeFiles/dron2_prueba.dir/src/dron2_prueba.cpp.o"
 )
 

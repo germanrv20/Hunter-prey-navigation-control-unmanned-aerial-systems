@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone2_aggressive_node"
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone2_aggressive_node.pdb"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_aggressive_node"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_aggressive_node.pdb"
   "CMakeFiles/drone2_aggressive_node.dir/src/drone2_aggressive_trajectories.cpp.o"
 )
 

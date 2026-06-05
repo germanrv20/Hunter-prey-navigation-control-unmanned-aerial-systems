@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/drone_projection/drone_projection_node"
-  "/home/germanrv/drone_ws/devel/lib/drone_projection/drone_projection_node.pdb"
+  "/home/germanrv/drone_ws/devel/.private/drone_projection/lib/drone_projection/drone_projection_node"
+  "/home/germanrv/drone_ws/devel/.private/drone_projection/lib/drone_projection/drone_projection_node.pdb"
   "CMakeFiles/drone_projection_node.dir/src/drone_projection_node.cpp.o"
 )
 

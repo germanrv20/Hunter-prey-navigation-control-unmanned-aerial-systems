@@ -68,7 +68,7 @@ set(drone_lap_CONFIG_INCLUDED TRUE)
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
   set(drone_lap_SOURCE_PREFIX /home/germanrv/drone_ws/src/drone_lap)
-  set(drone_lap_DEVEL_PREFIX /home/germanrv/drone_ws/devel)
+  set(drone_lap_DEVEL_PREFIX /home/germanrv/drone_ws/devel/.private/drone_lap)
   set(drone_lap_INSTALL_PREFIX "")
   set(drone_lap_PREFIX ${drone_lap_DEVEL_PREFIX})
 else()

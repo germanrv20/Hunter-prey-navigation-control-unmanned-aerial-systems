@@ -21,7 +21,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/opt/ros/noetic/share/xmlrpcpp/cmake/../../../include/xmlrpcpp"
   "/usr/include/opencv4"
   "/usr/include/eigen3"
-  "/home/germanrv/drone_ws/src/src/px4_vision_gnc"
+  "/home/germanrv/drone_ws/src/drone_projection/src/px4_vision_gnc"
   )
 
 # Targets to which this target links.

@@ -1,0 +1,13 @@
+[35m[1mScanning dependencies of target drone_lap_projection[0m
+[ 10%] Built target drone2_spin_up_down_node
+[ 20%] Built target drone1_pitch_pid_node
+[ 30%] Built target drone1_follow_xy_pid
+[ 45%] Built target drone1_Yaw_pid_node
+[ 50%] Built target drone1_vertical_pid_node
+[ 70%] Built target drone2_aggressive_node
+[ 70%] Built target drone2_360lap
+[ 80%] Built target drone2_wavy_circle_node
+[ 90%] Built target dron2_prueba
+[ 95%] [32mBuilding CXX object CMakeFiles/drone_lap_projection.dir/src/drone_projectionV2.cpp.o[0m
+[100%] [32m[1mLinking CXX executable /home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone_lap_projection[0m
+[100%] Built target drone_lap_projection

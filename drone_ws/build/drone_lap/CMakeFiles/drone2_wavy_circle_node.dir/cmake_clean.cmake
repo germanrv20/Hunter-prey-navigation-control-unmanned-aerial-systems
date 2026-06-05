@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone2_wavy_circle_node"
-  "/home/germanrv/drone_ws/devel/lib/drone_lap/drone2_wavy_circle_node.pdb"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_wavy_circle_node"
+  "/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_wavy_circle_node.pdb"
   "CMakeFiles/drone2_wavy_circle_node.dir/src/drone2_wavy_circle.cpp.o"
 )
 

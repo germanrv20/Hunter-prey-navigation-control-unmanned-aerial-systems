@@ -20,7 +20,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/opt/ros/noetic/include"
   "/opt/ros/noetic/share/xmlrpcpp/cmake/../../../include/xmlrpcpp"
   "/usr/include/eigen3"
-  "/home/germanrv/drone_ws/src/src/px4_vision_gnc"
+  "/home/germanrv/drone_ws/src/drone_projection/src/px4_vision_gnc"
   "/usr/include/opencv4"
   )
 

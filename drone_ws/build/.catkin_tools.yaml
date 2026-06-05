@@ -1,0 +1,6 @@
+devel_space: /home/germanrv/drone_ws/devel
+install: false
+install_space: /home/germanrv/drone_ws/install
+profile: default
+source_space: /home/germanrv/drone_ws/src
+workspace: /home/germanrv/drone_ws
