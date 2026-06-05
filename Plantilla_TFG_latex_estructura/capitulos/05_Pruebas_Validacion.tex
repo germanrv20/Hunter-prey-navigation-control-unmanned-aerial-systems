@@ -10,9 +10,50 @@
 \section{Planificación de las Pruebas}
 
 
-\section{Métricas de Evaluación}
-
 \section{Desarrollo de los Experimentos}
+\subsection{Selecion modelo}
+
+\begin{table}[htbp]
+\centering
+\caption{Comparativa de modelos YOLO evaluados para la detección visual.}
+\label{tab:comparativa-yolo}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\hline
+\textbf{Modelo} & \textbf{Parámetros (M)} & \textbf{mAP50} & \textbf{mAP50-95} & \textbf{Inferencia (ms)} \\
+\hline
+YOLOv8n  & 3.2          & 0.992507 & 0.733692 & 2.660333  \\
+YOLOv8s  & 11.2         & 0.993716 & 0.734467 & 6.248403  \\
+YOLOv8m  & 25.9         & 0.993991 & 0.750974 & 14.657198 \\
+YOLOv10n & 2.3          & 0.988186 & 0.711153 & 3.258539  \\
+YOLOv10s & 7.2          & 0.989443 & 0.726444 & 6.054465  \\
+YOLOv10m & 16.4         & 0.983691 & 0.718956 & 14.397108 \\
+YOLO11n  & 2.6          & 0.993189 & 0.728236 & 2.814279  \\
+YOLO11s  & 9.4          & 0.994793 & 0.739400 & 6.217230  \\
+YOLO11m  & 20.1         & 0.990841 & 0.716693 & 17.582637 \\
+YOLO26n  & 2.4          & 0.986090 & 0.717900 & 2.899324  \\
+YOLO26s  & 9.5          & 0.991955 & 0.732011 & 6.551616  \\
+YOLO26m  & 20.04        & 0.988004 & 0.729559 & 17.643815 \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+
+A partir de estos resultados se selecciona \textbf{YOLOv8n} como modelo principal para el sistema de percepción. La elección no se basa únicamente en obtener la mayor precisión absoluta, sino en alcanzar un compromiso adecuado entre precisión, velocidad de inferencia y número de parámetros. Este criterio es especialmente importante en un sistema de seguimiento visual para UAV, donde el detector forma parte de un lazo de control y debe proporcionar medidas frecuentes sin introducir retardos significativos.
+
+Desde el punto de vista de la complejidad del modelo, YOLOv8n dispone de aproximadamente 3.2 millones de parámetros. Este valor es considerablemente inferior al de YOLOv8s, con 11.2 millones, y al de YOLOv8m, con 25.9 millones. Dentro de la misma familia YOLOv8, el modelo nano mantiene una precisión muy elevada, con un mAP50 de 0.992507, pero reduce de forma notable el tamaño de la red y el tiempo de inferencia. En concreto, YOLOv8s incrementa los parámetros hasta 11.2 millones y eleva la inferencia a 6.248403 ms, mientras que YOLOv8m alcanza 25.9 millones de parámetros y 14.657198 ms. Aunque YOLOv8m obtiene el mayor mAP50-95 de la tabla, con 0.750974, el incremento de coste computacional no compensa para una aplicación que requiere respuesta rápida.
+
+La comparación con otras familias refuerza esta decisión. YOLOv10n cuenta con 2.3 millones de parámetros, pero obtiene peores valores de precisión, con un mAP50 de 0.988186 y un mAP50-95 de 0.711153, además de una inferencia superior a YOLOv8n, con 3.258539 ms. YOLOv10s y YOLOv10m aumentan el número de parámetros hasta 7.2 y 16.4 millones, respectivamente, sin mejorar los resultados globales de YOLOv8n. Del mismo modo, YOLO11n presenta 2.6 millones de parámetros y una inferencia de 2.814279 ms, pero su mAP50-95, de 0.728236, queda por debajo del obtenido por YOLOv8n. Las versiones YOLO11s y YOLO11m aumentan la complejidad hasta 9.4 y 20.1 millones de parámetros, con tiempos de inferencia de 6.217230 ms y 17.582637 ms, respectivamente.
+
+También se evaluaron los modelos YOLO26n, YOLO26s y YOLO26m, con 2.4, 9.5 y 20.04 millones de parámetros. Aunque YOLO26n mantiene un tamaño reducido, su precisión es inferior, con un mAP50 de 0.986090 y un mAP50-95 de 0.717900. Las variantes YOLO26s y YOLO26m aumentan el número de parámetros y el tiempo de inferencia, pero tampoco superan de forma conjunta la precisión, velocidad y ligereza de YOLOv8n.
+
+Por tanto, YOLOv8n ofrece el mejor equilibrio para este proyecto: mantiene una precisión muy alta, presenta el menor tiempo de inferencia de todos los modelos evaluados, con 2.660333 ms, y conserva un número de parámetros reducido, con 3.2 millones. Esta combinación lo hace especialmente adecuado para seguimiento visual en tiempo real, ya que permite alimentar al controlador con medidas rápidas y suficientemente fiables, reduciendo el riesgo de respuestas tardías, oscilaciones o pérdida del objetivo durante la simulación.
+
+
+
 \subsection{Segumiento del Objetivo} 
 \section{Análisis de Resultados}
 \section{Experimentos}

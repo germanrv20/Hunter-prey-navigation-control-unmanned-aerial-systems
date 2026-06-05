@@ -33,11 +33,27 @@
 \vspace{-1.5cm} 
 \noindent\HRule\par\vspace{0.1cm}
 
+\section{Enfoque Metodológico del Proyecto}
 
-\section{Configuración de ROS}
-En esta sección se describe el proceso seguido para configurar ROS Noetic \cite{Rosnoetic} como base del entorno de desarrollo del proyecto. Para ello, se detalla la creación del espacio de trabajo, la instalación de los paquetes necesarios y el uso de los comandos básicos que permiten poner en marcha, supervisar y depurar los distintos nodos del sistema.
+Este capítulo describe el procedimiento seguido para desarrollar y validar el sistema propuesto. Su objetivo no es detallar todavía la programación concreta de cada nodo, script, sino establecer la lógica de trabajo empleada: preparación del entorno experimental, diseño de la simulación, definición del escenario multi-UAV, planteamiento de la percepción visual, estimación del estado y criterios de validación. 
 
-\subsection{Creación de un Espacio de Trabajo}
+\vspace{0.3cm}
+
+Las pruebas del sistema se plantean siguiendo una estrategia progresiva: primero se realizan en simulación y, una vez comprobado que el comportamiento es correcto, se considera su despliegue sobre un dron real. Esta decisión responde a una práctica habitual en robótica, donde los recursos hardware suelen ser limitados, costosos y sensibles a fallos durante las primeras etapas de desarrollo. Por ello, antes de utilizar una plataforma física, resulta necesario verificar en un entorno simulado que la comunicación, la percepción, el filtrado y el control funcionan de forma coherente y segura.
+
+\vspace{0.3cm}
+
+La metodología seguida se plantea de forma incremental. En primer lugar, se prepara un entorno reproducible basado en ROS, Gazebo, MAVROS y ArduPilot. A continuación, se configura una simulación con dos UAVs diferenciados para poder evaluar tareas de seguimiento visual. Sobre esta base se incorporan los módulos de percepción y estimación, encargados de obtener una medida visual del objetivo y suavizarla antes de alimentar el controlador. Finalmente, el sistema se valida inicialmente mediante pruebas en simulación, observando la comunicación entre nodos, la coherencia de los marcos de referencia y la respuesta del UAV ante las consignas generadas, como paso previo a una posible validación posterior con hardware real.
+
+\vspace{0.3cm}
+
+De este modo, la metodología actúa como guía del proceso experimental: define qué herramientas se emplean, por qué se utilizan y cómo se encadenan las fases de trabajo. La implementación, en cambio, recoge cómo se materializa cada una de esas decisiones en archivos, modelos entrenados, tópicos, parámetros y comandos concretos.
+
+
+\section{Entorno Experimental y Herramientas}
+En esta sección se describe el entorno base utilizado para el desarrollo del proyecto. ROS Noetic \cite{Rosnoetic} se adopta como middleware principal por su capacidad para organizar el sistema en nodos independientes y facilitar la comunicación entre percepción, estimación, control y simulación. La preparación del entorno se documenta con el fin de garantizar la reproducibilidad del trabajo; no obstante, la explicación de los módulos software concretos desarrollados se reserva para el capítulo de implementación.
+
+\subsection{Preparación del Entorno Base}
 Para el desarrollo e integración de paquetes propios en ROS Noetic, resulta necesario disponer de un espacio de trabajo organizado, compatible con la estructura habitual de ROS y preparado para compilar los distintos módulos del proyecto. En este caso, se ha utilizado \texttt{catkin tools} en lugar del método tradicional basado en \texttt{catkin\_make}, ya que ofrece una gestión más flexible del proceso de compilación y facilita el control del entorno de desarrollo.
 
 \begin{enumerate}
@@ -72,7 +88,7 @@ source ~/.bashrc
 
 
 
-\subsection{Instalación de Paquetes}
+\subsection{Herramientas y Dependencias Empleadas}
 
 
 La correcta ejecución del sistema de navegación y seguimiento visual exige la integración de diversas bibliotecas especializadas que extienden las funcionalidades base de ROS Noetic. Para este proyecto, el entorno requiere herramientas que gestionen desde la comunicación con el hardware de vuelo hasta el procesamiento avanzado de imágenes y uso de matrices de transformación.
@@ -166,11 +182,11 @@ sudo apt-get install libeigen-dev
 Siguiendo estos pasos se obtiene un workspace provisto con todos los paquetes
 necesarios para el desarrollo satisfactorio del proyecto.
 
-\section{Configuración y Ejecución de la Simulación en
+\section{Diseño Metodológico de la Simulación en
 Gazebo}
-En esta sección se presenta el procedimiento seguido para preparar y ejecutar la simulación de los UAVs mediante \textit{Gazebo}. Este simulador físico permite representar entornos de prueba realistas e interactuar con nodos de \textit{ROS}, ofreciendo un marco seguro y repetible para evaluar algoritmos de navegación, analizar la respuesta dinámica del vehículo y comprobar la robustez del sistema ante distintas condiciones de operación.
+En esta sección se presenta el planteamiento seguido para preparar y ejecutar la simulación de los UAVs mediante \textit{Gazebo}. Este simulador físico permite representar entornos de prueba realistas e interactuar con nodos de \textit{ROS}, ofreciendo un marco seguro y repetible para evaluar algoritmos de navegación, analizar la respuesta dinámica del vehículo y comprobar la robustez del sistema ante distintas condiciones de operación.
 
-\subsection{Modelo del Vehículo Aéreo y Configuración del Entorno}
+\subsection{Modelo del Vehículo Aéreo y Escenario de Prueba}
 La simulación se construye a partir del paquete \textit{iq\_sim} \cite{iqsim}, desarrollado por \textit{Intelligent Quads}, ya que proporciona modelos de UAVs, sensores virtuales y mundos de prueba preparados para trabajar con \textit{ROS} y \textit{Gazebo}. El modelo empleado recoge los elementos necesarios para representar el comportamiento del dron dentro del simulador:
 
 \begin{itemize}
@@ -181,98 +197,51 @@ La simulación se construye a partir del paquete \textit{iq\_sim} \cite{iqsim}, 
 
 Además del modelo del UAV, se utiliza un archivo de mundo \texttt{.world} para definir el escenario de pruebas. En este caso, se opta por un entorno aéreo abierto y sin obstáculos fijos, de modo que las trayectorias puedan desarrollarse con mayor libertad y sea posible observar el comportamiento del sistema en condiciones controladas.
 
-\subsection{Lanzamiento y Supervisión de la Simulación}
+\subsection{Procedimiento de Lanzamiento y Supervisión}
 La ejecución de la simulación se organiza mediante archivos \texttt{.launch}, encargados de cargar el modelo del dron, iniciar el entorno de \textit{Gazebo} y activar los nodos necesarios para la comunicación con el sistema de control. Estos archivos se ajustan para incluir la carga automática del UAV, la inicialización de \textit{MAVROS} como puente de comunicación y la conexión con \textit{ArduPilot} a través de puertos \texttt{UDP} simulados.
 
 Una vez iniciado el entorno, se activa el controlador correspondiente, ya sea el esquema convencional basado en \textit{ArduPilot} o el control propuesto en el proyecto. Durante la ejecución se supervisa la respuesta del sistema mediante la visualización 3D en \textit{Gazebo}, la consulta de tópicos con herramientas como \texttt{rqt\_graph} y \texttt{rostopic echo}, y la inspección del estado de los nodos mediante \texttt{rosnode list}. Esta supervisión permite comprobar que la simulación se ejecuta correctamente y que los módulos de percepción, comunicación y control intercambian información de forma adecuada.
 
+\vspace{0.3cm}
 
-\begin{listing}[language=XML,caption={Archivo \texttt{apm.launch} para la conexión de \textit{MAVROS}},label={lst:apm-launch}]
+Para facilitar el lanzamiento de varias instancias de \textit{MAVROS}, se emplea un archivo \texttt{apm.launch} genérico parametrizado mediante argumentos. De esta forma, cada UAV puede reutilizar la misma plantilla modificando únicamente el identificador del dron, el puerto \texttt{UDP}, el espacio de nombres y el archivo de configuración correspondiente.
+
+\begin{listing}[language=XML,caption={Archivo \texttt{apm.launch} genérico para múltiples drones},label={lst:apm-launch-generico}]
 <launch>
-    <!-- APM launch generico para multiples drones -->
+  <!-- APM launch generico para multiples drones -->
 
-    <arg name="drone_id" default="1" />
-    <arg name="fcu_url" default="udp://127.0.0.1:14551@14555" />
-    <arg name="gcs_url" default="" />
-    <arg name="tgt_system" default="1" />
-    <arg name="tgt_component" default="1" />
-    <arg name="log_output" default="screen" />
-    <arg name="respawn_mavros" default="true" />
-    <arg name="mavros_ns" default="/" />
-    <arg name="config_yaml"
-         default="$(env HOME)/drone_ws/mavros/launch/apm_config_d$(arg drone_id).yaml" />
+  <arg name="drone_id" default="1" />
+  <arg name="fcu_url" default="udp://127.0.0.1:14551@14555" />
+  <arg name="gcs_url" default="" />
+  <arg name="tgt_system" default="1" />
+  <arg name="tgt_component" default="1" />
+  <arg name="log_output" default="screen" />
+  <arg name="respawn_mavros" default="true"/>
+  <arg name="mavros_ns" default="/"/>
+  <arg name="config_yaml" default="mavros/launch/apm_config_d$(arg drone_id).yaml" />
 
-    <include file="$(find iq_sim)/launch/mavros_node.launch">
-        <arg name="pluginlists_yaml"
-             value="$(find mavros)/launch/apm_pluginlists.yaml" />
-        <arg name="config_yaml" value="$(arg config_yaml)" />
-        <arg name="mavros_ns" value="$(arg mavros_ns)" />
-        <arg name="fcu_url" value="$(arg fcu_url)" />
-        <arg name="gcs_url" value="$(arg gcs_url)" />
-        <arg name="respawn_mavros" value="$(arg respawn_mavros)" />
-        <arg name="tgt_system" value="$(arg tgt_system)" />
-        <arg name="tgt_component" value="$(arg tgt_component)" />
-        <arg name="log_output" value="$(arg log_output)" />
-    </include>
+  <include file="$(find iq_sim)/launch/mavros_node.launch">
+    <arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
+    <arg name="config_yaml" value="$(arg config_yaml)" />
+    <arg name="mavros_ns" value="$(arg mavros_ns)"/>
+    <arg name="fcu_url" value="$(arg fcu_url)" />
+    <arg name="gcs_url" value="$(arg gcs_url)" />
+    <arg name="respawn_mavros" value="$(arg respawn_mavros)"/>
+    <arg name="tgt_system" value="$(arg tgt_system)" />
+    <arg name="tgt_component" value="$(arg tgt_component)" />
+    <arg name="log_output" value="$(arg log_output)" />
+  </include>
 </launch>
 \end{listing}
 
 
-\section{Configuración UAVs en Simulación}
+\section{Diseño del Escenario Multi-UAV}
 En esta sección se aborda la configuración de los dos UAVs empleados en el entorno simulado. La separación entre ambos vehículos permite definir de forma clara sus parámetros de comunicación, identificadores, espacios de nombres y archivos de lanzamiento, evitando conflictos entre tópicos, nodos y conexiones con el autopiloto. Esta organización resulta especialmente importante cuando se trabaja con varios drones dentro de una misma instancia de \textit{Gazebo}, ya que facilita el seguimiento individual de cada plataforma y prepara el sistema para ejecutar pruebas coordinadas de navegación y control.
 
-\subsection{Configuración del Dron 1}
+\subsection{Definición del UAV Cazador}
 Para el primer UAV se tomó como base el modelo de dron incluido en \textit{iq\_sim} y se creó una variante propia denominada \texttt{drone1}, ubicada dentro de la ruta relativa \texttt{iq\_sim/models}. Esta separación permite modificar el modelo sin alterar la plantilla original y facilita su identificación dentro del entorno de simulación. El modelo queda registrado mediante el archivo \texttt{model.config}, donde se declara el nombre \texttt{drone1} y se enlaza con el archivo principal \texttt{model.sdf}.
 
-\begin{listing}[language=XML,caption={Extracto de \texttt{model.config} para declarar el modelo \texttt{drone1}},label={lst:drone1-model-config}]
-<model>
-  <name>drone1</name>
-  <version>1.0</version>
-  <sdf version="1.6">model.sdf</sdf>
-</model>
-\end{listing}
 
-En el archivo \texttt{model.sdf} se incorporó una cámara virtual fijada al cuerpo del vehículo, configurada para publicar imágenes y metadatos de calibración mediante el plugin \textit{gazebo\_ros\_camera}.
-
-\begin{listing}[language=XML,caption={Extracto de codigo en \texttt{model.sdf},sensor de cámara incorporado  para \texttt{drone1}},label={lst:drone1-camera-sdf}]
-<sensor name="cam" type="camera">
-  <pose>0 0 0.15 0 0 0</pose>
-  <camera>
-    <horizontal_fov>1.2</horizontal_fov>
-    <image>
-      <width>640</width>
-      <height>480</height>
-    </image>
-    <clip>
-      <near>0.1</near>
-      <far>1000</far>
-    </clip>
-  </camera>
-  <always_on>1</always_on>
-  <update_rate>30</update_rate>
-  <visualize>true</visualize>
-  <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-    <always_on>true</always_on>
-    <update_rate>30</update_rate>
-    <cameraName>webcam</cameraName>
-    <imageTopicName>image_raw</imageTopicName>
-    <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-    <frameName>camera_link</frameName>
-  </plugin>
-</sensor>
-</link>
-<joint name="camera_mount" type="fixed">
-  <child>cam_link</child>
-  <parent>iris::base_link</parent>
-  <axis>
-    <xyz>0 0 1</xyz>
-    <limit>
-      <upper>0</upper>
-      <lower>0</lower>
-    </limit>
-  </axis>
-</joint>
-\end{listing}
 
 Además del modelo físico, se generó una carpeta \texttt{config} asociada a \texttt{drone1}. En ella se incluyó un archivo \texttt{.yaml} con la información de la cámara, necesario para mantener organizada su configuración dentro de \textit{ROS}. También se añadió el archivo \texttt{drone1\_params.parm}, donde se define el identificador del vehículo para que \textit{ArduPilot} pueda reconocerlo de forma independiente dentro de la simulación.
 
@@ -315,60 +284,24 @@ local_position:
 \end{listing}
 
 
-\subsection{Configuración del Dron 2}
-Para el segundo UAV se creó una nueva carpeta denominada \texttt{drone2}, tomando como referencia la estructura ya definida para \texttt{drone1}. Esta copia permitió mantener una organización homogénea entre ambos modelos, pero eliminando la cámara del segundo vehículo, ya que en esta configuración no era necesario disponer de un segundo flujo de imagen. De este modo, \texttt{drone2} conserva la estructura básica del UAV y queda preparado para ejecutarse de forma simultánea dentro de \textit{Gazebo} sin interferir con el primer dron.
+\subsection{Definición del UAV Objetivo}
+Para el segundo UAV se siguió el mismo procedimiento aplicado al UAV cazador, reutilizando la estructura de \texttt{drone1} como base y creando una nueva instancia denominada \texttt{drone2}. Esta decisión permitió mantener una organización homogénea entre ambos vehículos y reducir la duplicación de configuraciones, modificando únicamente los parámetros necesarios para que el UAV objetivo pudiera ejecutarse de forma independiente dentro de la simulación.
 
-Al igual que en el caso anterior, el modelo se registra mediante el archivo \texttt{model.config}. En él se define el nombre del modelo como \texttt{drone2} y se indica que la descripción física del vehículo debe leerse desde el archivo \texttt{model.sdf}. Este archivo contiene la estructura del dron, sus enlaces, propiedades físicas y elementos necesarios para que \textit{Gazebo} pueda cargarlo correctamente en la simulación.
+\vspace{0.3cm}
 
-\begin{listing}[language=XML,caption={Extracto de \texttt{model.config} para declarar el modelo \texttt{drone2}},label={lst:drone2-model-config}]
-<model>
-  <name>drone2</name>
-  <version>1.0</version>
-  <sdf version="1.6">model.sdf</sdf>
-</model>
-\end{listing}
+La principal diferencia funcional respecto al UAV cazador es que en \texttt{drone2} se eliminó la cámara, ya que el flujo de imagen solo debía generarse desde el vehículo perseguidor. El UAV objetivo conserva, por tanto, la estructura física básica del modelo, pero no incorpora el sensor visual utilizado por el módulo de percepción.
 
-Asimismo, se creó un archivo de parámetros propio, denominado \texttt{drone2\_params.parm}, para asignar un identificador independiente al segundo UAV. Este valor permite que \textit{ArduPilot} distinga ambos vehículos durante la ejecución y evita conflictos en la comunicación con \textit{MAVROS}.
+\vspace{0.3cm}
 
+Los cambios realizados respecto a la configuración de \texttt{drone1} fueron los siguientes:
 
-\begin{listing}[caption={Identificador asignado al segundo UAV en \texttt{drone2\_params.parm}},label={lst:drone2-sysid}]
-SYSID_THISMAV 2
-\end{listing}
+\begin{itemize}
+    \item \textbf{Nombre del modelo:} se cambió el identificador del modelo de \texttt{drone1} a \texttt{drone2} dentro del archivo \texttt{model.config}, manteniendo \texttt{model.sdf} como archivo de descripción física.
+    \item \textbf{Identificador de ArduPilot:} se creó el archivo \texttt{drone2\_params.parm} y se asignó el valor \texttt{SYSID\_THISMAV 2}, para que el autopiloto pudiera distinguir el UAV objetivo del UAV cazador.
+    \item \textbf{Configuración de MAVROS:} se generó el archivo \texttt{apm\_config\_d2.yaml} siguiendo la misma estructura que \texttt{apm\_config\_d1.yaml}, pero sustituyendo las referencias a \texttt{drone1/base\_link} por \texttt{drone2/base\_link} en los apartados de posición global, IMU y posición local.
+\end{itemize}
 
-Por último, se creó el archivo \texttt{apm\_config\_d2.yaml} dentro de la ruta relativa \texttt{mavros/launch}. Este archivo cumple la misma función que el definido para el primer UAV, pero empleando los marcos de referencia propios de \texttt{drone2}. En concreto, se asigna el cuerpo del vehículo al marco \texttt{drone2/base\_link}, permitiendo que \textit{MAVROS} publique la posición global, la información inercial y la posición local sin solaparse con los datos del primer dron.
-
-\begin{listing}[caption={Fragmento principal de \texttt{apm\_config\_d2.yaml} para \texttt{drone2}},label={lst:drone2-apm-config}]
-# global_position
-global_position:
-  frame_id: "map"             # origin frame
-  child_frame_id: "drone2/base_link" # body-fixed frame
-  rot_covariance: 99999.0   # covariance for attitude?
-  gps_uere: 1.0             # User Equivalent Range Error (UERE) of GPS sensor (m)
-  use_relative_alt: true    # use relative altitude for local coordinates
-  tf:
-    send: false               # send TF?
-    frame_id: "map"  # TF frame_id
-    global_frame_id: "earth"  # TF earth frame_id
-    child_frame_id: "drone2/base_link" # TF child_frame_id
-
-# imu_pub
-imu:
-  frame_id: "drone2/base_link"
-  # need find actual values
-  linear_acceleration_stdev: 0.0003
-  angular_velocity_stdev: 0.0003490659 // 0.02 degrees
-  orientation_stdev: 1.0
-  magnetic_stdev: 0.0
-
-# local_position
-local_position:
-  frame_id: "map"
-  tf:
-    send: true
-    frame_id: "map"
-    child_frame_id: "drone2/base_link"
-    send_fcu: false
-\end{listing}
+\vspace{0.3cm}
 
 Tras definir los modelos y sus configuraciones individuales, ambos UAVs fueron añadidos al archivo de mundo \texttt{runaway.world}. En este archivo se indica a \textit{Gazebo} qué modelos deben cargarse en la escena y la posición inicial de cada uno. De esta forma, \texttt{drone1} se sitúa en el origen del entorno, mientras que \texttt{drone2} se inicializa desplazado 10 metros en el eje \textit{x}, evitando que ambos vehículos aparezcan superpuestos al comenzar la simulación.
 
@@ -388,7 +321,7 @@ Tras definir los modelos y sus configuraciones individuales, ambos UAVs fueron a
 </model>
 \end{listing}
 
-\subsection{Ejecución Básica de la Simulación}
+\subsection{Inicialiación de la Simulación}
 Una vez definidos los modelos \texttt{drone1} y \texttt{drone2}, sus identificadores de \textit{ArduPilot}, los archivos de configuración de \textit{MAVROS} y su inclusión en el mundo de \textit{Gazebo}, la simulación básica se ejecuta mediante varias terminales simultáneas. Para organizar este proceso se empleó \textit{Terminator}, una herramienta que permite dividir una misma ventana en varios paneles de terminal. Esta característica resulta especialmente útil en entornos ROS, ya que facilita observar al mismo tiempo la salida de \textit{Gazebo}, las dos instancias SITL de \textit{ArduPilot} y los dos nodos de \textit{MAVROS}, evitando cambiar continuamente entre ventanas independientes.
 
 \begin{center}
@@ -441,6 +374,520 @@ Las terminales cuarta y quinta ejecutan el archivo \texttt{apm.launch} para crea
 \vspace{0.4cm}
 La Figura \ref{fig:frames-basico} muestra los marcos de referencia publicados tras ejecutar los comandos anteriores. Esta comprobación permite verificar que cada UAV dispone de su propio \textit{frame} asociado, como \texttt{drone1/base\_link} y \texttt{drone2/base\_link}, enlazado con el marco global \texttt{map}. De esta forma se confirma que la configuración definida en \texttt{apm\_config\_d1.yaml} y \texttt{apm\_config\_d2.yaml} separa correctamente las transformaciones de ambos vehículos y evita ambigüedades al incorporar posteriormente los nodos de percepción y control propuestos.
 
+\section{Metodología Para el Componente de Percepción}
 
-\section{Configuración del Control Propuesto y Ejecución en
-Gazebo}
+Una vez definido el entorno de simulación, se establece la base metodológica que permite transformar las observaciones de la cámara en información útil para el control. El objetivo principal del módulo de percepción es localizar el UAV objetivo en la imagen capturada por el UAV cazador y convertir esa detección en variables numéricas que puedan ser utilizadas por los módulos de filtrado y control.
+
+\vspace{0.3cm}
+
+La percepción se plantea como una etapa de detección visual basada en imágenes. La cámara simulada en \textit{Gazebo} proporciona el flujo de entrada, que posteriormente es procesado por un detector de objetos.
+
+\subsection{Detector de UAVs}
+
+Como se indicó en la sección de estado del arte, los detectores basados en redes convolucionales pueden organizarse, de forma general, en modelos de dos etapas y modelos de una etapa. Los métodos de dos etapas, como la familia R-CNN, primero generan regiones candidatas en la imagen y posteriormente clasifican cada una de ellas. Este planteamiento puede ofrecer buenos resultados de detección, pero introduce una mayor complejidad y un mayor tiempo de procesamiento, algo poco conveniente cuando la salida del detector debe alimentar un lazo de control en tiempo real \cite{diffTwoStage, FunRcnn}.
+
+\vspace{0.3cm}
+
+Por este motivo, en este trabajo se opta por un detector de la familia YOLO. A diferencia de los enfoques de dos etapas, YOLO realiza la detección en una única pasada sobre la imagen, proporcionando directamente la caja delimitadora del UAV objetivo. Esta salida resulta suficiente para la metodología propuesta, ya que a partir de ella se obtiene el centro del objetivo, el error visual respecto al centro de la cámara y el área normalizada utilizada como referencia aproximada de distancia. Así, YOLO ofrece un compromiso adecuado entre rapidez, simplicidad de integración y precisión para una tarea de seguimiento visual de UAVs .
+
+\vspace{0.3cm}
+
+\subsection{Dataset Utilizado}
+
+El conjunto de datos empleado para entrenar y evaluar el módulo de detección se construyó de forma progresiva, con el objetivo de adaptar el modelo a las distintas condiciones visuales presentes en el proyecto. Como punto de partida se realizó un \textit{fork} del dataset público \textit{Synthetic Drone}, disponible en Roboflow Universe: \url{https://universe.roboflow.com/drone-spegy/synthetic-drone}. Las imágenes de este primer dataset estaban anotadas originalmente en formato de segmentación, por lo que fue necesario revisar el conjunto y etiquetarlo manualmente mediante cajas delimitadoras adaptadas a la tarea de detección de UAVs. Este primer conjunto proporcionó una base inicial de imágenes sintéticas de drones, útil para comenzar el entrenamiento y comprobar la viabilidad del detector en una fase temprana.
+
+\vspace{0.3cm}
+
+Para realizar el etiquetado y organizar las distintas versiones del conjunto de datos se utilizó \textit{Roboflow}, debido a su facilidad de uso y a la disponibilidad de herramientas de anotación asistidas por IA. Estas herramientas permitieron acelerar el etiquetado de múltiples imágenes, ya que generaban propuestas iniciales de cajas delimitadoras que posteriormente podían revisarse y corregirse manualmente. Además, la plataforma facilitó la gestión del dataset, la revisión visual de las anotaciones y la exportación en un formato compatible con el entrenamiento de modelos YOLO.
+
+\vspace{0.3cm}
+
+Posteriormente, se añadieron imágenes obtenidas directamente desde el entorno de simulación. Esta ampliación permitió aproximar el dataset a las condiciones específicas del sistema desarrollado, ya que las pruebas del controlador y de la percepción visual se realizan inicialmente en Gazebo. La incorporación de imágenes procedentes de la simulación resultó importante para que el modelo no dependiera únicamente de ejemplos genéricos, sino que también aprendiera características visuales cercanas a las que encontraría durante los ensayos simulados del UAV.
+
+\vspace{0.3cm}
+
+En una etapa final, el dataset se enriqueció con imágenes de drones reales. Estas muestras permitieron introducir mayor variabilidad visual en cuanto a iluminación, fondo, escala, orientación y apariencia del objetivo. Todas las imágenes reales incorporadas en esta última fase fueron etiquetadas manualmente, revisando la posición del dron en cada imagen y ajustando las cajas delimitadoras para asegurar una anotación coherente. Este proceso fue necesario para mejorar la calidad del entrenamiento y reducir la diferencia entre las imágenes sintéticas, las capturas simuladas y las condiciones reales de operación.
+
+\vspace{0.3cm}
+
+Como resultado, se obtuvo un dataset final de carácter mixto, compuesto por imágenes sintéticas, imágenes procedentes de la simulación e imágenes reales etiquetadas manualmente. Esta combinación permite entrenar un detector más robusto, capaz de reconocer el objetivo tanto en el entorno virtual como en situaciones más próximas a un escenario real. El conjunto final utilizado en este trabajo se encuentra organizado en Roboflow en el siguiente enlace: \url{https://app.roboflow.com/germanrv-uyz9j/synthetic-drone-d2ius/browse}.
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:dataset-roboflow}
+\includegraphics[width=0.9\textwidth]{imagenes/roboflow_2.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Vista del dataset final organizado en Roboflow. (Imagen de elaboración propia).}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Vista del dataset final organizado en Roboflow. (Imagen de elaboración propia)}
+\end{center}
+
+\vspace{0.3cm}
+
+El procedimiento seguido para llegar al dataset final puede resumirse en cuatro fases: primero, selección y \textit{fork} del dataset sintético de partida; segundo, incorporación de capturas obtenidas en simulación para adaptar el entrenamiento al entorno Gazebo; tercero, inclusión de imágenes reales de drones para aumentar la diversidad del conjunto; y cuarto, etiquetado manual y revisión de las nuevas muestras antes de entrenar los modelos YOLO comparados en la sección siguiente.
+
+
+
+explicar como he hehco el dataset y como lo he entrnado finetuning de yolo
+\subsection{Geometría Proyectiva aplicada a la Percepción Visual}
+
+\vspace{0.3cm}
+
+La geometría proyectiva se incorpora en esta metodología para justificar cómo se interpretan las medidas obtenidas por el detector visual. En este trabajo, YOLO no proporciona directamente la posición tridimensional del UAV objetivo, sino una caja delimitadora en la imagen. A partir de esa caja se calculan el centro del objetivo, el error respecto al centro del fotograma y el área normalizada. Por tanto, esta subsección no se plantea como un bloque independiente de reconstrucción 3D, sino como la base geométrica que permite entender por qué esas magnitudes visuales son válidas para el seguimiento.
+
+\vspace{0.3cm}
+
+\subsubsection{Relación entre cámara, detección y error visual}
+
+\vspace{0.3cm}
+
+El punto de partida es el modelo de cámara estenopeica (\textit{pinhole camera model}). Este modelo idealiza la formación de la imagen suponiendo que los rayos de luz pasan por un único punto, denominado centro óptico o centro de proyección, antes de alcanzar el plano imagen. Aunque una cámara real incluye lentes y pequeñas deformaciones, esta aproximación permite describir de forma sencilla cómo un punto del espacio se transforma en una posición dentro de la imagen \cite{uvaPinholeCamera, bergamasco2019pinhole}.
+
+\vspace{0.3cm}
+
+En visión por computador suele utilizarse un plano imagen virtual situado delante del centro óptico. Esta convención evita invertir los signos de la imagen y facilita la definición del error visual que se presenta en las subsecciones siguientes. Así, cuando el centro de la caja detectada se desplaza respecto al centro del fotograma, dicho desplazamiento puede interpretarse como una desviación angular aproximada del objetivo respecto al eje óptico de la cámara \cite{uvaPinholeCamera, CameraModels}.
+
+\vspace{0.3cm}
+
+Si un punto del entorno se expresa en el sistema de referencia de la cámara como $P_c = (X_c, Y_c, Z_c)$, su proyección ideal sobre el plano imagen métrico viene dada por:
+
+\vspace{0.3cm}
+
+\begin{equation}
+x = f \frac{X_c}{Z_c}, \quad y = f \frac{Y_c}{Z_c}
+\end{equation}
+
+\vspace{0.3cm}
+
+En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ representa la profundidad y $f$ es la distancia focal. Esta relación conecta directamente con lo realizado en el módulo de percepción: si el UAV objetivo se desplaza lateralmente o verticalmente, cambia el centro de la caja detectada; si se acerca o se aleja, cambia su tamaño aparente. Por esta razón, el error visual y el área normalizada permiten alimentar un seguimiento reactivo sin reconstruir completamente la posición 3D del objetivo \cite{bergamasco2019pinhole, CameraModels}.
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:ibvs-esquema-metodologia}
+\includegraphics[width=0.65\textwidth]{imagenes/pinholeCameramodel2.jpeg}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Esquema simplificado del modelo de cámara estenopeica. Fuente: \cite{opencvCalib3d}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del modelo de cámara estenopeica}
+\end{center}
+
+\vspace{0.3cm}
+
+\subsubsection{Paso a coordenadas de píxel}
+
+\vspace{0.3cm}
+
+Para utilizar esta relación dentro del sistema desarrollado, la proyección geométrica debe expresarse en coordenadas de imagen. Primero se obtienen las coordenadas normalizadas:
+
+\vspace{0.3cm}
+
+\begin{equation}
+x_n = \frac{X_c}{Z_c}, \quad y_n = \frac{Y_c}{Z_c}
+\end{equation}
+
+\vspace{0.3cm}
+
+Estas coordenadas recogen la dirección del punto observado respecto a la cámara. Después, se transforman a coordenadas de píxel mediante los parámetros intrínsecos:
+
+\vspace{0.3cm}
+
+\begin{equation}
+u = f_x x_n + c_x, \quad v = f_y y_n + c_y
+\end{equation}
+
+\vspace{0.3cm}
+
+Aquí, $f_x$ y $f_y$ son las distancias focales expresadas en píxeles, mientras que $c_x$ y $c_y$ definen el punto principal de la cámara. Esta conversión es la que permite trabajar con las mismas magnitudes que entrega el detector: coordenadas de píxel de la caja delimitadora. Además, explica por qué en la metodología se normaliza el error visual respecto a $W/2$ y $H/2$: de esta forma, la señal de control depende menos de la resolución concreta de la cámara utilizada \cite{CameraModels, opencvCalib3d}.
+
+\vspace{0.3cm}
+
+La formulación completa de la proyección puede escribirse en coordenadas homogéneas como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+s \left[\begin{array}{c}
+u \\ v \\ 1\end{array}\right] = K \cdot [R|t] \cdot \left[\begin{array}{c}X_w \\ Y_w \\ Z_w \\ 1\end{array}\right]
+\end{equation}
+
+\vspace{0.3cm}
+
+En esta expresión, $(X_w, Y_w, Z_w)$ son las coordenadas del punto en el sistema de referencia del mundo, $[R|t]$ representa la posición y orientación de la cámara respecto a ese mundo, $K$ agrupa los parámetros intrínsecos y $s$ es un factor de escala. La matriz intrínseca se expresa como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+K = \left[\begin{array}{ccc}
+f_x & \gamma & c_x \\
+0 & f_y & c_y \\
+0 & 0 & 1
+\end{array}\right]
+\end{equation}
+
+\vspace{0.3cm}
+
+Desde el punto de vista metodológico, esta formulación ayuda a separar dos aspectos: por un lado, la geometría de la cámara y sus parámetros internos; por otro, la posición relativa entre cámara y objetivo. En el sistema propuesto no se utiliza esta ecuación para calcular una pose 3D completa en cada instante, sino para fundamentar el uso de medidas 2D normalizadas como entrada al filtrado y al control \cite{CameraModels, uvaPinholeCamera}.
+
+\vspace{0.3cm}
+
+\subsubsection{Efecto del FOV, la resolución y la distorsión}
+
+\vspace{0.3cm}
+
+Otro aspecto importante para el seguimiento es el campo de visión o \textit{Field of View} (FOV), que define la amplitud angular de la escena capturada por la cámara. Si $d_x$ y $d_y$ representan el tamaño del sensor en horizontal y vertical, el FOV puede aproximarse mediante:
+
+\vspace{0.3cm}
+
+\begin{equation}
+FOV_x = 2 \arctan \left( \frac{d_x}{2f} \right), \quad FOV_y = 2 \arctan \left( \frac{d_y}{2f} \right)
+\end{equation}
+
+\vspace{0.3cm}
+
+Este parámetro afecta directamente al comportamiento observado. Un FOV amplio facilita mantener al UAV objetivo dentro de la imagen durante maniobras rápidas, aunque reduce el tamaño aparente del objeto. Un FOV más estrecho ofrece más detalle sobre el objetivo, pero aumenta el riesgo de perderlo si se desplaza fuera del encuadre. Por ello, en este trabajo el error visual se trata como una medida relativa dentro del fotograma, en lugar de depender únicamente de valores absolutos en píxeles \cite{bergamasco2019pinhole, CameraModels}.
+
+\vspace{0.3cm}
+
+Además, una cámara real no proyecta la escena de manera perfectamente ideal. La lente puede introducir distorsión radial y tangencial. La distorsión radial desplaza los puntos según su distancia al centro de la imagen, mientras que la distorsión tangencial aparece cuando lente y sensor no están perfectamente alineados. Estas deformaciones son relevantes porque afectan precisamente a las variables usadas por el sistema: centro de la caja, error visual y área aparente \cite{opencvCalib3d, uvaPinholeCamera}.
+
+\vspace{0.3cm}
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:Camera-distorsion}
+    \includegraphics[width=0.85\textwidth]{imagenes/distosionCamera.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Imágenes de una pantalla de objeto rectangular mostradas con (a) ninguna distorsión; (b) distorsión radial; (c) distorsión tangencial.,  \cite{ImgDistorsion}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} sDistorsion Camera pinhole}
+ \end{center}
+
+\vspace{0.3cm}
+
+Desde el punto de vista del sistema propuesto, esto implica que una misma posición real del objetivo podría producir un error visual ligeramente diferente según la zona de la imagen donde aparezca. Por este motivo, conviene trabajar con coordenadas normalizadas o con puntos corregidos mediante calibración antes de usar la medida en las etapas posteriores \cite{opencvCalib3d, CameraModels}.
+
+\vspace{0.3cm}
+
+
+
+\vspace{0.3cm}
+
+
+\subsection{Flujo General del Módulo de Percepción}
+
+El flujo metodológico del módulo comienza con la captura de una imagen desde la cámara del UAV cazador. Sobre dicha imagen se ejecuta el detector, que devuelve una caja delimitadora o \textit{bounding box} asociada al UAV objetivo. Esta caja constituye la salida básica del detector y permite calcular tanto la posición del objetivo en el plano imagen como su tamaño aparente.
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:dron-error-visual}
+\includegraphics[width=0.75\textwidth]{imagenes/dron_error.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Representación del error visual entre el centro de la imagen y el UAV objetivo detectado. Imagen de elaboración propia.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Representación del error visual entre el centro de la imagen y el UAV objetivo detectado}
+\end{center}
+
+\vspace{0.3cm}
+
+
+A partir de la caja delimitadora se obtiene el centro del objetivo. Si $(x_{min}, y_{min})$ y $(x_{max}, y_{max})$ representan las esquinas de la caja detectada, el centro se calcula como:
+
+\begin{equation}
+c_x = \frac{x_{min} + x_{max}}{2}, \quad
+c_y = \frac{y_{min} + y_{max}}{2}
+\end{equation}
+
+Este punto se interpreta como una aproximación de la posición del UAV objetivo dentro de la imagen. Aunque no proporciona directamente una posición tridimensional real, sí permite obtener una señal visual suficiente para definir la dirección en la que debe corregirse el movimiento del UAV cazador.
+
+\subsection{Cálculo y Normalización del Error Visual}
+
+El error visual se define como la diferencia entre el centro del objetivo detectado y el centro de la imagen. Si $W$ y $H$ representan el ancho y alto del fotograma, el centro de la imagen viene dado por:
+
+\begin{equation}
+c_{img,x} = \frac{W}{2}, \quad c_{img,y} = \frac{H}{2}
+\end{equation}
+
+Por tanto, el error horizontal y vertical en píxeles se expresa como:
+
+\begin{equation}
+e_x = c_x - c_{img,x}, \quad e_y = c_y - c_{img,y}
+\end{equation}
+
+\vspace{0.3cm}
+
+Esta normalización resulta especialmente importante porque no todas las cámaras empleadas trabajan con la misma resolución. En el entorno de simulación, la cámara configurada en \textit{Gazebo} genera imágenes de $640 \times 480$ píxeles, mientras que la cámara considerada para el dron real trabaja con una resolución de $346 \times 260$ píxeles. Si el error se utilizara directamente en píxeles, una misma desviación relativa del objetivo produciría valores diferentes según la cámara utilizada.
+
+
+\vspace{0.3cm}
+
+Esta relación se representa gráficamente en la Figura \ref{fig:dron-error-visual}, donde se observa cómo el desplazamiento del UAV objetivo respecto al centro de la imagen genera las componentes horizontal y vertical del error visual.
+
+\vspace{0.3cm}
+
+
+Para evitar esta dependencia directa de la resolución, el error se normaliza respecto a la mitad del ancho y de la altura de la imagen:
+
+\begin{equation}
+e_{x,norm} = \frac{e_x}{W/2}, \quad e_{y,norm} = \frac{e_y}{H/2}
+\end{equation}
+
+Esta normalización permite expresar el error en una escala relativa. Un valor próximo a cero indica que el objetivo se encuentra centrado en la imagen, mientras que valores positivos o negativos indican desplazamientos hacia uno u otro lado del plano visual. De este modo, el controlador puede trabajar con una señal más homogénea y menos dependiente de la configuración concreta de la cámara.
+
+
+\section{Estimación de Distancia}
+
+Al plantear la estimación de distancia se valoró inicialmente emplear directamente el área de la caja delimitadora como señal de error. En ese enfoque, se fijaría un área deseada en la imagen y el controlador intentaría mantener la detección con ese tamaño: si el área medida fuese menor, el objetivo estaría más lejos; si fuese mayor, estaría demasiado cerca. Aunque esta solución es sencilla, el error queda expresado como una magnitud relativa de imagen y queda condicionado por el valor de área deseada elegido, la escala aparente del modelo y la estabilidad de la caja detectada.
+
+\vspace{0.3cm}
+
+Por este motivo, se optó por convertir el tamaño de la caja en una distancia aproximada expresada en metros. Esta decisión permite que el PID de distancia trabaje con una variable física, comparando la distancia estimada con una distancia deseada real. La ventaja de este planteamiento es que el controlador queda desacoplado del sensor concreto: si en el futuro se incorpora otro sistema capaz de medir distancia en metros, el PID de distancia no tendría que cambiar, ya que seguiría recibiendo una entrada con las mismas unidades.
+
+\vspace{0.3cm}
+
+La idea implementada consiste en estimar una distancia aproximada entre la cámara del UAV cazador y el UAV objetivo utilizando la geometría proyectiva descrita anteriormente. Para ello, se aplica el modelo de cámara estenopeica no solo a la posición de un punto, sino también al tamaño aparente de un objeto cuyo tamaño real es conocido.
+
+\vspace{0.3cm}
+
+A partir de la relación geométrica básica, una dimensión real del objeto se proyecta en la imagen de forma proporcional a la distancia focal e inversamente proporcional a la profundidad:
+
+\begin{equation}
+x = f_x \frac{X_c}{Z_c}, \quad y = f_y \frac{Y_c}{Z_c}
+\end{equation}
+
+\vspace{0.3cm}
+
+En esta expresión, las variables se interpretan de la siguiente forma para el problema de seguimiento del UAV:
+
+\begin{itemize}
+    \item $Z_c$ representa la distancia real entre la cámara del UAV cazador y el UAV objetivo. Es la magnitud que se desea estimar.
+    \item $X_c$ e $Y_c$ representan las dimensiones reales conocidas del UAV objetivo. En este trabajo se considera un ancho aproximado de $X_c = 0.55\,\mathrm{m}$ y una altura aproximada de $Y_c = 0.11\,\mathrm{m}$.
+    \item $x$ e $y$ representan el tamaño del UAV objetivo en la imagen, medido en píxeles. En la práctica, estos valores corresponden al ancho y alto de la caja delimitadora entregada por YOLO, es decir, $x = w_{box}$ e $y = h_{box}$.
+    \item $f_x$ y $f_y$ son las distancias focales de la cámara expresadas en píxeles. Estos parámetros se obtienen de la matriz intrínseca publicada por la cámara.
+\end{itemize}
+
+\vspace{0.3cm}
+
+Como el objetivo es calcular la distancia $Z_c$, se despeja la expresión anterior. La estimación puede obtenerse usando el ancho de la caja delimitadora o usando su alto:
+
+\begin{equation}
+Z_{c,x} = \frac{f_x \cdot X_c}{x}
+\end{equation}
+
+\begin{equation}
+Z_{c,y} = \frac{f_y \cdot Y_c}{y}
+\end{equation}
+
+\vspace{0.3cm}
+
+La primera opción, basada en el ancho, resulta especialmente conveniente en este trabajo porque el UAV presenta una dimensión horizontal mayor que la vertical. Al proyectarse con más píxeles, el ancho de la caja suele ser una medida más estable frente a pequeñas variaciones de la detección. No obstante, la estimación basada en la altura también puede emplearse como comprobación adicional o como alternativa cuando el ancho de la caja no sea fiable.
+
+\vspace{0.3cm}
+
+Por ejemplo, si la distancia focal horizontal de la cámara simulada es $f_x = 500$ píxeles y YOLO detecta el UAV objetivo con un ancho de caja de $x = 100$ píxeles, tomando como ancho real $X_c = 0.55\,\mathrm{m}$ se obtiene:
+
+\begin{equation}
+Z_c = \frac{500 \cdot 0.55}{100} = \frac{275}{100} = 2.75\,\mathrm{m}
+\end{equation}
+
+\vspace{0.3cm}
+
+Su uso dentro del sistema consiste en transformar cada detección válida en una distancia aproximada, que posteriormente puede compararse con una distancia deseada para generar el error longitudinal del controlador. Debido a que la caja delimitadora puede fluctuar entre fotogramas, esta distancia debe interpretarse como una medida visual ruidosa y conviene suavizarla o validarla antes de utilizarla directamente en el control.
+
+\vspace{0.3cm}
+
+
+
+
+\section{Filtrado }
+
+\subsection{Filtro de Kalman}
+
+El filtro de Kalman es una técnica de estimación que permite suavizar medidas ruidosas y predecir brevemente cómo evoluciona una variable en el tiempo. En este proyecto no se utiliza para detectar el UAV, sino para hacer más estable la caja delimitadora entregada por YOLO antes de usarla en el cálculo del error visual y de la distancia \cite{kalman1960new, kalmanfilterNetES, wikipediaFiltroKalman}.
+
+\vspace{0.3cm}
+
+\begin{center}
+    \refstepcounter{figure}\label{fig:Filtro-kalman}
+    \includegraphics[width=1\textwidth]{imagenes/KalmanYolo2.png}\\[0.5ex]
+    {\small \textbf{Figura \thefigure.} Ejemplo de uso del filtro de Kalman sobre la detección visual. Imagen de elaboración propia.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Ejemplo de uso del filtro de Kalman sobre la detección visual}
+\end{center}
+
+\vspace{0.3cm}
+
+De forma sencilla, el filtro mantiene un \textbf{estado} con la posición estimada del objetivo y su velocidad aparente. Para un caso bidimensional básico, este estado puede escribirse como:
+
+\begin{equation}
+\mathbf{x}_k = \left[ \begin{array}{cccc} x_k & y_k & \dot{x}_k & \dot{y}_k \end{array} \right]^{T}
+\end{equation}
+
+\vspace{0.3cm}
+
+En esta expresión, $x_k$ e $y_k$ representan la posición del objetivo en la imagen, mientras que $\dot{x}_k$ y $\dot{y}_k$ representan cómo cambia esa posición entre fotogramas. Para predecir el siguiente estado se utiliza la matriz de transición $\mathbf{F}_k$:
+
+\begin{equation}
+\mathbf{F}_k = \left[ \begin{array}{cccc}
+1 & 0 & \Delta t & 0 \\
+0 & 1 & 0 & \Delta t \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
+\end{array} \right]
+\end{equation}
+
+\vspace{0.3cm}
+
+La matriz $\mathbf{F}_k$ describe cómo evoluciona el estado: la nueva posición se calcula usando la posición anterior y la velocidad estimada. En cambio, la matriz de observación $\mathbf{H}_k$ indica qué parte del estado se mide realmente. Si la cámara solo mide la posición del objetivo, pero no su velocidad, puede expresarse como:
+
+\begin{equation}
+\mathbf{H}_k = \left[ \begin{array}{cccc}
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0
+\end{array} \right]
+\end{equation}
+
+\vspace{0.3cm}
+
+También se emplean dos matrices para representar la incertidumbre del sistema:
+
+\begin{equation}
+\mathbf{Q}_k = \left[ \begin{array}{cccc}
+\sigma_x^2 & 0 & 0 & 0 \\
+0 & \sigma_y^2 & 0 & 0 \\
+0 & 0 & \sigma_{\dot{x}}^2 & 0 \\
+0 & 0 & 0 & \sigma_{\dot{y}}^2
+\end{array} \right], \quad
+\mathbf{R}_k = \left[ \begin{array}{cc}
+\sigma_{mx}^2 & 0 \\
+0 & \sigma_{my}^2
+\end{array} \right]
+\end{equation}
+
+\vspace{0.3cm}
+
+La matriz $\mathbf{Q}_k$ representa el ruido del modelo: cuanto mayor sea, menos se confía en la predicción. La matriz $\mathbf{R}_k$ representa el ruido de la medida: cuanto mayor sea, menos se confía en la detección de YOLO. Por tanto, estas matrices regulan el equilibrio entre seguir la predicción del movimiento o corregir con la nueva caja detectada.
+
+\vspace{0.3cm}
+
+La actualización se entiende de forma simple. Cuando llega una nueva detección, el filtro la compara con la predicción anterior. Si la caja de YOLO es coherente, la estimación se corrige hacia esa medida. Si la caja cambia bruscamente, contiene ruido o desaparece durante unos instantes, el filtro confía más en la predicción. Así se obtiene una señal más suave y útil para el controlador.
+
+\subsection{Uso del Filtro de Kalman en el Sistema Propuesto}
+
+\vspace{0.3cm}
+
+En este trabajo, el filtro de Kalman se utiliza directamente sobre la salida del detector YOLO. En lugar de filtrar únicamente el centro de la detección, se filtra la caja delimitadora completa. Por ello, el estado empleado en el seguimiento visual se define a partir de las cuatro coordenadas de la caja y de sus velocidades aparentes:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{x}_k = \left[ \begin{array}{cccccccc}
+x_{1,k} & y_{1,k} & x_{2,k} & y_{2,k} & \dot{x}_{1,k} & \dot{y}_{1,k} & \dot{x}_{2,k} & \dot{y}_{2,k}
+\end{array} \right]^{T}
+\end{equation}
+
+\vspace{0.3cm}
+
+La medida proporcionada por YOLO está formada únicamente por las coordenadas observadas de la caja:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{z}_k = \left[ \begin{array}{cccc}
+x_{1,k} & y_{1,k} & x_{2,k} & y_{2,k}
+\end{array} \right]^{T}
+\end{equation}
+
+\vspace{0.3cm}
+
+De este modo, el filtro estima no solo dónde se encuentra la caja en el fotograma actual, sino también cómo tiende a desplazarse entre imágenes consecutivas. Metodológicamente, se ha adoptado un modelo de velocidad constante con un intervalo de muestreo aproximado de $\Delta t = 0.05$. La matriz de transición propaga las cuatro coordenadas de la caja utilizando sus velocidades, mientras que la matriz de observación selecciona únicamente las coordenadas que realmente entrega el detector.
+
+\vspace{0.3cm}
+
+La aplicación práctica se organiza en tres estados. Cuando YOLO detecta el UAV objetivo, la caja observada corrige la predicción del filtro y se publica una detección válida. Cuando YOLO pierde temporalmente el objetivo, pero el filtro ya había sido inicializado, se utiliza la fase de predicción para mantener durante un número limitado de fotogramas una estimación aproximada de la caja. Finalmente, si la pérdida se prolonga demasiado, el seguimiento se reinicia y la medida se considera no válida. En la implementación desarrollada, este límite se fija en 15 fotogramas consecutivos sin detección.
+
+\vspace{0.3cm}
+
+Esta decisión se tomó porque las detecciones de YOLO pueden presentar saltos pequeños entre fotogramas o desaparecer durante instantes breves debido a cambios de escala, desenfoque, orientación del dron o pequeñas oclusiones. Sin el filtro, estas variaciones se transmitirían directamente al cálculo del error visual y podrían generar consignas bruscas. Con Kalman, la caja delimitadora mantiene una evolución temporal más coherente y el sistema dispone de una predicción razonable cuando la detección falla de forma puntual.
+
+\vspace{0.3cm}
+
+\subsection{Filtro EMA aplicado a la Caja de Detección}
+
+\vspace{0.3cm}
+
+Además del filtro de Kalman, se utiliza un filtro EMA (\textit{Exponential Moving Average}) sobre las cuatro coordenadas de la caja delimitadora recibida por el nodo de proyección. Por tanto, el suavizado no se aplica únicamente al centro, sino directamente a las esquinas de la detección, formadas por $(x_{1,k}, y_{1,k})$ y $(x_{2,k}, y_{2,k})$. Si la caja en el instante $k$ se representa como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\mathbf{b}_k = \left[ \begin{array}{cccc}
+x_{1,k} & y_{1,k} & x_{2,k} & y_{2,k}
+\end{array} \right]^T
+\end{equation}
+
+\vspace{0.3cm}
+
+el suavizado EMA de la caja puede expresarse de forma compacta como:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\bar{\mathbf{b}}_k = \alpha \mathbf{b}_k + (1 - \alpha)\bar{\mathbf{b}}_{k-1}
+\end{equation}
+
+\vspace{0.3cm}
+
+En el sistema desarrollado se emplea $\alpha = 0.55$. Este valor proporciona un compromiso entre suavizado y capacidad de respuesta: si $\alpha$ fuera demasiado bajo, la caja sería más estable pero reaccionaría con retraso ante maniobras del objetivo; si fuera demasiado alto, las coordenadas filtradas seguirían casi por completo las oscilaciones instantáneas del detector. Con el valor elegido, la caja conserva la tendencia de movimiento del UAV objetivo y reduce pequeñas variaciones entre fotogramas.
+
+\vspace{0.3cm}
+
+A partir de las coordenadas suavizadas se calcula el centro final de la detección, que es el punto utilizado para obtener el error visual horizontal y vertical del controlador:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\bar{c}_{x,k} = \frac{\bar{x}_{1,k} + \bar{x}_{2,k}}{2}, \quad
+\bar{c}_{y,k} = \frac{\bar{y}_{1,k} + \bar{y}_{2,k}}{2}
+\end{equation}
+
+\vspace{0.3cm}
+
+De este modo, el punto central no depende de una caja instantánea de YOLO, sino de una caja previamente suavizada. Esto reduce la fluctuación del centro entre fotogramas y evita que pequeñas vibraciones de las esquinas se transformen directamente en cambios rápidos del error visual. En caso de pérdida puntual de detección, el sistema puede mantener la última caja suavizada válida para evitar saltos artificiales hacia el origen de la imagen, ya que un salto a $(0,0)$ generaría un error visual falso y podría producir una orden de control incorrecta.
+
+\vspace{0.3cm}
+
+La misma caja suavizada también se utiliza para calcular la anchura y la altura empleadas en la estimación de distancia:
+
+\vspace{0.3cm}
+
+\begin{equation}
+\bar{w}_k = \bar{x}_{2,k} - \bar{x}_{1,k}, \quad
+\bar{h}_k = \bar{y}_{2,k} - \bar{y}_{1,k}
+\end{equation}
+
+\vspace{0.3cm}
+
+Esto resulta importante porque la distancia estimada depende del tamaño aparente del UAV objetivo en la imagen. Si la anchura o la altura de la caja cambian bruscamente por una oscilación del detector, la distancia calculada también puede variar de forma brusca. Al aplicar EMA sobre las cuatro esquinas antes de obtener $\bar{w}_k$ y $\bar{h}_k$, se consigue que el cálculo de distancia reciba medidas más continuas y menos sensibles a vibraciones puntuales de YOLO.
+
+\vspace{0.3cm}
+
+La necesidad de esta segunda etapa se debe a que el filtro de Kalman, aunque mejora la coherencia temporal de la caja delimitadora y reduce parte de las vibraciones del detector, no elimina por completo las oscilaciones residuales entre fotogramas. Una variación pequeña en la posición o en el tamaño de la caja puede desplazar de forma apreciable su punto central y modificar la distancia estimada. Si estas señales se utilizaran directamente como entrada del controlador, el error visual y el error longitudinal podrían cambiar de manera continua, generando consignas alternantes y provocando vibraciones en el dron cazador.
+
+\vspace{0.3cm}
+
+Por ello, el filtro EMA se justifica como un suavizado final aplicado a las coordenadas de la caja que alimentan tanto el cálculo del centro como el cálculo del ancho y el alto. Kalman se encarga de estabilizar y predecir la detección completa, mientras que el EMA reduce las oscilaciones residuales de las variables que llegan al controlador y al estimador de distancia. Esta combinación permite reducir movimientos correctivos innecesarios del UAV perseguidor sin añadir una carga computacional elevada ni introducir una respuesta excesivamente lenta ante maniobras reales del objetivo.
+
+\vspace{0.3cm}
+
+\section{Metodología de Control }
+
+La estrategia de control se plantea a partir de tres reguladores PID independientes, cada uno asociado a una variable visual o espacial concreta. Esta división permite separar el seguimiento angular, la corrección vertical y el mantenimiento de la distancia de seguridad respecto al UAV objetivo. De este modo, el dron cazador no recibe una única orden global, sino varias correcciones calculadas a partir de errores específicos obtenidos por el sistema de percepción.
+
+\vspace{0.3cm}
+
+El primer regulador corresponde al control de \textit{yaw}. Este PID utiliza como entrada el error horizontal de la imagen, es decir, la diferencia entre el centro de la detección y el centro de la cámara en el eje $x$. Dicho error se trabaja en píxeles normalizados para que la respuesta no dependa directamente de la resolución de la imagen. Si el objetivo aparece desplazado hacia un lado del fotograma, el controlador genera una corrección de guiñada que orienta progresivamente el dron cazador hacia el UAV objetivo.
+
+\vspace{0.3cm}
+
+El segundo regulador se emplea para el control de altura. En este caso, la entrada del PID es el error vertical de la imagen, calculado a partir del desplazamiento del centro de la detección respecto al centro de la cámara en el eje $y$. Inicialmente se consideró la posibilidad de corregir este error mediante el ángulo de \textit{pitch}, ya que inclinar el dron podría modificar la posición vertical aparente del objetivo en la imagen. Sin embargo, esta opción no se adoptó finalmente para no comprometer la seguridad del UAV durante las pruebas. Una corrección basada en \textit{pitch} podría introducir movimientos longitudinales no deseados, variaciones bruscas de actitud o acercamientos peligrosos al objetivo. Por ello, se optó por actuar sobre la altura, manteniendo una respuesta más segura y controlada.
+
+\vspace{0.3cm}
+
+El tercer regulador corresponde al control de distancia. Este PID compara la distancia estimada al UAV objetivo, expresada en metros, con una distancia deseada de seguimiento. El objetivo no es alcanzar físicamente al otro dron, sino mantenerse a una separación prefijada que permita realizar el seguimiento visual sin riesgo de colisión. Esta distancia de referencia actúa como margen de seguridad, evitando que el dron cazador se acerque demasiado al objetivo y reduciendo la posibilidad de choque durante las pruebas, lo que podría dañar o destruir alguno de los UAVs.
+
+\vspace{0.3cm}
+
+En conjunto, los tres PID permiten transformar las salidas del sistema de percepción en consignas de control interpretables: el error horizontal corrige la orientación mediante \textit{yaw}, el error vertical corrige la altura y el error de distancia regula el acercamiento o alejamiento respecto al objetivo. Esta estructura modular facilita el ajuste independiente de cada comportamiento y permite limitar cada acción de control para priorizar la estabilidad y la seguridad del seguimiento.  

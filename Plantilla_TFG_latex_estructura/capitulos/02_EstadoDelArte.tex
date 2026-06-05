@@ -231,33 +231,6 @@ El desarrollo de esta disciplina ha estado impulsado por la disponibilidad de gr
 
 \vspace{0.3cm}
 
-\section{Modelos de regresión}
-
-En aprendizaje automático, un modelo de regresión es aquel que estima variables continuas a partir de una entrada dada. A diferencia de los modelos de clasificación, cuyo objetivo es asignar una etiqueta discreta, la regresión predice magnitudes numéricas, como una posición, una velocidad, una distancia, una temperatura o cualquier otra cantidad medible \cite{goodfellow2016deep}.
-
-\vspace{0.3cm}
-
-Desde un punto de vista funcional, un modelo de regresión recibe un conjunto de variables de entrada y aprende una función que relaciona esas entradas con una salida continua. Durante el entrenamiento, el modelo ajusta sus parámetros para reducir el error entre la predicción y el valor real observado. Una forma general de expresar este comportamiento es la siguiente:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\hat{y} = f_{\theta}(x)
-\end{equation}
-
-\vspace{0.3cm}
-
-donde $x$ representa la información de entrada, $f_{\theta}$ el modelo parametrizado y $\hat{y}$ el valor continuo estimado. Una vez entrenado, el modelo puede utilizar la relación aprendida para predecir valores sobre datos no vistos previamente \cite{goodfellow2016deep}.
-
-\vspace{0.3cm}
-
-Por tanto, los modelos de regresión sirven para estimar magnitudes de interés, cuantificar relaciones entre variables y apoyar la toma de decisiones en problemas donde la salida no es una clase, sino un valor numérico. Se emplean, por ejemplo, para prever tendencias, estimar estados físicos, calcular distancias o aproximar parámetros que no se observan de forma directa.
-
-\vspace{0.3cm}
-
-En este contexto, la regresión aporta la información geométrica necesaria para localizar el objeto en la imagen, lo que enlaza de forma natural con la detección de objetos, tratada en el apartado siguiente.
-\vspace{0.3cm}
-
 \section{Visión por Computador}
 
 La visión por computador, también conocida como visión artificial o visión computarizada, es una rama de la inteligencia artificial que agrupa técnicas y herramientas orientadas a adquirir, procesar e interpretar información visual procedente del entorno. A partir de imágenes o secuencias de vídeo, estos sistemas pueden extraer características relevantes que facilitan la detección, la clasificación y el análisis de objetos, escenas y movimientos.
@@ -601,48 +574,31 @@ En consecuencia, el EMA constituye una técnica de suavizado sencilla, ligera y 
 La sofisticación de los sistemas robóticos modernos, especialmente en el ámbito de las aeronaves no tripuladas que operan en entornos dinámicos, exige infraestructuras de software que permitan la ejecución paralela de procesos heterogéneos. En este contexto, resulta imperativo emplear marcos de trabajo que actúen como capas de abstracción o middleware, garantizando la interoperabilidad entre los diferentes módulos de percepción, planificación y control mediante intercambios de datos deterministas y eficientes. Estas plataformas aseguran una comunicación estandarizada entre procesos, facilitando la integración de algoritmos complejos de navegación autónoma.
 \vspace{0.3cm}
 
-\subsection{Comunicación Distribuida en Robótica}
+\subsection{Intercambio de Datos en Robótica}
 
-\subsubsection{Data Distribution Service (DDS)}
-
-El estándar Data Distribution Service se define como un middleware orientado a datos, regulado por la Object Management Group, y diseñado específicamente para entornos donde la fiabilidad y el determinismo son requisitos de misión crítica. Su naturaleza descentralizada, basada en un modelo de publicación y suscripción, elimina la dependencia de un servidor central, lo que potencia la resiliencia del sistema ante fallos puntuales de red o de nodos. 
+La coordinación de un sistema robótico distribuido requiere mecanismos capaces de mover datos entre procesos de forma ordenada, predecible y compatible con las necesidades temporales de cada módulo. En el caso de los UAVs, esta comunicación resulta especialmente crítica, ya que los bloques de percepción, estimación, planificación y control deben compartir información de manera continua para mantener una respuesta coherente durante el vuelo. Dentro de este marco se revisan tres alternativas representativas: DDS, MQTT y ROS, cada una con un enfoque distinto respecto a la organización de la red, la fiabilidad de los mensajes y su adecuación al control en tiempo real.
 
 \vspace{0.3cm}
-La característica más distintiva de esta tecnología es su capacidad para gestionar políticas de Calidad de Servicio (QoS). Estos parámetros permiten un control exhaustivo sobre la latencia, la prioridad de los mensajes y la persistencia de la información, adaptándose a las necesidades temporales estrictas de aplicaciones aeroespaciales y de vehículos autónomos. No obstante, su principal desventaja
-es su complejidad: requiere una configuración meticulosa de las políticas QoS y un conocimiento técnico avanzado, lo que puede dificultar su adopción en fases tempranas de desarrollo o en equipos con recursos limitados.
 
-\vspace{0.4cm}
-\subsubsection{Message Queuing Telemetry Transport (MQTT)}
+\subsubsection{DDS como Middleware Orientado a Datos}
 
-Como contraparte, el protocolo MQTT se presenta como una solución optimizada para la transferencia de mensajes en redes con ancho de banda limitado y recursos computacionales restringidos, condiciones habituales en el ecosistema del Internet de las Cosas (IoT). A diferencia de arquitecturas peer-to-peer, MQTT se apoya en un broker centralizado que gestiona el tráfico entre publicadores y suscriptores, simplificando la topología de la red.
+Data Distribution Service (DDS) es un estándar definido por la \textit{Object Management Group} para sistemas distribuidos en los que la fiabilidad, el determinismo y la disponibilidad son requisitos de elevada importancia. Su diseño se apoya en una arquitectura descentralizada de publicación--suscripción, donde los productores y consumidores de información pueden descubrirse e intercambiar datos sin depender de un servidor central. Esta ausencia de un punto único de fallo mejora la tolerancia del sistema ante caídas de nodos o problemas puntuales de red, una propiedad especialmente valiosa en robótica móvil, vehículos autónomos y aplicaciones aeroespaciales.
 
-\vspace{0.4cm}
+\vspace{0.3cm}
 
-Si bien este protocolo ofrece diferentes niveles de fiabilidad en la entrega de datos, su diseño original no contempla los requisitos de sincronización y baja latencia necesarios para el control de vuelo en tiempo real. Por esta razón, su aplicación en el desarrollo de UAVs suele quedar restringida a tareas complementarias de telemetría o interfaces de monitorización remota, resultando insuficiente para gobernar los lazos de control cerrados que exigen algoritmos de interceptación o seguimiento visual.
+Uno de los elementos más relevantes de DDS es la configuración de políticas de Calidad de Servicio (QoS). A través de ellas es posible ajustar parámetros como la latencia tolerada, la prioridad de los mensajes, la persistencia de la información y la fiabilidad de la entrega. Esta capacidad proporciona un control muy fino sobre el comportamiento temporal de la comunicación; sin embargo, también incrementa la complejidad de diseño. La selección incorrecta de las políticas QoS puede afectar al rendimiento global, por lo que su uso exige conocimiento técnico avanzado y una etapa de configuración cuidadosa.
 
 \vspace{0.4cm}
 
-\subsubsection{Robot Operating System (ROS)}
+\subsubsection{MQTT como Protocolo Ligero basado en Broker}
 
-En el panorama actual de la robótica, ROS se ha consolidado como el ecosistema de desarrollo más versátil, proporcionando una capa de abstracción que convierte un sistema operativo convencional en un entorno robótico distribuido. Mediante el uso de nodos, topics y services, esta plataforma permite la creación de sistemas modulares donde la percepción visual y las leyes de control pueden interactuar de forma transparente.
+Message Queuing Telemetry Transport (MQTT) responde a una filosofía distinta. Se trata de un protocolo de mensajería ligero, concebido para redes con ancho de banda limitado y dispositivos con recursos computacionales reducidos, condiciones habituales en aplicaciones del Internet de las Cosas (IoT). A diferencia de los esquemas completamente descentralizados, MQTT introduce un \textit{broker} central que recibe los mensajes de los publicadores y los distribuye a los suscriptores correspondientes. Esta solución simplifica la topología de comunicación y facilita la integración de dispositivos heterogéneos.
 
-\vspace{0.4cm}
+\vspace{0.3cm}
 
-El valor fundamental de este framework reside en su vasto repositorio de herramientas, que abarca desde la simulación en entornos de alta fidelidad como Gazebo hasta la visualización de estados internos y la gestión de sensores complejos. La transición hacia versiones más modernas ha permitido que el transporte de datos se apoye nativamente en el estándar DDS, unificando la flexibilidad del desarrollo modular con la robustez de las comunicaciones industriales. Para proyectos de navegación autónoma, esta arquitectura facilita la integración de nodos de gnc y proyección de imagen, permitiendo que el sistema responda a las exigencias de tiempo real impuestas por la dinámica de vuelo.
-
-\vspace{0.4cm}
-
-
-\begin{center}
-    \refstepcounter{figure}\label{fig:ROS-grap}
-    \includegraphics[width=1.0 \textwidth]{imagenes/rosgraph.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Ejemplo de conexión de Nodos durante ejecución(Imagen de Elaboración Propia)}
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Conexión de Nodos durante ejecución(Imagen de Elaboración Propia)}
-\end{center}
-
+Aunque MQTT permite trabajar con diferentes niveles de fiabilidad en la entrega de datos, su diseño no está orientado a cerrar lazos de control de baja latencia ni a sincronizar estados cinemáticos con la precisión temporal que requiere un UAV durante maniobras rápidas. Por este motivo, su uso en plataformas aéreas resulta más adecuado para tareas auxiliares, como telemetría, monitorización remota o transmisión de información no crítica. En cambio, para algoritmos de seguimiento visual o interceptación, donde el controlador debe reaccionar de forma continua ante cambios del objetivo, MQTT no ofrece las garantías temporales necesarias.
 
 \vspace{0.4cm}
-
 \subsection{Computación Distribuida Seleccionada}
 
 La implementación del sistema de navegación autónoma para la interceptación de aeronaves no tripuladas requiere de una infraestructura de software capaz de gestionar procesos concurrentes con un alto grado de desacoplamiento. En este sentido, se ha seleccionado el paradigma de Robot Operating System (ROS) como el middleware central, integrando componentes críticos como MAVROS para la interfaz con el hardware de vuelo.
@@ -661,137 +617,133 @@ El ecosistema de ROS proporciona, además, una serie de bibliotecas  y herramien
 implementar un sistema de navegación vectorial distribuido, garantizando tanto la
 eficiencia computacional como la cohesión arquitectónica del conjunto.
 
-\subsubsection{ROS como base de la arquitectura distribuida}
 
-La arquitectura distribuida desarrollada en este proyecto se articula sobre Robot Operating System (ROS), elegido por su capacidad para coordinar múltiples procesos concurrentes dentro de un esquema modular y escalable. Más que un sistema operativo en sentido estricto, ROS actúa como un middleware robótico que establece una capa de abstracción entre el software de alto nivel y el hardware. Gracias a ello, facilita la comunicación entre módulos, la gestión de nodos, la supervisión del sistema y el desarrollo integrado de aplicaciones, cualidades especialmente relevantes en un contexto de navegación autónoma.
+\subsubsection{ROS como Núcleo de la Arquitectura Modular}
 
-\vspace{0.4cm}
+En este proyecto, Robot Operating System (ROS) se adopta como el elemento vertebrador de la arquitectura distribuida, ya que permite coordinar procesos concurrentes sin imponer una estructura monolítica al sistema. Su función principal es actuar como middleware entre los algoritmos de alto nivel y los elementos asociados al vehículo, proporcionando una capa de abstracción que simplifica la comunicación, la supervisión y la integración de los distintos módulos. Esta capacidad resulta especialmente adecuada para navegación autónoma, donde percepción, estimación y control deben operar de forma simultánea y con dependencias bien definidas.
 
-La estructura fundamental de ROS se organiza en torno al concepto de nodo, que constituye la unidad de ejecución lógica e independiente dentro del ecosistema del robot. Estas entidades funcionan como procesos autónomos que pueden ser desarrollados en diversos lenguajes de programación, aportando una gran modularidad al sistema completo. La transferencia de datos entre estos módulos se gestiona mediante tópicos, que actúan como canales de comunicación asíncrona bajo un esquema de publicación y suscripción.
+\vspace{0.3cm}
 
+La organización interna de ROS se apoya en el concepto de nodo. Cada nodo representa una unidad lógica de ejecución encargada de una tarea específica, como procesar imágenes, calcular referencias de guiado, publicar estados del UAV o enviar comandos de control. Al tratarse de procesos independientes, pueden implementarse en distintos lenguajes de programación y evolucionar de manera separada, lo que incrementa la modularidad y facilita la depuración. El intercambio continuo de información entre ellos se realiza principalmente mediante tópicos, canales asíncronos que siguen un modelo de publicación--suscripción.
 
+\vspace{0.3cm}
 
-\vspace{0.4cm}
-
-Además de los tópicos, ROS dispone de mecanismos de comunicación complementarios, entre los que destacan los servicios y las acciones. Los servicios resultan apropiados para intercambios puntuales de tipo petición--respuesta entre nodos, por ejemplo cuando se requiere consultar el estado actual del UAV o recuperar la configuración de un módulo concreto. Las acciones, en cambio, están orientadas a tareas de ejecución prolongada que necesitan retroalimentación continua, seguimiento del progreso o posibilidad de cancelación, como ocurre en el seguimiento de trayectorias con validación dinámica. Aun así, en este proyecto se ha priorizado una arquitectura basada exclusivamente en tópicos, ya que ofrece un comportamiento más adecuado para flujos de datos continuos y para las exigencias propias de la navegación y el control en tiempo real.
-
-
+Junto a los tópicos, ROS ofrece mecanismos adicionales como servicios y acciones. Los servicios son apropiados para interacciones puntuales de tipo petición--respuesta, por ejemplo al consultar un estado concreto del vehículo o modificar una configuración. Las acciones, en cambio, están pensadas para procesos de mayor duración que requieren seguimiento, retroalimentación o cancelación. No obstante, la arquitectura desarrollada en este trabajo se apoya principalmente en tópicos, ya que los flujos de navegación visual, telemetría y control necesitan actualizaciones continuas y una comunicación más adecuada para operación en tiempo real.
 
 \vspace{0.3cm}
 
 \begin{center}
     \refstepcounter{figure}\label{fig:logo-Ros}
     \includegraphics[width=0.58\textwidth]{imagenes/ROS.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Robotics Operating System. Fuente: \cite{ROSLogo}.}
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Logo de ROS}
+    {\small \textbf{Figura \thefigure.} Robot Operating System. Fuente: \cite{ROSLogo}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Logo de ROS}
 \end{center}
 
 \vspace{0.3cm}
 
-\subsubsection{Comandos Básicos de ROS}
+\subsubsection{Herramientas de Terminal para ROS}
 
-El manejo de la línea de comandos constituye una parte esencial del trabajo con ROS Noetic, ya que permite poner en marcha el sistema, supervisar su estado y depurar incidencias durante la integración de los distintos nodos. A lo largo del desarrollo de este proyecto se han utilizado de forma recurrente varios comandos básicos, cada uno con una función concreta dentro del ecosistema ROS:
+La operación de ROS Noetic se apoya de forma habitual en la línea de comandos, tanto durante la puesta en marcha del sistema como en las fases de diagnóstico y depuración. En lugar de constituir comandos aislados, estas utilidades forman parte del flujo de trabajo necesario para iniciar la infraestructura de comunicación, lanzar nodos, consultar el estado de ejecución y comprobar el contenido de los mensajes intercambiados. La Tabla siguiente resume las instrucciones utilizadas con mayor frecuencia durante el desarrollo del proyecto.
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 
-\begin{itemize}
-    \item \texttt{roscore}. Inicia el maestro de ROS y los servicios de comunicación fundamentales del sistema, por lo que su ejecución es imprescindible para que el resto de nodos pueda registrarse e intercambiar información.
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.56\textwidth}}
+\textbf{Comando} & \textbf{Función dentro del flujo de trabajo} \\
+\hline
+\texttt{roscore} & Inicializa el maestro de ROS y los servicios básicos que permiten registrar nodos y habilitar el descubrimiento entre procesos. \\
+\texttt{rosrun nombre\_paquete nombre\_nodo} & Ejecuta un nodo concreto incluido en un paquete previamente compilado, lo que resulta útil para pruebas individuales o depuración localizada. \\
+\texttt{roslaunch nombre\_paquete archivo.launch} & Lanza de forma coordinada varios nodos, parámetros y configuraciones definidos en un archivo \texttt{.launch}, facilitando el arranque de escenarios más complejos. \\
+\texttt{rosnode list} & Muestra los nodos activos registrados en el sistema y permite comprobar rápidamente qué procesos se encuentran en ejecución. \\
+\texttt{rostopic list} & Enumera los tópicos disponibles en la sesión actual, ayudando a identificar los canales de comunicación publicados por los distintos módulos. \\
+\texttt{rostopic echo nombre\_topico} & Visualiza en tiempo real los mensajes emitidos en un tópico específico, por lo que resulta esencial para verificar datos, formatos y posibles anomalías de comunicación. \\
+\texttt{rosparam list} & Consulta el servidor de parámetros de ROS y permite revisar las variables de configuración cargadas durante la ejecución. \\
+\end{longtable}
 
-    \item \texttt{rosrun nombre\_paquete nombre\_nodo}. Permite ejecutar directamente un nodo específico contenido en un paquete previamente compilado, algo especialmente útil durante tareas de prueba y depuración aislada.
 
-    \item \texttt{roslaunch nombre\_paquete archivo.launch}. Se emplea para arrancar varios nodos de forma coordinada mediante archivos \texttt{.launch}, lo que facilita la inicialización de configuraciones más complejas.
+\subsubsection{MAVROS como Interfaz entre ROS y el Autopiloto}
 
-    \item \texttt{rosnode list}. Muestra el conjunto de nodos activos registrados en el maestro, ofreciendo una visión rápida del estado del sistema en ejecución.
-
-    \item \texttt{rostopic list}. Enumera los tópicos disponibles en ese momento, permitiendo identificar los canales de comunicación activos entre nodos.
-
-    \item \texttt{rostopic echo nombre\_topico}. Hace posible visualizar en tiempo real el contenido de los mensajes publicados en un tópico determinado, lo que resulta de gran utilidad para verificar datos y detectar anomalías en la comunicación.
-
-    \item \texttt{rosparam list}. Permite consultar el servidor de parámetros de ROS y revisar las variables de configuración cargadas en el sistema.
-\end{itemize}
-
-\subsubsection{MavROS como puente entre ROS y el sistema UAV}
-
-MAVROS constituye la capa de integración que permite enlazar el ecosistema ROS con el protocolo MAVLink, ampliamente utilizado por autopilotos como PX4 y ArduPilot. Su papel dentro de la arquitectura no se limita a una simple pasarela de datos: actúa como un mecanismo de traducción entre los mensajes y servicios propios de ROS y las órdenes, estados y parámetros que entiende el controlador de vuelo. Gracias a esta intermediación, los módulos de percepción, estimación y control pueden operar sobre una interfaz homogénea sin depender directamente de los detalles internos del autopiloto.
+MAVROS se emplea como la capa de interoperabilidad encargada de conectar la arquitectura ROS con MAVLink, protocolo de comunicación utilizado de forma habitual por autopilotos como PX4 y ArduPilot. Su función no se limita a transferir paquetes entre ambos entornos, sino que proporciona una traducción estructurada entre los mensajes, servicios y parámetros propios de ROS y las órdenes, estados y configuraciones que interpreta el controlador de vuelo. Gracias a esta abstracción, los módulos de percepción, estimación y control pueden operar sobre una interfaz uniforme sin depender de los detalles específicos del autopiloto utilizado.
 
 \vspace{0.3cm}
 
-Desde el punto de vista funcional, MAVROS habilita un canal bidireccional de comunicación entre los nodos desarrollados en ROS y el UAV, ya sea en simulación o sobre una plataforma real. A través de este canal es posible recibir telemetría relacionada con la posición, la velocidad, la actitud, el estado de vuelo o el modo de operación del vehículo, al tiempo que se pueden enviar consignas de movimiento, comandos de misión y ajustes sobre determinados parámetros del sistema. Esta capacidad resulta especialmente valiosa en aplicaciones de navegación autónoma, donde el lazo de control debe alimentarse continuamente con información del estado del vehículo y responder en tiempo real mediante nuevas referencias.
+Desde una perspectiva operativa, MAVROS establece un canal bidireccional entre los nodos desarrollados en ROS y el UAV, tanto en simulación como en una plataforma física. A través de esta conexión se recibe telemetría relativa a la posición, la velocidad, la actitud, el estado de vuelo y el modo de operación del vehículo. En sentido inverso, la misma interfaz permite enviar consignas de movimiento, comandos de misión y modificaciones de determinados parámetros. Esta comunicación continua resulta crítica en navegación autónoma, ya que el lazo de control necesita actualizarse con información reciente del vehículo y generar nuevas referencias durante la ejecución.
 
 \vspace{0.3cm}
 
-En el contexto de este proyecto, MAVROS se emplea como elemento de unión entre la lógica de navegación visual y el sistema de vuelo del UAV. Por un lado, permite que los algoritmos de seguimiento reciban de forma estructurada los datos necesarios para estimar el comportamiento del vehículo. Por otro, hace posible que las trayectorias o correcciones generadas por el sistema propuesto se transmitan nuevamente al autopiloto utilizando una interfaz estandarizada. Esta separación entre la lógica de alto nivel y el hardware concreto aporta una ventaja importante: favorece la reutilización del software y reduce la dependencia de una plataforma aérea específica.
+Dentro del sistema propuesto, MAVROS actúa como punto de enlace entre la navegación visual y el sistema de vuelo. Los algoritmos de seguimiento obtienen datos organizados para estimar el comportamiento del UAV, mientras que las correcciones calculadas por el controlador se remiten al autopiloto mediante una interfaz normalizada. Esta separación entre la lógica de alto nivel y el hardware concreto aumenta la reutilización del software, facilita el mantenimiento y reduce la dependencia de una configuración aérea específica.
 
-\vspace{0.4cm}
+\vspace{0.3cm}
 
-Otro aspecto relevante de MAVROS es su integración con el sistema de transformaciones espaciales de ROS, gestionado mediante \texttt{tf}. Esto facilita la coordinación entre distintos marcos de referencia, como \texttt{map}, \texttt{odom} o \texttt{base\_link}, algo imprescindible para interpretar correctamente la información de navegación y relacionar las observaciones visuales con el movimiento real del vehículo. No obstante, esta misma gestión de referencias puede convertirse en una fuente de complejidad cuando se trabaja con varios UAV de manera simultánea. En etapas tempranas del desarrollo, uno de los retos principales consistió precisamente en evitar interferencias y superposiciones entre los datos publicados por ambos sistemas, especialmente cuando compartían marcos de referencia con nombres comunes dentro del entorno de simulación.
+Otro elemento clave es su integración con el sistema de transformaciones espaciales de ROS, gestionado mediante \texttt{tf}. Esta funcionalidad permite coordinar marcos de referencia como \texttt{map}, \texttt{odom} y \texttt{base\_link}, necesarios para interpretar la navegación del vehículo y relacionar las observaciones visuales con el movimiento del UAV. En escenarios con varios drones, la gestión de estos marcos requiere especial cuidado: si diferentes vehículos publican referencias con nombres comunes, pueden aparecer ambigüedades o solapamientos. Por ello, durante la integración fue necesario separar correctamente los datos publicados por cada UAV dentro del entorno de simulación.
 
-\vspace{0.4cm}
+\vspace{0.3cm}
 
-En conjunto, MAVROS no solo simplifica la comunicación con el autopiloto, sino que también proporciona una base robusta para desacoplar percepción, control y ejecución de vuelo dentro de una arquitectura distribuida. Por ello, se convierte en una herramienta esencial para trasladar la lógica desarrollada en ROS a un sistema aéreo operativo, manteniendo al mismo tiempo modularidad, escalabilidad y portabilidad entre escenarios simulados y reales.
+En síntesis, MAVROS proporciona mucho más que una pasarela de comunicación con el autopiloto. Su incorporación permite desacoplar percepción, control y ejecución de vuelo dentro de una arquitectura distribuida, manteniendo al mismo tiempo modularidad, escalabilidad y portabilidad entre pruebas simuladas y aplicaciones sobre plataformas reales.
 
-\subsubsection{Defensa de la Elección}
+\subsubsection{Justificación de la Arquitectura Adoptada}
 
-La arquitectura distribuida seleccionada presenta una serie de ventajas que justifican su elección dentro de este proyecto:
+La selección de una arquitectura basada en ROS, MAVROS y MAVLink responde a criterios técnicos directamente relacionados con las necesidades del proyecto. En lugar de presentar estas ventajas como elementos aislados, la Tabla siguiente resume el papel que desempeña cada criterio dentro del diseño global del sistema.
 
-\vspace{0.15cm}
+\vspace{0.2cm}
 
-\begin{itemize}
-    \item \textbf{Modularidad.} La división del sistema en nodos independientes facilita la implementación progresiva de cada bloque, así como su mantenimiento y depuración.
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.67\textwidth}}
+\textbf{Criterio} & \textbf{Aportación al sistema} \\
+\hline
+\textbf{Modularidad} & La división en nodos independientes permite desarrollar, probar y mantener cada bloque de forma progresiva, reduciendo el acoplamiento entre percepción, estimación y control. \\
+\textbf{Escalabilidad} & La estructura distribuida facilita incorporar nuevos sensores, módulos de control o múltiples UAV sin modificar de manera sustancial la arquitectura base. \\
+\textbf{Portabilidad} & El uso de estándares consolidados como ROS y MAVLink permite trasladar la lógica desarrollada desde simulación hacia plataformas reales con cambios limitados. \\
+\textbf{Flexibilidad} & La integración de MAVROS permite trabajar con distintos autopilotos y configuraciones de vehículo bajo una interfaz homogénea, tanto en pruebas simuladas como en escenarios reales. \\
+\end{longtable}
 
-    \item \textbf{Escalabilidad.} La arquitectura permite incorporar nuevos sensores, módulos de control o incluso múltiples UAV sin alterar de forma significativa el funcionamiento general del sistema.
-
-    \item \textbf{Portabilidad.} El uso de estándares consolidados como ROS y MAVLink hace posible reutilizar la lógica desarrollada tanto en simulación como en plataformas reales con cambios mínimos.
-
-    \item \textbf{Flexibilidad.} La integración de MAVROS con el ecosistema ROS permite trabajar con diferentes controladores de vuelo y configuraciones de vehículo de manera homogénea, tanto en pruebas simuladas como en escenarios reales.
-
-\end{itemize}
-
-En conclusión, estas ventajas permiten afirmar que la arquitectura adoptada no solo responde de manera adecuada a las exigencias técnicas del proyecto, sino que también favorece un desarrollo más ordenado, comprensible y sostenible en el tiempo. La combinación de ROS, MAVROS y herramientas de supervisión como RViz aporta un entorno de trabajo coherente para diseñar, observar y validar el comportamiento del sistema, lo que refuerza la idoneidad de esta elección tanto en simulación como en futuras aplicaciones sobre plataformas reales. Asimismo, esta arquitectura deja preparado el sistema para futuras extensiones, entre ellas la integración de sensores más avanzados, nuevos algoritmos de percepción y estrategias de cooperación entre múltiples UAV en entornos distribuidos.
+En conjunto, esta arquitectura satisface los requisitos técnicos del proyecto y, además, favorece un proceso de desarrollo más ordenado y sostenible. La combinación de ROS, MAVROS y herramientas de supervisión como RViz ofrece un entorno adecuado para diseñar, observar y validar el comportamiento del sistema. Asimismo, deja abierta la posibilidad de incorporar sensores más avanzados, nuevos algoritmos de percepción y estrategias cooperativas entre múltiples UAV en entornos distribuidos.
 
 
 
 \subsection{Simulación}
 
-La simulación ocupa un papel central en el desarrollo de sistemas robóticos autónomos, especialmente cuando se trabaja con vehículos aéreos no tripulados. Antes de trasladar un algoritmo a una plataforma física, resulta necesario disponer de un entorno controlado que permita estudiar con rigor el comportamiento dinámico del vehículo, la estabilidad del controlador y la respuesta del sistema ante perturbaciones o cambios en las condiciones de operación. En este sentido, el entorno simulado constituye una fase intermedia esencial entre el diseño teórico y la validación sobre hardware real.
+La simulación constituye una etapa esencial en el desarrollo de sistemas robóticos autónomos y, en particular, en aplicaciones con vehículos aéreos no tripulados. Antes de trasladar un algoritmo a una plataforma física, es necesario disponer de un entorno controlado en el que sea posible estudiar el comportamiento dinámico del UAV, comprobar la estabilidad del controlador y analizar la respuesta del sistema ante perturbaciones, cambios de trayectoria o variaciones en las condiciones de operación. De este modo, el simulador actúa como un punto intermedio entre el diseño teórico y la validación experimental sobre hardware real.
 
 \vspace{0.4cm}
 
-Los simuladores tridimensionales ofrecen, además, la posibilidad de reproducir con suficiente realismo diversos elementos del entorno físico, como la gravedad, las colisiones, la respuesta cinemática y ciertas aproximaciones de la dinámica aerodinámica, junto con la emulación de sensores virtuales. Esto permite repetir ensayos en condiciones equivalentes, ajustar parámetros de forma iterativa y someter la solución a un proceso de prueba más amplio, seguro y económicamente asumible. Gracias a ello, se reducen de manera notable los riesgos sobre la plataforma física y se acelera la depuración del sistema antes de su despliegue en escenarios reales.
+Los simuladores tridimensionales permiten reproducir, con distintos grados de fidelidad, elementos propios del entorno físico, como la gravedad, las colisiones, la respuesta cinemática, determinadas aproximaciones aerodinámicas y la lectura de sensores virtuales. Esta capacidad facilita la repetición de ensayos bajo condiciones equivalentes, el ajuste iterativo de parámetros y la evaluación de la solución en escenarios que serían costosos o arriesgados de reproducir directamente con un dron real. Por ello, la simulación no solo reduce riesgos materiales, sino que también acelera la depuración de los módulos de percepción, comunicación y control.
+
+\vspace{0.4cm}
+
+La elección del simulador resulta especialmente relevante cuando la arquitectura se apoya en herramientas como ROS, MAVROS y autopilotos compatibles con MAVLink, ya que la utilidad del entorno no depende únicamente de su calidad visual o de su motor físico, sino también de su capacidad para integrarse de forma estable con el resto del sistema. En este contexto, se han considerado distintas alternativas utilizadas habitualmente en robótica y navegación autónoma, entre las que destacan AirSim, Webots y Gazebo.
 
 
 
 \subsubsection{AirSim}
 
-AirSim es un simulador concebido específicamente para vehículos autónomos, desarrollado por Microsoft sobre el motor gráfico Unreal Engine. Entre sus principales fortalezas destaca la elevada calidad visual de los escenarios que genera, así como la posibilidad de emular sensores habituales en plataformas aéreas, como cámaras RGB, LIDAR, IMU o GPS. Por ello, suele considerarse una alternativa especialmente interesante en trabajos centrados en visión por computador, aprendizaje por refuerzo o navegación guiada principalmente por percepción.
+AirSim es un simulador orientado a vehículos autónomos, desarrollado por Microsoft sobre el motor gráfico Unreal Engine. Su principal ventaja reside en la elevada calidad visual de los escenarios y en la posibilidad de emular sensores habituales en plataformas aéreas, como cámaras RGB, LIDAR, IMU o GPS. Estas características lo convierten en una herramienta atractiva para investigaciones centradas en visión por computador, aprendizaje por refuerzo o navegación basada principalmente en percepción.
 
 \vspace{0.4cm}
 
-No obstante, en el marco de este proyecto presenta algunas limitaciones relevantes. Aunque puede conectarse con ROS, su integración no resulta tan directa ni tan madura como la de otras plataformas más orientadas a la robótica experimental, y con frecuencia requiere componentes adicionales para comunicarse con fluidez con autopilotos como PX4 o ArduPilot. A ello se suma la exigencia computacional asociada al uso de Unreal Engine, que puede dificultar la ejecución simultánea de varios UAV y hacer menos ágil el proceso de prueba.
+Sin embargo, en el marco de este proyecto presenta algunas limitaciones relevantes. Aunque puede conectarse con ROS, su integración no resulta tan directa como en otras plataformas más extendidas dentro de la robótica experimental, y la comunicación con autopilotos como PX4 o ArduPilot suele requerir una configuración adicional. A ello se añade la carga computacional asociada a Unreal Engine, que puede dificultar la ejecución simultánea de varios UAV y ralentizar el ciclo de pruebas cuando se pretende evaluar una arquitectura distribuida completa.
 
 \subsubsection{Webots}
 
-Webots, desarrollado por Cyberbotics, constituye una solución de código abierto ampliamente utilizada en docencia e investigación. Ofrece una interfaz accesible, compatibilidad con distintos lenguajes de programación y soporte para una variedad amplia de sensores y actuadores. Además, dispone de integración con ROS, especialmente en entornos vinculados con ROS 2, lo que lo convierte en una plataforma versátil para numerosas tareas de robótica general.
+Webots, desarrollado por Cyberbotics, es una solución de código abierto ampliamente empleada en docencia e investigación. Ofrece una interfaz accesible, compatibilidad con distintos lenguajes de programación y soporte para una variedad amplia de sensores, actuadores y modelos robóticos. Además, dispone de integración con ROS, especialmente en entornos vinculados con ROS 2, por lo que constituye una plataforma versátil para el prototipado y la validación de aplicaciones de robótica general.
 
 \vspace{0.4cm}
 
-Sin embargo, su idoneidad disminuye cuando se pretende reproducir con mayor fidelidad el comportamiento de un sistema UAV completo gobernado por autopilotos reales. La conexión con plataformas como PX4 o ArduPilot no alcanza el mismo grado de solidez que en otras alternativas, y su motor físico, aun siendo suficiente para muchos contextos, no siempre proporciona la precisión dinámica necesaria para analizar maniobras aéreas exigentes, control fino de trayectoria o escenarios multivehículo con un nivel más alto de realismo.
+No obstante, su idoneidad disminuye cuando el objetivo es reproducir un sistema UAV completo gobernado por autopilotos reales. La conexión con plataformas como PX4 o ArduPilot no alcanza el mismo grado de madurez que en otros entornos más utilizados para simulación aérea con SITL, y su motor físico, aunque suficiente para numerosos casos, puede resultar menos adecuado para analizar maniobras exigentes, control fino de trayectoria o escenarios multivehículo con mayor realismo dinámico.
 
 \subsubsection{Gazebo}
 
-Gazebo se ha consolidado como uno de los simuladores más empleados en robótica por su equilibrio entre realismo físico, flexibilidad y facilidad de integración con el ecosistema ROS. Su arquitectura basada en plugins, la posibilidad de construir entornos modificables y su compatibilidad con múltiples sensores y modelos hacen de esta plataforma una opción especialmente adecuada para ensayar algoritmos de navegación, percepción y control en condiciones reproducibles.
+Gazebo se ha consolidado como uno de los simuladores más utilizados en robótica por su equilibrio entre realismo físico, flexibilidad y facilidad de integración con el ecosistema ROS. Su arquitectura basada en plugins, la posibilidad de construir mundos modificables y la compatibilidad con múltiples sensores y modelos robóticos permiten ensayar algoritmos de navegación, percepción y control en condiciones reproducibles.
 
 \vspace{0.4cm}
 
-En proyectos centrados en UAV, esta combinación de fidelidad e interoperabilidad resulta especialmente valiosa, ya que permite conectar de forma natural los nodos de control con los modelos del vehículo, automatizar experimentos y reproducir escenarios con varios agentes sin perder coherencia dentro de la arquitectura distribuida adoptada.
+En proyectos centrados en UAV, esta combinación de fidelidad e interoperabilidad resulta especialmente valiosa. Gazebo puede conectarse con ROS mediante paquetes específicos y, a través de MAVROS y MAVLink, enlazarse con autopilotos como PX4 o ArduPilot. De este modo, los nodos de control pueden intercambiar consignas y telemetría con el vehículo simulado siguiendo una estructura cercana a la que se emplearía en una plataforma real, lo que facilita la automatización de experimentos y la reproducción de escenarios con varios agentes.
 
 \subsection{Simulador Seleccionado}
 
-Atendiendo a las necesidades del proyecto, Gazebo ha sido el simulador seleccionado para el desarrollo y la validación del sistema de navegación propuesto. Esta elección responde a su amplia implantación en el ámbito de la robótica y, en particular, a su buena sintonía con infraestructuras basadas en ROS. Su motor físico, su capacidad de personalización y la integración directa mediante paquetes como \texttt{gazebo\_ros} y \texttt{gazebo\_plugins} lo convierten en una herramienta especialmente adecuada para construir entornos de prueba coherentes con la arquitectura distribuida empleada en este trabajo.
+Atendiendo a las necesidades del proyecto, Gazebo ha sido el simulador seleccionado para el desarrollo y la validación del sistema de navegación propuesto. La decisión se basa en su amplia implantación en robótica, su integración natural con ROS y su capacidad para representar entornos físicos configurables sin separar la simulación del resto de la arquitectura software. Mediante paquetes como \texttt{gazebo\_ros} y \texttt{gazebo\_plugins}, el simulador permite incorporar modelos de sensores, publicar información en tópicos ROS y conectar la dinámica del entorno con los nodos encargados de la percepción y el control.
 
 \vspace{0.3cm}
 
-Uno de los aspectos más relevantes de esta plataforma ha sido su integración fluida con MAVROS, lo que permite enlazar la simulación con un autopiloto virtual basado en PX4 o ArduPilot a través del protocolo MAVLink. De este modo, las consignas generadas por los nodos de control se envían al UAV virtual como si se tratara de un dron real, mientras que la telemetría producida por el autopiloto se redistribuye al resto de módulos ROS manteniendo la coherencia estructural del sistema. Esta continuidad entre percepción, control y simulación ha resultado especialmente valiosa para validar el comportamiento global de la arquitectura sin abandonar un entorno seguro y controlado.
+Uno de los aspectos más relevantes de esta elección es la integración con MAVROS, que permite enlazar la simulación con un autopiloto virtual basado en PX4 o ArduPilot a través del protocolo MAVLink. Así, las consignas generadas por los nodos de control se envían al UAV virtual de forma análoga a como se enviarían a un dron real, mientras que la telemetría producida por el autopiloto se redistribuye al resto de módulos ROS. Esta continuidad entre percepción, control, autopiloto y simulación resulta fundamental para validar el comportamiento global del sistema sin abandonar un entorno seguro, repetible y controlado.
 
 
 \begin{center}
@@ -804,5 +756,8 @@ Uno de los aspectos más relevantes de esta plataforma ha sido su integración f
 
 \vspace{0.3cm}
 
-En la práctica, Gazebo ha desempeñado un papel fundamental durante las fases de diseño, prueba y ajuste del sistema, ya que ha permitido analizar la respuesta del UAV ante cambios de trayectoria, maniobras de seguimiento y variaciones del entorno de forma repetible y sin riesgo para la plataforma física. Aun así, conviene recordar que la simulación no elimina por completo el denominado \textit{sim2real gap}, es decir, las diferencias inevitables entre el entorno virtual y el comportamiento real del vehículo. Factores como las latencias, el ruido sensorial o ciertas dinámicas no modeladas obligan a interpretar la simulación como una etapa crítica de validación previa, pero no como un sustituto definitivo de las pruebas experimentales sobre hardware real.
+En la práctica, Gazebo ha desempeñado un papel fundamental durante las fases de diseño, prueba y ajuste del sistema, ya que ha permitido analizar la respuesta del UAV ante cambios de trayectoria, maniobras de seguimiento y variaciones del entorno de forma repetible y sin riesgo para la plataforma física. Además, su compatibilidad con ROS, MAVROS, PX4 y ArduPilot facilita que los resultados obtenidos en simulación puedan trasladarse posteriormente a una configuración real con cambios limitados en la arquitectura de comunicación.
 
+\vspace{0.3cm}
+
+Aun así, la simulación no elimina por completo el denominado \textit{sim2real gap}, es decir, las diferencias inevitables entre el entorno virtual y el comportamiento real del vehículo. Factores como las latencias, el ruido sensorial, las condiciones aerodinámicas o ciertas dinámicas no modeladas obligan a interpretar Gazebo como una etapa crítica de validación previa, pero no como un sustituto definitivo de las pruebas experimentales sobre hardware real.

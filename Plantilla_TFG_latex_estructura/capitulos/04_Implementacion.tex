@@ -1,340 +1,358 @@
 \clearpage
 
 \refstepcounter{chapter}
-\chapter*{Implementacion}
+\chapter*{Implementación}
 
-\addcontentsline{toc}{chapter}{\protect\numberline{\thechapter}Implementacion}
+\addcontentsline{toc}{chapter}{\protect\numberline{\thechapter}Implementación}
 \vspace{-1.5cm} 
 \noindent\HRule\par\vspace{0.1cm}
 
-\section{Solucion Software}
-\subsection{Preparación del Espacio de Trabajo}
-\subsection{Solución para Simulación}
-\subsection{Desarrollo de Scripts y Gráficas}
+\section{Solución Software}
+
+
+
+
+\subsection{Nodos y Scripts Desarrollados}
+
+En esta sección se describe la arquitectura de nodos y tópicos utilizados para integrar la percepción visual, la estimación del error y el control del UAV cazador. También se resumen los tópicos ROS más importantes observados mediante \texttt{rostopic list}, diferenciando entre los tópicos propios del sistema y los generados automáticamente por \textit{Gazebo}, \textit{MAVROS} y los sensores simulados.
+
+\vspace{0.3cm}
+
+Para visualizar la evolución de la arquitectura se emplea \texttt{rqt\_graph}, que permite observar de forma gráfica qué nodos están activos y cómo se comunican mediante tópicos. En primer lugar, se muestra el sistema justo después de iniciar la simulación, sin activar todavía los nodos de visión ni el nodo de control. En esta etapa aparecen principalmente los nodos y conexiones asociados a \textit{Gazebo}, \textit{MAVROS}, la cámara simulada y los tópicos de soporte de ROS.
+
+\begin{center}
+\refstepcounter{figure}\label{fig:rqt-graph-primero}
+\includegraphics[width=0.95\textwidth]{imagenes/rosgraph_primero.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Grafo inicial del sistema sin nodos de visión ni control activos. Imagen de elaboración propia.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Grafo inicial del sistema sin nodos de visión ni control activos}
+\end{center}
+
+\vspace{0.3cm}
+
+Posteriormente se activan los nodos de visión. En este segundo estado aparecen el nodo \texttt{yolo\_sender\_node}, encargado de procesar la imagen y publicar las coordenadas de la caja detectada, y el nodo \texttt{drone\_projection\_opencv\_node}, encargado de recibir la detección, calcular el centro visual, aplicar la compensación de actitud y publicar el error visual. En el grafo se observa cómo la imagen de la cámara alimenta al nodo de YOLO y cómo sus salidas se conectan con el nodo de proyección.
+
+\begin{center}
+\refstepcounter{figure}\label{fig:rqt-graph-segundo}
+\includegraphics[width=1.0\textwidth]{imagenes/rosgraph_segundo.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Grafo del sistema con los nodos de visión activados. Imagen de elaboración propia.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Grafo del sistema con los nodos de visión activados}
+\end{center}
+
+\vspace{0.3cm}
+
+Finalmente, se activa el nodo de control \texttt{drone1\_follow\_xy\_pid}. Este nodo recibe el error publicado por \texttt{drone\_projection\_opencv\_node} a través de \verb|/drone1/vision_error|, comprueba el estado del UAV mediante \verb|/drone1/mavros/state| y publica las consignas de velocidad en \verb|/drone1/mavros/setpoint_velocity/cmd_vel|. Con ello queda cerrado el flujo completo entre percepción, estimación del error, control y autopiloto.
+
+\begin{center}
+\refstepcounter{figure}\label{fig:rqt-graph-tercero}
+\rotatebox{90}{%
+\begin{minipage}{0.98\textheight}
+\centering
+\includegraphics[width=1.0\textheight]{imagenes/rosgraph_tercero.png}\\[0.8ex]
+{\small \textbf{Figura \thefigure.} Grafo completo del sistema con visión y control activos. Imagen de elaboración propia.}
+\end{minipage}%
+}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Grafo completo del sistema con visión y control activos}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:topic-list}
+\includegraphics[width=0.75\textwidth]{imagenes/TopicList.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Listado de  algunos tópicos ROS obtenido mediante \texttt{rostopic list}. Imagen de elaboración propia.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Listado de tópicos ROS obtenido mediante rostopic list}
+\end{center}
+
+\vspace{0.3cm}
+
+La salida de \texttt{rostopic list} muestra una gran cantidad de tópicos porque se lanzan dos instancias de UAV, cada una con su propio espacio de nombres de \textit{MAVROS}. Sin embargo, para el funcionamiento del sistema propuesto, los tópicos más relevantes son los siguientes:
+
+\begin{itemize}
+    \item \verb|/webcam/image_raw|: imagen RGB de entrada utilizada por YOLO y por el nodo de proyección para visualizar la detección y calcular el error sobre el plano de imagen.
+    \item \verb|/webcam/camera_info|: información de calibración de la cámara. Aunque en la implementación también se cargan parámetros desde archivo, este tópico representa la fuente estándar de parámetros intrínsecos en ROS.
+    \item \verb|/drone1/yolo_pixel_coords|: tópico publicado por el nodo de YOLO con las cuatro coordenadas de la caja delimitadora del objetivo, codificadas como \texttt{Quaternion}: $x_1$, $y_1$, $x_2$ e $y_2$.
+    \item \verb|/drone1/yolo_state|: tópico de estado de la detección. El valor 0 indica objetivo perdido, el valor 1 indica detección directa de YOLO y el valor 2 indica predicción temporal mediante Kalman.
+
+    \item \verb|/drone1/vision_error|: tópico publicado por el nodo de proyección. Contiene el error horizontal, el error vertical y el error de distancia en un mensaje \texttt{PointStamped}, que posteriormente consume el controlador PID.
+    \item \verb|/drone1/mavros/state|: estado de conexión, armado y modo de vuelo del UAV cazador. El controlador lo consulta antes de publicar órdenes para evitar actuar cuando el dron no está listo.
+    \item \verb|/drone1/mavros/setpoint_velocity/cmd_vel|: tópico de salida del controlador. En él se publican las velocidades lineales y angulares que \textit{MAVROS} envía al autopiloto para mover el dron cazador.
+    \item \verb|/gazebo/model_states|: poses de los modelos simulados en \textit{Gazebo}. Se utiliza para obtener la pose de \texttt{drone1} y \texttt{drone2}, comprobar la geometría de la simulación y apoyar la compensación/proyección.
+    
+\end{itemize}
+
+\vspace{0.3cm}
+
+De forma resumida, el flujo de información comienza en \verb|/webcam/image_raw|, pasa por el nodo YOLO, se transforma en coordenadas de caja mediante \verb|/drone1/yolo_pixel_coords|, se convierte en error visual y longitudinal en \verb|/drone1/vision_error| y finalmente se traduce en comandos de velocidad publicados en \verb|/drone1/mavros/setpoint_velocity/cmd_vel|. El resto de tópicos de \textit{MAVROS} que aparecen bajo \verb|/drone1/mavros/| y \verb|/drone2/mavros/| corresponden a telemetría, sensores, misiones, parámetros y servicios auxiliares generados automáticamente por la interfaz con el autopiloto.
 
 \section{Arquitectura del Sistema}
-\section{Modulo de percepcion}
-\subsection{Eleccion de modelo de Yolo}
-\subsection{USo Yolo}
-\subsection{Uso de Filtro de Kalman y EMA}
-\section{Geometría Proyectiva}
 
-\vspace{0.3cm}
-El modelo de cámara estenopeica (\textit{pinhole camera model}) idealiza la formación de la imagen suponiendo que todos los rayos de luz atraviesan un único punto, denominado centro óptico o centro de proyección, antes de alcanzar el plano imagen. Esta simplificación elimina el comportamiento complejo de las lentes reales y permite describir la proyección mediante relaciones geométricas limpias y fácilmente interpretables \cite{uvaPinholeCamera, bergamasco2019pinhole}.
+
 
 \vspace{0.3cm}
 
-En una cámara física, la imagen se forma invertida sobre el sensor. No obstante, en visión por computador suele emplearse un plano imagen virtual situado delante del centro óptico para evitar inversiones de signo y hacer más intuitiva la interpretación matemática del modelo. Esta convención no altera la geometría del problema, pero simplifica el análisis de la proyección y la definición de los errores visuales \cite{uvaPinholeCamera, CameraModels}.
+
+
+\begin{figure}[htpb]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[
+        node distance=1.8cm and 1.9cm,
+        block/.style={rectangle, draw, fill=blue!10, text width=2.8cm, align=center, rounded corners, minimum height=1.1cm, font=\sffamily\small},
+        pid/.style={rectangle, draw, fill=green!10, text width=3.2cm, align=center, rounded corners, minimum height=1.2cm, font=\sffamily\small},
+        command/.style={rectangle, draw, fill=orange!15, text width=3.2cm, align=center, rounded corners, minimum height=1.2cm, font=\sffamily\small},
+        arrow/.style={-{Latex[length=3mm]}, thick},
+        feedback/.style={-{Latex[length=3mm]}, thick, dashed},
+        flowlabel/.style={font=\footnotesize, fill=white, inner sep=1.5pt, align=center}
+    ]
+
+    \node [block] (cam) at (0, -2.6) {Cámara\\real o simulada};
+    \node [block] (yolo) at (0, 2.4) {YOLOv8n};
+    \node [block] (filtro) at (9.4, 2.4) {Kalman + EMA};
+    \node [block] (errores) at (9.4, 0.0) {Cálculo de errores};
+
+    \node [pid] (pidyaw) at (4.7, -2.6) {PID de \textit{yaw}};
+    \node [pid] (pidz) at (9.4, -2.6) {PID de altura};
+    \node [pid] (piddist) at (14.1, -2.6) {PID de distancia};
+    \node [block] (mavros) at (9.4, -5.0) {MAVROS /\\controlador de vuelo};
+    \node [block] (uav) at (9.4, -7.4) {UAV real o\\Gazebo/SITL};
+
+    \draw [arrow] (cam) -- node[right, font=\footnotesize] {Imágenes RGB} (yolo);
+    \draw [arrow] (yolo) -- node[above, flowlabel] {caja YOLO\\$(x_1,y_1,x_2,y_2)$} (filtro);
+    \draw [arrow] (filtro.south) -- node[right, flowlabel] {caja suavizada\\centro, ancho, alto} (errores.north);
+
+    \draw [arrow] (errores.south west) -- node[above, sloped, flowlabel] {\texttt{ex\_virtual}} (pidyaw.north east);
+    \draw [arrow] (errores.south) -- node[right, flowlabel] {\texttt{ey\_virtual}} (pidz.north);
+    \draw [arrow] (errores.south east) -- node[above, sloped, flowlabel] {\texttt{e\_dist}} (piddist.north west);
+
+    \draw [arrow] (pidyaw.south east) -- node[below, sloped, flowlabel] {\texttt{w\_yaw}} (mavros.north west);
+    \draw [arrow] (pidz.south) -- node[right, flowlabel] {\texttt{v\_y}} (mavros.north);
+    \draw [arrow] (piddist.south west) -- node[below, sloped, flowlabel] {\texttt{v\_x}} (mavros.north east);
+
+    \draw [arrow] (mavros) -- node[right, flowlabel] {MAVLink / setpoints} (uav);
+    \draw [feedback] (uav.west) -| node[pos=0.25, below, flowlabel] {movimiento\\nueva imagen} (cam.south);
+
+    \end{tikzpicture}%
+    }
+    \caption{Arquitectura general del sistema de seguimiento visual, válida tanto para simulación como para despliegue real.}
+    \label{fig:arquitectura_nodos}
+\end{figure}
+
+\section{Componente de Percepción}
+
+\subsection{Entrenamiento y Comparación de Modelos YOLO}
+
+DECIR DATA AUG y  omo lo entrene finetuning
+
+Para seleccionar el modelo de detección se compararon distintas variantes de YOLO atendiendo a tres criterios principales: precisión de detección, precisión media en distintos umbrales de IoU y tiempo de inferencia. Todos los modelos fueron entrenados utilizando el dataset final descrito en la subsección anterior, manteniendo las mismas condiciones de entrenamiento y empleando un total de 25 épocas. De este modo, la comparación entre arquitecturas se realizó de forma homogénea, evitando que las diferencias observadas dependieran de cambios en el conjunto de datos o en la configuración experimental. La Tabla \ref{tab:comparativa-yolo} resume los resultados obtenidos para cada arquitectura evaluada.
+
+\subsection{Estimación de la Distancia mediante Ancho y Alto de la Caja}
+
+La estimación de la distancia al UAV objetivo se realiza a partir de la caja delimitadora proporcionada por el sistema de percepción. En esta parte no se vuelve a desarrollar el suavizado temporal, ya que este se describe en el apartado de estimación y filtrado. Únicamente se considera que la caja utilizada para el cálculo ya ha sido estabilizada previamente, de forma que sus coordenadas, su anchura y su altura presentan menos variaciones entre fotogramas.
 
 \vspace{0.3cm}
 
-Si un punto del entorno se expresa en el sistema de referencia de la cámara como $P_c = (X_c, Y_c, Z_c)$, su proyección ideal sobre el plano imagen métrico viene dada por:
-
-\vspace{0.3cm}
+El proceso implementado parte de las coordenadas de la caja una vez suavizadas. Después de estabilizar las cuatro coordenadas de la detección, se calcula la anchura y la altura aparentes del UAV objetivo en la imagen:
 
 \begin{equation}
-x = f \frac{X_c}{Z_c}, \quad y = f \frac{Y_c}{Z_c}
+\bar{w}_k = \bar{x}_{2,k} - \bar{x}_{1,k}, \quad
+\bar{h}_k = \bar{y}_{2,k} - \bar{y}_{1,k}
 \end{equation}
 
 \vspace{0.3cm}
 
-En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ es su profundidad o distancia a lo largo del eje de visión, $f$ es la distancia focal y $(x, y)$ son las coordenadas proyectadas sobre el plano imagen ideal. La ecuación pone de manifiesto el comportamiento esencial de la perspectiva: cuanto mayor es $Z_c$, menor es la proyección del objeto en la imagen, haciendo que los objetos lejanos aparecen más pequeños y los cercanos ocupan más píxeles \cite{bergamasco2019pinhole, CameraModels}.
+Con estos dos valores se calculan dos estimaciones independientes de la distancia. La primera utiliza la anchura real aproximada del UAV y la focal horizontal de la cámara, mientras que la segunda emplea la altura real aproximada y la focal vertical:
+
+\begin{equation}
+D_W = \frac{f_x \cdot W_{real}}{\bar{w}_k}, \quad
+D_H = \frac{f_y \cdot H_{real}}{\bar{h}_k}
+\end{equation}
+
+\vspace{0.3cm}
+
+En estas expresiones, $f_x$ y $f_y$ representan las focales de la cámara en píxeles, y $W_{real}$ y $H_{real}$ corresponden a las dimensiones reales aproximadas del UAV objetivo. La distancia final se obtiene promediando ambas estimaciones:
+
+\begin{equation}
+D_{final} = \frac{D_W + D_H}{2}
+\end{equation}
+
+\vspace{0.3cm}
+
+Este procedimiento permite aprovechar simultáneamente la información horizontal y vertical de la detección. Si YOLO genera una caja ligeramente más ancha de lo real, pero mantiene una altura coherente, la estimación basada en la altura compensa parcialmente el error. Del mismo modo, si la altura presenta una pequeña variación, la anchura ayuda a estabilizar el resultado. Así, el sistema obtiene una medida de profundidad más robusta que si dependiera de una sola dimensión de la caja.
+
+\vspace{0.3cm}
+
+Finalmente, la distancia calculada se utiliza como entrada del controlador longitudinal, comparándola con una distancia deseada de seguimiento. De esta forma, el dron cazador puede acercarse o alejarse del objetivo manteniendo un margen de seguridad, sin depender únicamente del desplazamiento del centro de la imagen.
+
+\section{Compensación de Actitud y Proyección}
+
+Durante las primeras pruebas se observó que el error visual no dependía únicamente de la posición real del UAV objetivo dentro de la imagen, sino también de la actitud instantánea del dron cazador. Si se tomaba siempre el centro geométrico de la imagen como referencia, cualquier inclinación de la cámara producía un desplazamiento aparente del objetivo. Esto generaba errores falsos que el controlador interpretaba como movimientos reales del objetivo.
+
+\vspace{0.3cm}
+
+El problema aparecía especialmente en dos situaciones. En primer lugar, cuando el dron cazador avanzaba, debía inclinarse para generar movimiento longitudinal. Esta inclinación modificaba la orientación de la cámara y hacía que el objetivo apareciera desplazado verticalmente en la imagen, aunque su posición relativa no hubiese cambiado de forma equivalente. Como consecuencia, el error vertical aumentaba y el controlador de altura podía intentar corregir una desviación que realmente estaba producida por el propio \textit{pitch} del UAV.
+
+\vspace{0.3cm}
+
+En segundo lugar, al realizar giros o movimientos laterales, el dron podía ladearse. Este \textit{roll} rotaba el plano de la imagen y acoplaba parte del error horizontal con el error vertical. Es decir, un desplazamiento producido por la actitud del dron podía aparecer como una variación en el eje vertical de la imagen, generando órdenes de altura innecesarias. Para evitar este comportamiento, se decidió compensar la referencia visual usando la orientación real de la cámara antes de calcular el error.
 
 \vspace{0.3cm}
 
 \begin{center}
-\refstepcounter{figure}\label{fig:ibvs-esquema-metodologia}
-\includegraphics[width=0.65\textwidth]{imagenes/pinholeCameramodel2.jpeg}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Esquema simplificado del modelo de cámara estenopeica. Fuente: \cite{opencvCalib3d}.}
-\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema simplificado del modelo de cámara estenopeica}
+\refstepcounter{figure}\label{fig:compensacion-actitud}
+\includegraphics[width=0.78\textwidth]{imagenes/Compensacion.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Esquema de compensación de actitud aplicado al plano de imagen. Fuente: ACTA Press \cite{actapressCompensacion}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Esquema de compensación de actitud aplicado al plano de imagen}
 \end{center}
 
 \vspace{0.3cm}
 
-\subsection{Fundamentos de la Geometría Proyectiva}
-
-Para trabajar de forma práctica con imágenes digitales, la proyección anterior se expresa normalmente en coordenadas normalizadas y, posteriormente, en coordenadas de píxel. Las coordenadas normalizadas vienen dadas por:
+La Figura \ref{fig:compensacion-actitud} ilustra la idea utilizada para desplazar la referencia de la imagen en función de la actitud de la cámara. En lugar de emplear un centro fijo, se proyecta un rayo compensado que representa el nuevo punto de referencia sobre el plano visual.
 
 \vspace{0.3cm}
 
+La compensación se implementa a partir de la pose del dron cazador en \textit{Gazebo} y de la transformación fija entre el cuerpo del dron y la cámara. En primer lugar, se construye la transformación homogénea del dron en el mundo y se compone con la transformación de la cámara:
+
 \begin{equation}
-x_n = \frac{X_c}{Z_c}, \quad y_n = \frac{Y_c}{Z_c}
+\mathbf{T}_{w}^{c} = \mathbf{T}_{w}^{d1} \mathbf{T}_{d1}^{c}
 \end{equation}
 
 \vspace{0.3cm}
 
-Estas variables recogen la parte puramente proyectiva del problema: dependen de la dirección del punto respecto a la cámara, pero no del tamaño físico del sensor. A partir de ellas, el paso a píxeles se modela como:
-
-\vspace{0.3cm}
+De esta transformación se extrae la matriz de rotación de la cámara y se convierte a ángulos de \textit{roll}, \textit{pitch} y \textit{yaw}:
 
 \begin{equation}
-u = f_x x_n + c_x, \quad v = f_y y_n + c_y
+\mathbf{R}_{w}^{c} = \mathbf{T}_{w}^{c}(1{:}3,1{:}3), \quad
+(\phi, \theta, \psi) = \mathrm{RPY}(\mathbf{R}_{w}^{c})
 \end{equation}
 
 \vspace{0.3cm}
 
-Aquí, $f_x$ y $f_y$ son las distancias focales expresadas en píxeles en las direcciones horizontal y vertical, mientras que $c_x$ y $c_y$ definen el punto principal, es decir, la proyección del eje óptico sobre la imagen. En una cámara ideal, este punto suele estar cerca del centro del sensor, aunque en la práctica puede aparecer ligeramente desplazado por el montaje o la calibración \cite{CameraModels, opencvCalib3d}.
-
-\vspace{0.3cm}
-
-La formulación completa en coordenadas homogéneas se resume mediante la ecuación:
+A continuación, se genera una rotación de compensación utilizando únicamente las componentes de \textit{pitch} y \textit{roll}. Siguiendo la convención de ejes empleada en el nodo, esta rotación se construye como:
 
 \begin{equation}
-s \left[\begin{array}{c}
-u \\ v \\ 1\end{array}\right] = K \cdot [R|t] \cdot \left[\begin{array}{c}X_w \\ Y_w \\ Z_w \\ 1\end{array}\right]
+\mathbf{q}_{comp} = \mathbf{q}_{pitch}(\theta) \mathbf{q}_{roll}(\phi)
 \end{equation}
 
 \vspace{0.3cm}
 
-En esta relación, $(X_w, Y_w, Z_w)$ son las coordenadas del punto en el sistema de referencia del mundo, $[R|t]$ describe la transformación extrínseca que lleva ese punto al sistema de referencia de la cámara, $K$ es la matriz de parámetros intrínsecos y $s$ es un factor de escala propio de las coordenadas homogéneas. La matriz intrínseca se suele escribir como:
-
-\vspace{0.3cm}
+Esta rotación se aplica sobre el rayo ideal de la cámara, definido como un vector que apunta hacia delante en el eje óptico:
 
 \begin{equation}
-K = \left[\begin{array}{ccc}
-f_x & \gamma & c_x \\
-0 & f_y & c_y \\
-0 & 0 & 1
-\end{array}\right]
+\mathbf{r}_{0} = \left[ \begin{array}{ccc} 0 & 0 & 1 \end{array} \right]^T, \quad
+\mathbf{r}_{comp} = \mathbf{R}(\mathbf{q}_{comp})\mathbf{r}_{0}
 \end{equation}
 
 \vspace{0.3cm}
 
-Cada término tiene una interpretación física clara: $f_x$ y $f_y$ convierten coordenadas geométricas en coordenadas de píxel, $c_x$ y $c_y$ fijan el punto principal y $\gamma$ representa el sesgo o \textit{skew} entre ejes de píxel, normalmente nulo o despreciable en cámaras modernas. Esta descomposición es importante porque separa dos preguntas distintas: dónde está la cámara respecto al mundo (parámetros extrínsecos) y cómo proyecta la cámara lo que ve (parámetros intrínsecos) \cite{CameraModels, uvaPinholeCamera}.
-
-\vspace{0.3cm}
-
-\subsection{Parámetros intrínsecos, FOV y distorsión}
-
-\vspace{0.3cm}
-
-Otro concepto fundamental es el campo de visión o \textit{Field of View} (FOV), que puede entenderse como la amplitud angular de la escena que la cámara es capaz de cubrir. Si $d_x$ y $d_y$ representan el tamaño del sensor en horizontal y vertical, entonces el FOV puede aproximarse mediante:
-
-\vspace{0.3cm}
+El vector resultante representa hacia dónde debería desplazarse el centro de referencia de la imagen cuando la cámara está inclinada. Para obtener ese punto en coordenadas de imagen, el rayo compensado se proyecta mediante el modelo de cámara y los parámetros intrínsecos:
 
 \begin{equation}
-FOV_x = 2 \arctan \left( \frac{d_x}{2f} \right), \quad FOV_y = 2 \arctan \left( \frac{d_y}{2f} \right)
+\left[ \begin{array}{ccc} u_c & v_c & 1 \end{array} \right]^T \sim
+\mathbf{K}\mathbf{r}_{comp}
 \end{equation}
 
 \vspace{0.3cm}
 
-Estas expresiones pueden interpretarse de forma sencilla. Para un mismo sensor, una distancia focal pequeña genera un FOV amplio: la cámara ve una porción mayor de la escena, pero cada objeto ocupa menos píxeles. En cambio, una distancia focal grande produce un FOV más estrecho: la cámara cubre menos escena, aunque el objetivo aparece con mayor tamaño aparente en la imagen. En tareas de seguimiento, este comportamiento introduce un compromiso claro entre cobertura y detalle: un FOV amplio ayuda a no perder el blanco durante maniobras bruscas, mientras que un FOV estrecho permite medir con más precisión sus desplazamientos cuando se encuentra lejos \cite{bergamasco2019pinhole, CameraModels}.
-
-\vspace{0.3cm}
-
-Hasta aquí se ha descrito una cámara ideal. Sin embargo, una cámara real no proyecta la escena de manera perfectamente geométrica, porque la lente introduce pequeñas deformaciones. Las más relevantes en visión por computador son la distorsión radial y la distorsión tangencial. La distorsión radial depende sobre todo de la distancia al centro de la imagen: cuanto más se aleja un punto de esa zona central, mayor puede ser su desplazamiento aparente, lo que hace que las rectas se curven cerca de los bordes. La distorsión tangencial, por su parte, aparece cuando la lente y el sensor no están perfectamente alineados y produce desplazamientos asimétricos de los puntos observados \cite{opencvCalib3d, uvaPinholeCamera}.
-
-
-\begin{center}
-    \refstepcounter{figure}\label{fig:Camera-distorsion}
-    \includegraphics[width=0.85\textwidth]{imagenes/distosionCamera.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Imágenes de una pantalla de objeto rectangular mostradas con (a) ninguna distorsión; (b) distorsión radial; (c) distorsión tangencial.,  \cite{ImgDistorsion}.}
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} sDistorsion Camera pinhole}
- \end{center}
-
-\vspace{0.3cm}
-
-En coordenadas normalizadas, una forma habitual de modelar esta distorsión es la siguiente:
-
-\vspace{0.3cm}
+En la implementación, esta proyección se realiza con \texttt{cv::projectPoints} y posteriormente se corrige con \texttt{cv::undistortPoints}, empleando la matriz intrínseca \texttt{camera\_matrix} y los coeficientes de distorsión \texttt{dist\_coeffs}. El punto obtenido, $(u_c, v_c)$, sustituye al centro geométrico de la imagen como referencia del controlador. Por ello, el error visual final se calcula como:
 
 \begin{equation}
-r^2 = x_n^2 + y_n^2
+e_x = \frac{u_c - u_{YOLO}}{W/2}, \quad
+e_y = \frac{v_c - v_{YOLO}}{H/2}
 \end{equation}
 
 \vspace{0.3cm}
 
+De este modo, el controlador no intenta centrar el objetivo respecto al centro fijo de la imagen, sino respecto al centro compensado según la inclinación real de la cámara. Esto reduce los errores verticales artificiales producidos por el avance del dron y por los ladeos durante maniobras laterales.
+
+\vspace{0.3cm}
+
+No obstante, la compensación no se aplicó a todas las componentes de la orientación. En particular, no se incluyó el \textit{yaw} dentro de la rotación compensada, ya que esto podía producir un efecto no deseado similar a una brújula: el punto de referencia de la imagen quedaría condicionado por el rumbo absoluto del dron y no solo por la inclinación de la cámara. En ese caso, durante los giros, el sistema podría desplazar artificialmente la referencia visual y generar correcciones que no corresponden al centrado real del objetivo. Por este motivo, la compensación se limitó a las inclinaciones que afectan directamente al plano de imagen, dejando que el control de \textit{yaw} se encargue de corregir el error horizontal de seguimiento.
+
+\vspace{0.3cm}
+
+\section{Componente de Control}
+
+Los valores de los controladores PID se obtuvieron mediante un proceso de ajuste empírico iterativo en simulación. En primer lugar, se fijaron ganancias proporcionales bajas para comprobar el sentido de actuación de cada eje y evitar respuestas bruscas. Después se aumentó progresivamente la ganancia proporcional hasta obtener una corrección rápida del error sin provocar oscilaciones sostenidas. A continuación, se introdujo la componente derivativa para amortiguar los cambios rápidos de la señal de error y reducir el sobreimpulso. Finalmente, se añadió una componente integral pequeña para compensar errores residuales en régimen permanente, evitando que la acumulación integral generase órdenes excesivas.
+
+\vspace{0.3cm}
+
+Durante este ajuste también se limitaron las salidas de cada controlador. De esta forma, aunque el error visual o el error de distancia aumenten de forma puntual, las consignas enviadas al autopiloto permanecen dentro de valores admisibles para la simulación. La ley general utilizada para cada controlador se expresa como:
+
 \begin{equation}
-x_d = x_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + 2 p_1 x_n y_n + p_2 \left(r^2 + 2 x_n^2\right)
+u(t) = K_p e(t) + K_i \int_0^t e(\tau)\,d\tau + K_d \frac{de(t)}{dt}
 \end{equation}
 
 \vspace{0.3cm}
 
+Posteriormente, la señal calculada se satura para limitar la velocidad angular o lineal enviada a \textit{MAVROS}:
+
 \begin{equation}
-y_d = y_n \left(1 + k_1 r^2 + k_2 r^4 + k_3 r^6\right) + p_1 \left(r^2 + 2 y_n^2\right) + 2 p_2 x_n y_n
+u_{sat}(t) = \mathrm{sat}_{[-u_{max},u_{max}]}\left(u(t)\right)
 \end{equation}
 
 \vspace{0.3cm}
 
-
-En estas ecuaciones, $r$ mide la distancia del punto al centro de la imagen normalizada; los coeficientes $k_1$, $k_2$ y $k_3$ describen la parte radial de la deformación, mientras que $p_1$ y $p_2$ describen la parte tangencial. Los puntos $(x_d, y_d)$ representan, por tanto, la posición finalmente observada tras el efecto de la lente. La consecuencia práctica es directa: una misma distancia física en la escena no siempre se traduce en la misma distancia en píxeles si la medida se toma en regiones distintas de la imagen \cite{opencvCalib3d}.
-
-\vspace{0.3cm}
-
-Desde el punto de vista del control, la distorsión introduce una dispersión en la medida visual: un mismo movimiento real puede producir errores distintos según la zona de la imagen en la que aparezca el objetivo. Por ello, para alimentar al controlador PID conviene trabajar con puntos sin distorsión o con coordenadas normalizadas obtenidas tras calibrar la cámara \cite{opencvCalib3d, CameraModels}.
-
-\vspace{0.3cm}
-
-En este trabajo, corregir esos puntos permite estimar mejor las distancias aparentes y generar una señal de error más estable para el lazo de control. Esta idea enlaza con la sección siguiente, dedicada a cómo el controlador PID transforma ese error visual en comandos de movimiento del UAV cazador.
-
-\vspace{0.3cm}
-
-\section{Filtro de Kalman}
-
-
-El filtro de Kalman es un método de estimación recursiva empleado para obtener una aproximación del estado de un sistema dinámico cuando las medidas disponibles contienen ruido. Su utilidad, en este trabajo, reside en que permite combinar la información procedente del modelo con la medida visual del objetivo, generando una estimación más estable y más útil para el controlador PID \cite{kalman1960new, kalmanfilterNetES, wikipediaFiltroKalman}.
-
-\vspace{0.3cm}
-
-\begin{center}
-    \refstepcounter{figure}\label{fig:Filtro-kalman}
-    \includegraphics[width=1\textwidth]{imagenes/KalmanYolo2.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.}Ejemplo uso de Filtro de Kalman. (Elaboración propia) }
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Ejemplo uso del Filtro de Kalman en dron real , en modo predición (Elaboración propia)}
-\end{center}
-
-\vspace{0.3cm}
-
-En primer lugar, conviene aclarar qué se entiende por \textbf{vector de estado}. El vector de estado es el conjunto de variables que describen la situación del sistema en un instante dado. En un problema de seguimiento visual, este vector puede incluir, por ejemplo, la posición del objetivo en la imagen y su velocidad aparente. Una forma podría ser:
-
-\vspace{0.3cm}
+En el caso del control horizontal, el error de entrada es el desplazamiento visual compensado en el eje horizontal, denominado \texttt{ex\_virtual}. Este error alimenta el PID de \textit{yaw}, cuya salida es la velocidad angular \texttt{w\_yaw}:
 
 \begin{equation}
-\mathbf{x}_k = \left[ \begin{array}{cccc} x_k & y_k & \dot{x}_k & \dot{y}_k \end{array} \right]^{T}
+\omega_{yaw} = \mathrm{sat}_{[-20,20]}\left(
+2.365625\,e_{x,virtual}(t)
++ 0.06 \int_0^t e_{x,virtual}(\tau)\,d\tau
++ 0.320\,\frac{de_{x,virtual}(t)}{dt}
+\right)
 \end{equation}
 
 \vspace{0.3cm}
 
-En este caso, $x_k$ e $y_k$ representan la posición del objetivo en el plano imagen, mientras que $\dot{x}_k$ y $\dot{y}_k$ representan su velocidad aparente. A partir de este vector, el modelo describe tanto la evolución temporal del sistema como la relación entre el estado interno y la medida observada \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
-
-\vspace{0.3cm}
-
-El sistema dinámico lineal discreto puede escribirse mediante las ecuaciones:
-
-\vspace{0.3cm}
+Para el control vertical se emplea el error \texttt{ey\_virtual}. Este controlador genera la velocidad vertical \texttt{v\_y}, responsable de corregir la posición aparente del objetivo en altura:
 
 \begin{equation}
-\mathbf{x}_k = \mathbf{F}_k \mathbf{x}_{k-1} + \mathbf{B}_k \mathbf{u}_k + \mathbf{w}_k
+v_y = \mathrm{sat}_{[-10,10]}\left(
+2.65\,e_{y,virtual}(t)
++ 0.03 \int_0^t e_{y,virtual}(\tau)\,d\tau
++ 0.192\,\frac{de_{y,virtual}(t)}{dt}
+\right)
 \end{equation}
 
 \vspace{0.3cm}
 
+Finalmente, el control longitudinal utiliza el error de distancia estimada, \texttt{e\_dist}, calculado a partir de la diferencia entre la distancia estimada al UAV objetivo y la distancia de referencia. Su salida es la velocidad frontal \texttt{v\_x}:
+
 \begin{equation}
-\mathbf{z}_k = \mathbf{H}_k \mathbf{x}_k + \mathbf{v}_k
+v_x = \mathrm{sat}_{[-10,10]}\left(
+0.47\,e_{dist}(t)
++ 0.02 \int_0^t e_{dist}(\tau)\,d\tau
++ 0.0014\,\frac{de_{dist}(t)}{dt}
+\right)
 \end{equation}
 
 \vspace{0.3cm}
 
-En estas expresiones, la matriz $\mathbf{F}_k$ corresponde a la \textbf{matriz de transición de estado}, encargada de modelar la evolución del sistema entre dos instantes consecutivos. Por su parte, la matriz $\mathbf{H}_k$ corresponde a la \textbf{matriz de observación}, cuya función es relacionar el vector de estado con la magnitud efectivamente medida por el sensor. En términos conceptuales, $\mathbf{F}_k$ describe la dinámica del sistema, mientras que $\mathbf{H}_k$ determina qué componentes de dicho estado son accesibles a través de la cámara o del sensor empleado \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+La Tabla \ref{tab:pid-control} resume las ganancias y los límites finalmente utilizados en los tres controladores implementados.
 
-\vspace{0.3cm}
-
-Por ejemplo, si se adopta un modelo bidimensional de velocidad constante con periodo de muestreo $\Delta t$, y la cámara mide únicamente la posición del objetivo, unas elecciones habituales son:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{F}_k = \left[ \begin{array}{cccc}
-1 & 0 & \Delta t & 0 \\
-0 & 1 & 0 & \Delta t \\
-0 & 0 & 1 & 0 \\
-0 & 0 & 0 & 1
-\end{array} \right], \quad
-\mathbf{H}_k = \left[ \begin{array}{cccc}
-1 & 0 & 0 & 0 \\
-0 & 1 & 0 & 0
-\end{array} \right]
-\end{equation}
-
-\vspace{0.3cm}
-
-Otro aspecto fundamental es el papel de las matrices de covarianza $\mathbf{Q}_k$ y $\mathbf{R}_k$. La matriz $\mathbf{Q}_k$ representa la incertidumbre asociada al modelo dinámico, es decir, cuánto puede desviarse la evolución real del sistema respecto a la predicción teórica. La matriz $\mathbf{R}_k$, en cambio, representa la incertidumbre de la medida, es decir, el nivel de ruido presente en la observación del sensor. En términos prácticos, $\mathbf{Q}_k$ expresa cuánto se confía en el modelo y $\mathbf{R}_k$ cuánto se confía en la medida \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
-
-\vspace{0.3cm}
-
-En el mismo ejemplo anterior, una forma sencilla de representar ambas matrices sería:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{Q}_k = \left[ \begin{array}{cccc}
-\sigma_x^2 & 0 & 0 & 0 \\
-0 & \sigma_y^2 & 0 & 0 \\
-0 & 0 & \sigma_{\dot{x}}^2 & 0 \\
-0 & 0 & 0 & \sigma_{\dot{y}}^2
-\end{array} \right], \quad
-\mathbf{R}_k = \left[ \begin{array}{cc}
-\sigma_{mx}^2 & 0 \\
-0 & \sigma_{my}^2
-\end{array} \right]
-\end{equation}
-
-\vspace{0.3cm}
-
-Aquí, los términos de $\mathbf{Q}_k$ recogen la incertidumbre asociada a la posición y a la velocidad del modelo, mientras que los términos de $\mathbf{R}_k$ representan el ruido de la medida en los ejes horizontal y vertical de la imagen.
-
-\vspace{0.3cm}
-
-Antes de iniciar el proceso iterativo del filtro, también es necesario fijar unas \textbf{condiciones iniciales}. En concreto, se requiere una estimación inicial del estado, denotada por $\hat{\mathbf{x}}_{0|0}$, y una estimación inicial de la incertidumbre asociada, representada por la matriz $\mathbf{P}_{0|0}$. Si se dispone de poca información inicial, la covarianza inicial suele elegirse grande; si, por el contrario, el estado inicial es relativamente conocido, esa covarianza puede fijarse con valores menores. Estas condiciones iniciales determinan el punto de partida a partir del cual el filtro comienza a refinar sus estimaciones.
-
-\vspace{0.3cm}
-
-Una vez definidos el estado, el modelo y las incertidumbres, el filtro opera en dos fases: \textbf{predicción} y \textbf{actualización}. En la fase de predicción, se calcula cuál debería ser el estado del sistema en el instante siguiente y cuál es la incertidumbre asociada a esa predicción:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\hat{\mathbf{x}}_{k|k-1} = \mathbf{F}_k \hat{\mathbf{x}}_{k-1|k-1} + \mathbf{B}_k \mathbf{u}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{P}_{k|k-1} = \mathbf{F}_k \mathbf{P}_{k-1|k-1} \mathbf{F}_k^{T} + \mathbf{Q}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-La primera ecuación proporciona la predicción del estado y la segunda actualiza la incertidumbre de dicha predicción. En esta etapa, el filtro todavía no ha incorporado la medida real del instante $k$.
-
-\vspace{0.3cm}
-
-Posteriormente, en la fase de actualización, la predicción se compara con la medida observada. La diferencia entre ambas se denomina \textbf{innovación} y se expresa como:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\tilde{\mathbf{y}}_k = \mathbf{z}_k - \mathbf{H}_k \hat{\mathbf{x}}_{k|k-1}
-\end{equation}
-
-\vspace{0.3cm}
-
-A partir de esta diferencia, se calcula la ganancia de Kalman:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{K}_k = \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} \left( \mathbf{H}_k \mathbf{P}_{k|k-1} \mathbf{H}_k^{T} + \mathbf{R}_k \right)^{-1}
-\end{equation}
-
-\vspace{0.3cm}
-
-Esta ganancia determina cuánto peso debe darse a la medida y cuánto a la predicción. Con ella, se actualiza el estado estimado y su covarianza:
-
-\vspace{0.3cm}
-
-\begin{equation}
-\hat{\mathbf{x}}_{k|k} = \hat{\mathbf{x}}_{k|k-1} + \mathbf{K}_k \tilde{\mathbf{y}}_k
-\end{equation}
-
-\vspace{0.3cm}
-
-\begin{equation}
-\mathbf{P}_{k|k} = \left( \mathbf{I} - \mathbf{K}_k \mathbf{H}_k \right) \mathbf{P}_{k|k-1}
-\end{equation}
-
-\vspace{0.3cm}
-
-La lógica del método es sencilla: si la medida es poco fiable, el filtro confía más en la predicción del modelo; si la observación es consistente, la corrección adquiere mayor peso. Como resultado, se obtiene una estimación más suave y más coherente del movimiento del objetivo, lo que resulta especialmente útil cuando existen maniobras rápidas, pequeñas oclusiones o fluctuaciones en la detección visual \cite{kalmanfilterNetES, wikipediaFiltroKalman}.
+\begin{table}[htpb]
+\centering
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Controlador} & \textbf{Entrada} & \textbf{Salida} & \textbf{$K_p$} & \textbf{$K_i$} & \textbf{$K_d$} & \textbf{Límite de salida} \\
+\hline
+PID de \textit{yaw} & \texttt{ex\_virtual} & \texttt{w\_yaw} & 2.365625 & 0.06 & 0.320 & $\pm 20.0$ rad/s \\
+\hline
+PID de altura & \texttt{ey\_virtual} & \texttt{v\_y} & 2.65 & 0.03 & 0.192 & $\pm 10.0$ m/s \\
+\hline
+PID de distancia & \texttt{e\_dist} & \texttt{v\_x} & 0.47 & 0.02 & 0.0014 & $\pm 10.0$ m/s \\
+\hline
+\end{tabular}%
+}
+\caption{Parámetros finales de los controladores PID utilizados para el seguimiento visual.}
+\label{tab:pid-control}
+\end{table}
 
 
+\section{Ejecución en Gazebo}
+
+\subsection{Lanzamiento de la Simulación}
 
 
-
-\section{Compensacion de Actitud y proyecccion}
-\section{Control de Seguimiento}
-\subsection{Control PID}
-\subsection{Control de distancia}
-\section{Configuración del Control Propuesto y Ejecución en
-Gazebo}
-\section{Metricas}
