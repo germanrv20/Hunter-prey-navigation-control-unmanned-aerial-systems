@@ -12,6 +12,71 @@
 
 
 
+\subsection{Arquitectura del Sistema}
+
+La arquitectura del sistema se plantea como un lazo cerrado de seguimiento visual, donde la información captada por la cámara se transforma progresivamente en órdenes de control para el UAV cazador. La Figura \ref{fig:arquitectura_nodos} resume este flujo completo, desde la adquisición de la imagen hasta el envío de consignas al autopiloto mediante \textit{MAVROS}.
+
+
+
+\vspace{0.2cm}
+
+
+
+\begin{figure}[H]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[
+        node distance=1.8cm and 1.9cm,
+        block/.style={rectangle, draw, fill=blue!10, text width=2.8cm, align=center, rounded corners, minimum height=1.1cm, font=\sffamily\small},
+        pid/.style={rectangle, draw, fill=green!10, text width=3.2cm, align=center, rounded corners, minimum height=1.2cm, font=\sffamily\small},
+        command/.style={rectangle, draw, fill=orange!15, text width=3.2cm, align=center, rounded corners, minimum height=1.2cm, font=\sffamily\small},
+        arrow/.style={-{Latex[length=3mm]}, thick},
+        feedback/.style={-{Latex[length=3mm]}, thick, dashed},
+        flowlabel/.style={font=\footnotesize, fill=white, inner sep=1.5pt, align=center}
+    ]
+
+    \node [block] (cam) at (0, -2.6) {Cámara\\real o simulada};
+    \node [block] (yolo) at (0, 2.4) {YOLOv8n};
+    \node [block] (filtro) at (9.4, 2.4) {Kalman + EMA};
+    \node [block] (errores) at (9.4, 0.0) {Cálculo de errores};
+
+    \node [pid] (pidyaw) at (4.7, -2.6) {PID de \textit{yaw}};
+    \node [pid] (pidz) at (9.4, -2.6) {PID de altura};
+    \node [pid] (piddist) at (14.1, -2.6) {PID de distancia};
+    \node [block] (mavros) at (9.4, -5.0) {MAVROS /\\controlador de vuelo};
+    \node [block] (uav) at (9.4, -7.4) {UAV real o\\Gazebo/SITL};
+
+    \draw [arrow] (cam) -- node[right, font=\footnotesize] {Imágenes RGB} (yolo);
+    \draw [arrow] (yolo) -- node[above, flowlabel] {caja YOLO\\$(x_1,y_1,x_2,y_2)$} (filtro);
+    \draw [arrow] (filtro.south) -- node[right, flowlabel] {caja suavizada\\centro, ancho, alto} (errores.north);
+
+    \draw [arrow] (errores.south west) -- node[above, sloped, flowlabel] {\texttt{ex\_virtual}} (pidyaw.north east);
+    \draw [arrow] (errores.south) -- node[right, flowlabel] {\texttt{ey\_virtual}} (pidz.north);
+    \draw [arrow] (errores.south east) -- node[above, sloped, flowlabel] {\texttt{e\_dist}} (piddist.north west);
+
+    \draw [arrow] (pidyaw.south east) -- node[below, sloped, flowlabel] {\texttt{w\_yaw}} (mavros.north west);
+    \draw [arrow] (pidz.south) -- node[right, flowlabel] {\texttt{v\_y}} (mavros.north);
+    \draw [arrow] (piddist.south west) -- node[below, sloped, flowlabel] {\texttt{v\_x}} (mavros.north east);
+
+    \draw [arrow] (mavros) -- node[right, flowlabel] {MAVLink / setpoints} (uav);
+    \draw [feedback] (uav.west) -| node[pos=0.25, below, flowlabel] {movimiento\\nueva imagen} (cam.south);
+
+    \end{tikzpicture}%
+    }
+    \caption{Arquitectura general del sistema de seguimiento visual, válida tanto para simulación como para despliegue real. Elaboración propia.}
+    \label{fig:arquitectura_nodos}
+\end{figure}
+
+Como se observa en la Figura \ref{fig:arquitectura_nodos}, el proceso comienza en la cámara real o simulada, que proporciona imágenes RGB del entorno. Estas imágenes son procesadas por YOLOv8n, que detecta el UAV objetivo y genera la caja delimitadora de la detección mediante las coordenadas $(x_1,y_1,x_2,y_2)$. Esta información constituye la entrada del bloque de filtrado, donde se aplica Kalman + EMA para suavizar las variaciones entre fotogramas y obtener una caja más estable.
+
+\vspace{0.3cm}
+
+A partir de la caja suavizada se calcula el centro aparente del objetivo, su anchura y su altura. Con estos datos se obtienen los tres errores que alimentan el control: \texttt{ex\_virtual}, asociado al desplazamiento horizontal; \texttt{ey\_virtual}, asociado al desplazamiento vertical; y \texttt{e\_dist}, asociado a la diferencia entre la distancia estimada y la distancia deseada de seguimiento.
+
+\vspace{0.3cm}
+
+Cada uno de estos errores se envía a un PID independiente. El PID de \textit{yaw} genera la velocidad angular \texttt{w\_yaw}, el PID de altura genera la velocidad vertical \texttt{v\_y} y el PID de distancia genera la velocidad frontal \texttt{v\_x}. Las tres salidas llegan al bloque \textit{MAVROS} / controlador de vuelo, que las convierte en consignas compatibles con el autopiloto. Finalmente, el movimiento del UAV modifica de nuevo la imagen recibida por la cámara, cerrando el lazo de realimentación visual del sistema.
+
 \subsection{Nodos y Scripts Desarrollados}
 
 En esta sección se describe la arquitectura de nodos y tópicos utilizados para integrar la percepción visual, la estimación del error y el control del UAV cazador. También se resumen los tópicos ROS más importantes observados mediante \texttt{rostopic list}, diferenciando entre los tópicos propios del sistema y los generados automáticamente por \textit{Gazebo}, \textit{MAVROS} y los sensores simulados.
@@ -84,66 +149,72 @@ La salida de \texttt{rostopic list} muestra una gran cantidad de tópicos porque
 
 De forma resumida, el flujo de información comienza en \verb|/webcam/image_raw|, pasa por el nodo YOLO, se transforma en coordenadas de caja mediante \verb|/drone1/yolo_pixel_coords|, se convierte en error visual y longitudinal en \verb|/drone1/vision_error| y finalmente se traduce en comandos de velocidad publicados en \verb|/drone1/mavros/setpoint_velocity/cmd_vel|. El resto de tópicos de \textit{MAVROS} que aparecen bajo \verb|/drone1/mavros/| y \verb|/drone2/mavros/| corresponden a telemetría, sensores, misiones, parámetros y servicios auxiliares generados automáticamente por la interfaz con el autopiloto.
 
-\section{Arquitectura del Sistema}
+\section{Componente de Percepción}
 
+\subsection{Entrenamiento de Modelos YOLO}
 
+El modelo de detección finalmente integrado en el sistema fue YOLOv8n. Esta arquitectura se seleccionó mediante un torneo comparativo entre distintas variantes de YOLO, atendiendo al equilibrio entre precisión, tiempo de inferencia y tamaño del modelo. Dicho proceso de selección se detalla en la sección de experimentación, mientras que en este apartado se describe la preparación del conjunto de datos y el entrenamiento del modelo elegido.
 
 \vspace{0.3cm}
 
+Antes del entrenamiento se aplicó un preprocesamiento común a todas las imágenes del dataset. En primer lugar, todas las muestras se redimensionaron a $640 \times 640$ píxeles mediante un ajuste de tipo \textit{Fit}, manteniendo la relación de aspecto original e incorporando bordes negros cuando fue necesario. Este formato coincide con el tamaño de entrada empleado durante el entrenamiento de YOLOv8n y permite trabajar con imágenes homogéneas sin deformar el objeto de interés.
 
+\vspace{0.3cm}
 
-\begin{figure}[htpb]
-    \centering
-    \resizebox{\textwidth}{!}{%
-    \begin{tikzpicture}[
-        node distance=1.8cm and 1.9cm,
-        block/.style={rectangle, draw, fill=blue!10, text width=2.8cm, align=center, rounded corners, minimum height=1.1cm, font=\sffamily\small},
-        pid/.style={rectangle, draw, fill=green!10, text width=3.2cm, align=center, rounded corners, minimum height=1.2cm, font=\sffamily\small},
-        command/.style={rectangle, draw, fill=orange!15, text width=3.2cm, align=center, rounded corners, minimum height=1.2cm, font=\sffamily\small},
-        arrow/.style={-{Latex[length=3mm]}, thick},
-        feedback/.style={-{Latex[length=3mm]}, thick, dashed},
-        flowlabel/.style={font=\footnotesize, fill=white, inner sep=1.5pt, align=center}
-    ]
+Sobre el dataset preprocesado se aplicó un proceso de aumento de datos con el objetivo de mejorar la capacidad de generalización del detector. Las transformaciones utilizadas fueron volteo horizontal, recorte con zoom mínimo del 0\% y zoom máximo del 13\%, variación de saturación entre $-4\%$ y $+4\%$, y variación de exposición entre $-8\%$ y $+8\%$. Estas modificaciones permiten que el modelo observe el UAV objetivo en condiciones visuales ligeramente distintas, simulando cambios de posición, escala, iluminación y color. De esta forma se reduce la dependencia respecto a las imágenes originales y se aumenta la robustez frente a situaciones que pueden aparecer durante la simulación o en un despliegue real.
 
-    \node [block] (cam) at (0, -2.6) {Cámara\\real o simulada};
-    \node [block] (yolo) at (0, 2.4) {YOLOv8n};
-    \node [block] (filtro) at (9.4, 2.4) {Kalman + EMA};
-    \node [block] (errores) at (9.4, 0.0) {Cálculo de errores};
+\vspace{0.3cm}
 
-    \node [pid] (pidyaw) at (4.7, -2.6) {PID de \textit{yaw}};
-    \node [pid] (pidz) at (9.4, -2.6) {PID de altura};
-    \node [pid] (piddist) at (14.1, -2.6) {PID de distancia};
-    \node [block] (mavros) at (9.4, -5.0) {MAVROS /\\controlador de vuelo};
-    \node [block] (uav) at (9.4, -7.4) {UAV real o\\Gazebo/SITL};
+Tras aplicar el preprocesamiento y el aumento de datos, el conjunto final quedó formado por 9651 imágenes. La división empleada para el entrenamiento fue de 6755 imágenes para \textit{train}, 1447 imágenes para \textit{valid} y 1449 imágenes para \textit{test}. Esta separación permitió entrenar el modelo con la mayor parte de los datos, supervisar su evolución sobre un conjunto de validación independiente y reservar un subconjunto final para comprobar posteriormente el comportamiento del detector.
 
-    \draw [arrow] (cam) -- node[right, font=\footnotesize] {Imágenes RGB} (yolo);
-    \draw [arrow] (yolo) -- node[above, flowlabel] {caja YOLO\\$(x_1,y_1,x_2,y_2)$} (filtro);
-    \draw [arrow] (filtro.south) -- node[right, flowlabel] {caja suavizada\\centro, ancho, alto} (errores.north);
+\vspace{0.3cm}
 
-    \draw [arrow] (errores.south west) -- node[above, sloped, flowlabel] {\texttt{ex\_virtual}} (pidyaw.north east);
-    \draw [arrow] (errores.south) -- node[right, flowlabel] {\texttt{ey\_virtual}} (pidz.north);
-    \draw [arrow] (errores.south east) -- node[above, sloped, flowlabel] {\texttt{e\_dist}} (piddist.north west);
+El entrenamiento se realizó en Google Colab, donde se cargó el dataset ya organizado y se configuró el archivo YAML correspondiente con las rutas de entrenamiento, validación y prueba. Como YOLOv8n ya dispone de pesos preentrenados, el proceso se planteó como un ajuste fino sobre el modelo base \texttt{yolov8n.pt}, en lugar de entrenar la red desde cero. La ejecución se configuró para entrenar durante 30 épocas, con imágenes de entrada de $640 \times 640$ píxeles y un tamaño de lote de 16. Además, se activó la generación de gráficas del entrenamiento para analizar posteriormente la evolución de las pérdidas, las métricas de validación y los ejemplos de detección obtenidos.
 
-    \draw [arrow] (pidyaw.south east) -- node[below, sloped, flowlabel] {\texttt{w\_yaw}} (mavros.north west);
-    \draw [arrow] (pidz.south) -- node[right, flowlabel] {\texttt{v\_y}} (mavros.north);
-    \draw [arrow] (piddist.south west) -- node[below, sloped, flowlabel] {\texttt{v\_x}} (mavros.north east);
+\vspace{0.3cm}
 
-    \draw [arrow] (mavros) -- node[right, flowlabel] {MAVLink / setpoints} (uav);
-    \draw [feedback] (uav.west) -| node[pos=0.25, below, flowlabel] {movimiento\\nueva imagen} (cam.south);
+Se mantuvieron los parámetros por defecto proporcionados por Ultralytics para el entrenamiento, dejando que la opción \texttt{optimizer=auto} seleccionara automáticamente el optimizador y los hiperparámetros principales. En este caso, el entrenamiento utilizó AdamW con \texttt{lr=0.002} y \texttt{momentum=0.9}, con pesos preentrenados activados mediante \texttt{pretrained=True}. Esto permitió aprovechar las características visuales ya aprendidas por YOLOv8n y adaptar únicamente el detector al UAV objetivo del dataset generado.
 
-    \end{tikzpicture}%
-    }
-    \caption{Arquitectura general del sistema de seguimiento visual, válida tanto para simulación como para despliegue real.}
-    \label{fig:arquitectura_nodos}
+\vspace{0.3cm}
+
+La evolución del entrenamiento se resume en la Figura \ref{fig:yolo-training-results}. En ella se observa que las pérdidas asociadas a la localización de la caja, la clasificación y la función DFL disminuyen de forma progresiva tanto en entrenamiento como en validación. Al mismo tiempo, las métricas de precisión, \textit{recall}, \textit{mAP50} y \textit{mAP50-95} aumentan y se estabilizan en valores elevados, lo que indica que el modelo aprende a detectar el UAV objetivo sin mostrar una divergencia clara entre entrenamiento y validación.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{imagenes/results.png}
+\caption{Evolución de pérdidas y métricas durante el entrenamiento de YOLOv8n. Imagen de elaboración propia.}
+\label{fig:yolo-training-results}
 \end{figure}
 
-\section{Componente de Percepción}
+\vspace{0.3cm}
 
-\subsection{Entrenamiento y Comparación de Modelos YOLO}
+La evolución de las últimas épocas confirma esta convergencia estable. En la época 18 se obtuvo una precisión de 0.992, un \textit{recall} de 0.991, un \textit{mAP50} de 0.995 y un \textit{mAP50-95} de 0.745. En la época 19 el \textit{mAP50-95} aumentó hasta 0.753, mientras que en la época 20 alcanzó 0.755, con una precisión de 0.996, un \textit{recall} de 0.994 y un \textit{mAP50} de 0.995. Al mismo tiempo, las pérdidas de entrenamiento continuaron descendiendo: la pérdida de caja pasó de 0.9271 a 0.8929, la pérdida de clasificación de 0.4212 a 0.3953 y la pérdida DFL de 0.9452 a 0.9339 entre las épocas 18 y 20.
 
-DECIR DATA AUG y  omo lo entrene finetuning
+\vspace{0.3cm}
 
-Para seleccionar el modelo de detección se compararon distintas variantes de YOLO atendiendo a tres criterios principales: precisión de detección, precisión media en distintos umbrales de IoU y tiempo de inferencia. Todos los modelos fueron entrenados utilizando el dataset final descrito en la subsección anterior, manteniendo las mismas condiciones de entrenamiento y empleando un total de 25 épocas. De este modo, la comparación entre arquitecturas se realizó de forma homogénea, evitando que las diferencias observadas dependieran de cambios en el conjunto de datos o en la configuración experimental. La Tabla \ref{tab:comparativa-yolo} resume los resultados obtenidos para cada arquitectura evaluada.
+La matriz de confusión de la Figura \ref{fig:yolo-confusion-matrix} refuerza esta conclusión, ya que concentra la mayor parte de las predicciones en la clase correcta y muestra una separación clara entre el UAV objetivo y el fondo. Este resultado es especialmente importante para el sistema de seguimiento, porque una confusión frecuente con el fondo provocaría cajas falsas, errores visuales incorrectos y órdenes de control innecesarias.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{imagenes/confusion_matrix.png}
+\caption{Matriz de confusión obtenida tras el entrenamiento de YOLOv8n. Imagen de elaboración propia.}
+\label{fig:yolo-confusion-matrix}
+\end{figure}
+
+\vspace{0.3cm}
+
+Por último, la Figura \ref{fig:yolo-validation-predictions} muestra ejemplos de predicción sobre imágenes de validación. En estos casos, el detector localiza correctamente el UAV y ajusta la caja delimitadora alrededor del objetivo, incluso cuando cambia su escala o su posición dentro de la imagen. Esta comprobación visual resulta útil porque permite verificar que las métricas numéricas se corresponden con detecciones coherentes desde el punto de vista del sistema de control.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{imagenes/val_batch2_pred.jpg}
+\caption{Ejemplos de detección sobre el conjunto de validación tras el entrenamiento. Imagen de elaboración propia.}
+\label{fig:yolo-validation-predictions}
+\end{figure}
+
+\vspace{0.3cm}
+
+En conjunto, los resultados obtenidos indican que el entrenamiento fue satisfactorio. Las métricas de precisión y \textit{recall} se mantuvieron muy elevadas, el \textit{mAP50} permaneció prácticamente saturado en 0.995 y el \textit{mAP50-95} siguió mejorando de forma progresiva. Además, la reducción simultánea de las pérdidas y la calidad de las predicciones visuales sugieren que el ajuste fino refinó correctamente la localización de las cajas y la clasificación del objetivo sin mostrar signos claros de degradación en validación. Una vez finalizado el entrenamiento, se guardó el mejor modelo obtenido, \texttt{best.pt}, para emplearlo posteriormente en el nodo de percepción visual del sistema.
 
 \subsection{Estimación de la Distancia mediante Ancho y Alto de la Caja}
 
@@ -295,7 +366,7 @@ u_{sat}(t) = \mathrm{sat}_{[-u_{max},u_{max}]}\left(u(t)\right)
 En el caso del control horizontal, el error de entrada es el desplazamiento visual compensado en el eje horizontal, denominado \texttt{ex\_virtual}. Este error alimenta el PID de \textit{yaw}, cuya salida es la velocidad angular \texttt{w\_yaw}:
 
 \begin{equation}
-\omega_{yaw} = \mathrm{sat}_{[-20,20]}\left(
+\omega_{yaw} = \mathrm{sat}_{[-10,10]}\left(
 2.365625\,e_{x,virtual}(t)
 + 0.06 \int_0^t e_{x,virtual}(\tau)\,d\tau
 + 0.320\,\frac{de_{x,virtual}(t)}{dt}
@@ -307,10 +378,10 @@ En el caso del control horizontal, el error de entrada es el desplazamiento visu
 Para el control vertical se emplea el error \texttt{ey\_virtual}. Este controlador genera la velocidad vertical \texttt{v\_y}, responsable de corregir la posición aparente del objetivo en altura:
 
 \begin{equation}
-v_y = \mathrm{sat}_{[-10,10]}\left(
-2.65\,e_{y,virtual}(t)
-+ 0.03 \int_0^t e_{y,virtual}(\tau)\,d\tau
-+ 0.192\,\frac{de_{y,virtual}(t)}{dt}
+v_y = \mathrm{sat}_{[-5,5]}\left(
+2.15\,e_{y,virtual}(t)
++ 0.0 \int_0^t e_{y,virtual}(\tau)\,d\tau
++ 0.205\,\frac{de_{y,virtual}(t)}{dt}
 \right)
 \end{equation}
 
@@ -319,10 +390,10 @@ v_y = \mathrm{sat}_{[-10,10]}\left(
 Finalmente, el control longitudinal utiliza el error de distancia estimada, \texttt{e\_dist}, calculado a partir de la diferencia entre la distancia estimada al UAV objetivo y la distancia de referencia. Su salida es la velocidad frontal \texttt{v\_x}:
 
 \begin{equation}
-v_x = \mathrm{sat}_{[-10,10]}\left(
-0.47\,e_{dist}(t)
-+ 0.02 \int_0^t e_{dist}(\tau)\,d\tau
-+ 0.0014\,\frac{de_{dist}(t)}{dt}
+v_x = \mathrm{sat}_{[-5,5]}\left(
+0.8\,e_{dist}(t)
++ 0.0 \int_0^t e_{dist}(\tau)\,d\tau
++ 0.35\,\frac{de_{dist}(t)}{dt}
 \right)
 \end{equation}
 
@@ -338,21 +409,14 @@ La Tabla \ref{tab:pid-control} resume las ganancias y los límites finalmente ut
 \hline
 \textbf{Controlador} & \textbf{Entrada} & \textbf{Salida} & \textbf{$K_p$} & \textbf{$K_i$} & \textbf{$K_d$} & \textbf{Límite de salida} \\
 \hline
-PID de \textit{yaw} & \texttt{ex\_virtual} & \texttt{w\_yaw} & 2.365625 & 0.06 & 0.320 & $\pm 20.0$ rad/s \\
+PID de \textit{yaw} & \texttt{ex\_virtual} & \texttt{w\_yaw} & 2.365625 & 0.06 & 0.320 & $\pm 10.0$ rad/s \\
 \hline
-PID de altura & \texttt{ey\_virtual} & \texttt{v\_y} & 2.65 & 0.03 & 0.192 & $\pm 10.0$ m/s \\
+PID de altura & \texttt{ey\_virtual} & \texttt{v\_y} & 2.15 & 0.0 & 0.205 & $\pm 5.0$ m/s \\
 \hline
-PID de distancia & \texttt{e\_dist} & \texttt{v\_x} & 0.47 & 0.02 & 0.0014 & $\pm 10.0$ m/s \\
+PID de distancia & \texttt{e\_dist} & \texttt{v\_x} & 0.8 & 0.0 & 0.35 & $\pm 5.0$ m/s \\
 \hline
 \end{tabular}%
 }
 \caption{Parámetros finales de los controladores PID utilizados para el seguimiento visual.}
 \label{tab:pid-control}
 \end{table}
-
-
-\section{Ejecución en Gazebo}
-
-\subsection{Lanzamiento de la Simulación}
-
-

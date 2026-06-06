@@ -4,14 +4,43 @@
 \chapter*{Pruebas y Validaciones}
 
 \addcontentsline{toc}{chapter}{\protect\numberline{\thechapter}Pruebas y Validaciones}
-\vspace{-1.5cm} 
+\vspace{-1.5cm}
 \noindent\HRule\par\vspace{0.1cm}
 
 \section{Planificación de las Pruebas}
 
+La validación del sistema se organizará en tres experimentos principales, planteados de forma progresiva para evaluar primero los componentes individuales y, posteriormente, el comportamiento conjunto del sistema de seguimiento visual.
+
+\vspace{0.3cm}
+
+El primer experimento estará dedicado a la selección del modelo de detección. Para ello se realizará un torneo comparativo entre distintas arquitecturas de YOLO, evaluando su precisión media, el número de parámetros y el tiempo de inferencia. El objetivo de esta prueba será determinar qué modelo resulta más recomendable para el sistema, no solo por su precisión absoluta, sino por su capacidad para trabajar en tiempo real dentro de un lazo de control visual.
+
+\vspace{0.3cm}
+
+El segundo experimento se centrará en la validación de los controladores PID. En primer lugar, se probarán de forma individual los tres reguladores principales: el PID de \textit{yaw}, mediante una trayectoria circular; el PID de altura, mediante una trayectoria vertical sinusoidal; y el PID de distancia, mediante una trayectoria recta con separación de seguridad. A continuación, se realizarán tres pruebas específicas para estimar el tiempo de establecimiento de cada controlador por separado, manteniendo condiciones de seguimiento cercanas al UAV objetivo. Después se realizará una prueba conjunta con los tres PID activados simultáneamente, en la que el UAV objetivo combinará un movimiento circular en el plano horizontal con una onda sinusoidal en altura. De este modo se analizará tanto la respuesta aislada de cada controlador como la capacidad del sistema completo para reducir los errores visuales y de distancia cuando todos los ejes se excitan al mismo tiempo.
+
+\vspace{0.3cm}
+
+El tercer experimento queda pendiente de definir y se concretará en función de los resultados obtenidos en las pruebas anteriores. Su finalidad será completar la validación del sistema incorporando un escenario adicional que permita estudiar algún aspecto no cubierto por la selección del detector ni por las pruebas específicas de control PID.
+
 
 \section{Desarrollo de los Experimentos}
-\subsection{Selecion modelo}
+
+\subsection{Selección del Modelo}
+
+El primer experimento tuvo como objetivo seleccionar el detector más adecuado para el sistema de seguimiento visual. Para ello se realizó un torneo comparativo entre distintas arquitecturas de la familia YOLO, utilizando el dataset descrito previamente y manteniendo las mismas condiciones de entrenamiento para todos los modelos. El experimento se ejecutó en Google Colab, aprovechando la disponibilidad de GPU para entrenar de forma secuencial las variantes YOLOv8, YOLOv10, YOLO11 y YOLO26 en sus versiones \textit{nano} (n), \textit{small} (s) y \textit{medium} (m).
+
+\vspace{0.3cm}
+
+La comparación se planteó como un proceso automatizado en el que se recorría una lista de pesos preentrenados. Para cada arquitectura se cargaba el modelo correspondiente, se inicializaba a partir de sus pesos base y se realizaba un ajuste fino sobre el dataset del proyecto. De esta forma, todos los modelos partían de conocimiento visual previo y se especializaban posteriormente en la detección del UAV objetivo, siguiendo el mismo enfoque de \textit{fine-tuning} empleado para YOLOv8n en el capítulo de implementación.
+
+\vspace{0.3cm}
+
+Todos los entrenamientos se realizaron con una configuración común: 25 épocas, tamaño de imagen de $640 \times 640$ píxeles y \textit{batch size} de 16. Además, se mantuvo la selección automática del optimizador mediante \texttt{optimizer=auto}, de forma que Ultralytics determinara los hiperparámetros más adecuados para cada caso. Cada ejecución se guardó en un directorio independiente, identificado con el nombre del modelo entrenado, lo que permitió comparar posteriormente las métricas obtenidas de forma ordenada y homogénea.
+
+\vspace{0.3cm}
+
+Los resultados del torneo se resumen en la Tabla \ref{tab:comparativa-yolo}. Para la comparación se utilizaron cuatro criterios principales: número de parámetros, \textit{mAP50}, \textit{mAP50-95} y tiempo de inferencia. Estos indicadores permiten evaluar no solo la precisión del detector, sino también su coste computacional y su idoneidad para integrarse en un lazo de control en tiempo real.
 
 \begin{table}[htbp]
 \centering
@@ -41,19 +70,248 @@ YOLO26m  & 20.04        & 0.988004 & 0.729559 & 17.643815 \\
 }
 \end{table}
 
+\vspace{0.3cm}
 
-A partir de estos resultados se selecciona \textbf{YOLOv8n} como modelo principal para el sistema de percepción. La elección no se basa únicamente en obtener la mayor precisión absoluta, sino en alcanzar un compromiso adecuado entre precisión, velocidad de inferencia y número de parámetros. Este criterio es especialmente importante en un sistema de seguimiento visual para UAV, donde el detector forma parte de un lazo de control y debe proporcionar medidas frecuentes sin introducir retardos significativos.
+A partir de estos resultados se seleccionó \textbf{YOLOv8n} como modelo principal para el sistema de percepción. La elección no se basó únicamente en obtener el mayor valor de precisión absoluta, sino en encontrar el mejor compromiso entre precisión, velocidad de inferencia y tamaño del modelo. Este criterio es especialmente relevante en un sistema de seguimiento visual para UAV, donde el detector no trabaja de forma aislada, sino como parte de un lazo cerrado que debe proporcionar medidas frecuentes al controlador.
 
-Desde el punto de vista de la complejidad del modelo, YOLOv8n dispone de aproximadamente 3.2 millones de parámetros. Este valor es considerablemente inferior al de YOLOv8s, con 11.2 millones, y al de YOLOv8m, con 25.9 millones. Dentro de la misma familia YOLOv8, el modelo nano mantiene una precisión muy elevada, con un mAP50 de 0.992507, pero reduce de forma notable el tamaño de la red y el tiempo de inferencia. En concreto, YOLOv8s incrementa los parámetros hasta 11.2 millones y eleva la inferencia a 6.248403 ms, mientras que YOLOv8m alcanza 25.9 millones de parámetros y 14.657198 ms. Aunque YOLOv8m obtiene el mayor mAP50-95 de la tabla, con 0.750974, el incremento de coste computacional no compensa para una aplicación que requiere respuesta rápida.
+\vspace{0.3cm}
 
-La comparación con otras familias refuerza esta decisión. YOLOv10n cuenta con 2.3 millones de parámetros, pero obtiene peores valores de precisión, con un mAP50 de 0.988186 y un mAP50-95 de 0.711153, además de una inferencia superior a YOLOv8n, con 3.258539 ms. YOLOv10s y YOLOv10m aumentan el número de parámetros hasta 7.2 y 16.4 millones, respectivamente, sin mejorar los resultados globales de YOLOv8n. Del mismo modo, YOLO11n presenta 2.6 millones de parámetros y una inferencia de 2.814279 ms, pero su mAP50-95, de 0.728236, queda por debajo del obtenido por YOLOv8n. Las versiones YOLO11s y YOLO11m aumentan la complejidad hasta 9.4 y 20.1 millones de parámetros, con tiempos de inferencia de 6.217230 ms y 17.582637 ms, respectivamente.
+Desde el punto de vista de la precisión, YOLOv8n obtuvo un \textit{mAP50} de 0.992507 y un \textit{mAP50-95} de 0.733692, valores suficientemente altos para detectar el UAV objetivo de forma fiable. Aunque YOLOv8m alcanzó el mayor \textit{mAP50-95} de la tabla, con 0.750974, esta mejora fue reducida frente al incremento de coste computacional: YOLOv8m utiliza 25.9 millones de parámetros y requiere 14.657198 ms de inferencia, frente a los 3.2 millones de parámetros y 2.660333 ms de YOLOv8n. Por tanto, la ganancia de precisión no compensaba el aumento de tamaño ni el retardo introducido.
 
-También se evaluaron los modelos YOLO26n, YOLO26s y YOLO26m, con 2.4, 9.5 y 20.04 millones de parámetros. Aunque YOLO26n mantiene un tamaño reducido, su precisión es inferior, con un mAP50 de 0.986090 y un mAP50-95 de 0.717900. Las variantes YOLO26s y YOLO26m aumentan el número de parámetros y el tiempo de inferencia, pero tampoco superan de forma conjunta la precisión, velocidad y ligereza de YOLOv8n.
+\vspace{0.3cm}
 
-Por tanto, YOLOv8n ofrece el mejor equilibrio para este proyecto: mantiene una precisión muy alta, presenta el menor tiempo de inferencia de todos los modelos evaluados, con 2.660333 ms, y conserva un número de parámetros reducido, con 3.2 millones. Esta combinación lo hace especialmente adecuado para seguimiento visual en tiempo real, ya que permite alimentar al controlador con medidas rápidas y suficientemente fiables, reduciendo el riesgo de respuestas tardías, oscilaciones o pérdida del objetivo durante la simulación.
+La comparación con YOLOv8s refuerza esta decisión. Esta variante obtuvo un \textit{mAP50-95} muy similar, de 0.734467, pero aumentó el número de parámetros hasta 11.2 millones y el tiempo de inferencia hasta 6.248403 ms. Es decir, la mejora en precisión fue prácticamente despreciable para el objetivo del proyecto, mientras que el coste computacional creció de forma considerable. En un sistema de control visual, este incremento puede traducirse en menor frecuencia de actualización, mayor retardo en las correcciones y peor capacidad de reacción ante movimientos rápidos del UAV objetivo.
+
+\vspace{0.3cm}
+
+El resto de familias tampoco ofreció un compromiso superior. YOLOv10n y YOLO26n presentan menos parámetros que YOLOv8n, pero obtienen peores métricas de precisión y tiempos de inferencia superiores. YOLO11n mantiene un tamaño reducido y un \textit{mAP50} elevado, pero su \textit{mAP50-95} queda por debajo del de YOLOv8n y su inferencia también es ligeramente más lenta. Las variantes \textit{small} y \textit{medium} de YOLOv10, YOLO11 y YOLO26 incrementan el número de parámetros y el tiempo de inferencia sin aportar una mejora global suficiente para justificar su uso.
+
+\vspace{0.3cm}
+
+Por todo ello, YOLOv8n fue considerado el modelo más adecuado para el sistema implementado. Su principal ventaja es que mantiene una precisión elevada con el menor tiempo de inferencia de todos los modelos evaluados. Esta combinación permite alimentar al controlador con detecciones rápidas y suficientemente estables, reduciendo el riesgo de respuestas tardías, oscilaciones o pérdida temporal del objetivo durante las maniobras de seguimiento.
+
+\subsection{Pruebas de Control}
+
+\subsubsection{Pruebas Individuales}
+
+En este bloque se evalúan de forma independiente los tres controladores principales del sistema: \textit{yaw}, altura y distancia. Cada prueba utiliza una trayectoria específica para excitar únicamente el eje de control correspondiente y analizar su respuesta sin mezclar efectos de otros reguladores.
+
+\paragraph{Prueba del PID de \textit{yaw} con trayectoria circular}\mbox{}\par
+
+La primera prueba de control se diseñó para evaluar de forma aislada el comportamiento del PID de \textit{yaw}. En este experimento, el UAV cazador permanece situado en una posición central, mientras que el UAV objetivo describe una trayectoria circular a su alrededor con un radio de 4 metros. Esta configuración permite comprobar si el controlador es capaz de girar el dron cazador de forma continua para mantener el objetivo centrado en el eje horizontal de la imagen.
+
+\vspace{0.3cm}
+
+La trayectoria circular se generó actualizando de forma periódica la posición del UAV objetivo en el plano horizontal. Para ello, se calculó una velocidad angular a partir de la relación entre la velocidad lineal deseada y el radio de la circunferencia. Con un periodo de actualización de 20 Hz, en cada iteración se incrementó el tiempo de simulación, se obtuvo el ángulo instantáneo de la trayectoria y se calcularon las coordenadas del objetivo mediante las funciones trigonométricas seno y coseno. La altura se mantuvo constante durante toda la prueba, de modo que la variación principal observada por la cámara correspondiera al desplazamiento horizontal del objetivo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{imagenes/trayectoria3D-circular.png}
+\caption{Trayectoria circular utilizada para la prueba del PID de \textit{yaw}. Imagen de elaboración propia.}
+\label{fig:trayectoria-circular-yaw}
+\end{figure}
+
+\vspace{0.3cm}
+
+Como se observa en la Figura \ref{fig:trayectoria-circular-yaw}, el UAV objetivo realiza una circunferencia alrededor del UAV cazador, manteniendo una altura constante. Esta trayectoria resulta adecuada para analizar el control de \textit{yaw}, ya que obliga al sistema a corregir continuamente el error horizontal sin introducir cambios relevantes en el eje vertical.
+
+\vspace{0.3cm}
+
+La respuesta obtenida por el controlador se muestra en la Figura \ref{fig:respuesta-pid-yaw-circular}. La señal representada corresponde al error angular horizontal, denominado \texttt{Ex}, mientras que la línea discontinua roja indica la referencia deseada, es decir, error nulo. Al inicio de la prueba aparece un error negativo debido a que el objetivo no se encuentra perfectamente centrado en la imagen. Sin embargo, el PID corrige rápidamente esta desviación y lleva la señal hacia valores próximos a cero.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{imagenes/RespuestaPID_YAW_Circular.png}
+\caption{Respuesta del PID de \textit{yaw} durante la trayectoria circular. Imagen de elaboración propia.}
+\label{fig:respuesta-pid-yaw-circular}
+\end{figure}
+
+\vspace{0.3cm}
+
+La evolución de la señal muestra una respuesta estable tras el transitorio inicial. Aunque se aprecia un pequeño error residual positivo, este permanece acotado y con oscilaciones reducidas, lo que indica que el controlador mantiene el objetivo cerca del centro horizontal de la imagen durante la trayectoria circular. Por tanto, esta prueba confirma que el PID de \textit{yaw} es capaz de compensar el movimiento lateral relativo del UAV objetivo y generar una respuesta suficientemente suave para el seguimiento visual.
+
+\paragraph{Prueba del PID de altura con trayectoria vertical}\mbox{}\par
+
+La segunda prueba de control se planteó para evaluar el comportamiento del PID de altura. En este caso, el UAV objetivo se situó inicialmente a una altura de referencia de 7 metros y se hizo oscilar verticalmente alrededor de dicha posición. La finalidad de esta prueba fue comprobar si el controlador era capaz de corregir el error vertical de la imagen cuando el objetivo sube y baja, manteniéndolo próximo al centro visual en el eje vertical.
+
+\vspace{0.3cm}
+
+La trayectoria se generó mediante una oscilación sinusoidal aplicada únicamente sobre la coordenada vertical del UAV objetivo. Para ello, se definió un valor central de altura, una amplitud de oscilación y un periodo de movimiento. En cada iteración, con una frecuencia de actualización de 20 Hz, se incrementó el tiempo de simulación y se calculó la nueva altura como la suma de la altura central y una componente sinusoidal. Además, se mantuvo fija la posición horizontal del UAV objetivo, de forma que la prueba excitara principalmente el eje vertical y no mezclara la respuesta con correcciones de \textit{yaw} o desplazamiento lateral. También se incluyó una limitación inferior de seguridad para evitar que la altura objetivo pudiera tomar valores demasiado bajos durante la simulación.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{imagenes/trayectoria3D-subir_bajar.png}
+\caption{Trayectoria vertical utilizada para la prueba del PID de altura. Imagen de elaboración propia.}
+\label{fig:trayectoria-altura-subir-bajar}
+\end{figure}
+
+\vspace{0.3cm}
+
+En la Figura \ref{fig:trayectoria-altura-subir-bajar} se observa que el movimiento del UAV objetivo se concentra en el eje vertical, mientras el UAV cazador permanece en una posición de referencia. Esta configuración permite analizar de forma directa la capacidad del controlador de altura para seguir variaciones ascendentes y descendentes del objetivo sin introducir cambios relevantes en el plano horizontal.
+
+\vspace{0.3cm}
+
+La respuesta del controlador se representa en la Figura \ref{fig:respuesta-pid-altura}. La señal verde corresponde al error vertical \texttt{Ey}, mientras que la línea roja discontinua marca la referencia de error nulo. A lo largo de la prueba, el error se mantiene en valores reducidos alrededor de cero, con pequeñas oscilaciones asociadas al movimiento sinusoidal del objetivo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{imagenes/RespuestaPID_Altura.png}
+\caption{Respuesta del PID de altura durante la trayectoria vertical. Imagen de elaboración propia.}
+\label{fig:respuesta-pid-altura}
+\end{figure}
+
+\vspace{0.3cm}
+
+La evolución de la señal muestra que el controlador responde de forma suave ante las variaciones de altura. No aparecen oscilaciones crecientes ni sobreimpulsos elevados, y el error vertical permanece acotado durante toda la trayectoria. Aunque se aprecia una ligera desviación respecto a la referencia en algunos instantes, esta se corrige progresivamente y se mantiene dentro de un margen pequeño. Por tanto, la prueba confirma que el PID de altura es capaz de compensar los movimientos verticales del UAV objetivo y mantener una respuesta estable para el seguimiento visual.
 
 
+\paragraph{Prueba del PID de distancia con trayectoria recta}\mbox{}\par
 
-\subsection{Segumiento del Objetivo} 
+La tercera prueba de control se diseñó para evaluar el comportamiento del PID de distancia, encargado de regular el avance longitudinal del UAV cazador respecto al UAV objetivo. En esta prueba, el UAV objetivo sigue una trayectoria recta a una velocidad constante de 3 m/s, avanzando un total aproximado de 25 metros. El objetivo del experimento es comprobar si el dron cazador es capaz de seguir a un objetivo en movimiento manteniendo una separación longitudinal controlada.
+
+\vspace{0.3cm}
+
+Aunque el planteamiento general del TFG está orientado a tareas de interceptación, en las pruebas de validación se decidió no forzar una colisión ni un contacto directo entre ambos UAV. Esta decisión permite que los experimentos sean repetibles, comparables y más fáciles de trasladar posteriormente a pruebas reales. Por este motivo, el sistema se configuró para mantener una distancia de seguridad de 1 metro respecto al UAV objetivo. De este modo, se evalúa la capacidad de aproximación y seguimiento sin comprometer la estabilidad de la simulación ni la seguridad de una posible plataforma física.
+
+\vspace{0.3cm}
+
+La trayectoria recta se generó desplazando progresivamente el UAV objetivo en una única dirección, manteniendo constante su altura y su orientación. Al imponer una velocidad de 3 m/s durante el recorrido, el controlador de distancia debe aumentar o reducir la velocidad frontal del UAV cazador para acercarse al objetivo y conservar la referencia deseada. Esta prueba resulta especialmente relevante porque combina una condición sencilla de analizar con una exigencia directa sobre el control longitudinal.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{imagenes/trayectoria3D-Recta.png}
+\caption{Trayectoria recta utilizada para la prueba del PID de distancia. Imagen de elaboración propia.}
+\label{fig:trayectoria-recta-distancia}
+\end{figure}
+
+\vspace{0.3cm}
+
+En la Figura \ref{fig:trayectoria-recta-distancia} se representa el desplazamiento rectilíneo del UAV objetivo y la respuesta del UAV cazador durante el seguimiento. La prueba permite observar si el controlador longitudinal es capaz de reducir la separación inicial y acompañar al objetivo durante el avance, manteniendo la distancia de seguridad establecida.
+
+\vspace{0.3cm}
+
+La respuesta del PID de distancia se muestra en la Figura \ref{fig:respuesta-pid-distancia}. En esta gráfica se analiza la evolución del error longitudinal asociado a la diferencia entre la distancia estimada al objetivo y la distancia de referencia. Una respuesta adecuada debe tender hacia valores próximos a cero, lo que indica que el sistema ha alcanzado la separación deseada y que el UAV cazador acompaña al objetivo sin alejarse ni acercarse en exceso.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{imagenes/RespuestaPID_Distancia.png}
+\caption{Respuesta del PID de distancia durante la trayectoria recta. Imagen de elaboración propia.}
+\label{fig:respuesta-pid-distancia}
+\end{figure}
+
+\vspace{0.3cm}
+
+Los resultados muestran un comportamiento satisfactorio del controlador longitudinal. Tras el transitorio inicial, el error de distancia se reduce y permanece acotado, lo que indica que el UAV cazador es capaz de adaptarse al movimiento del objetivo a 3 m/s. Además, el seguimiento se realiza manteniendo la referencia de seguridad de 1 metro, por lo que el sistema no solo se aproxima al objetivo, sino que también evita una interceptación directa. Esta respuesta confirma que el PID de distancia proporciona una base adecuada para escenarios de persecución controlada y para futuras pruebas reales donde la repetibilidad y la seguridad son requisitos fundamentales.
+
+\subsubsection{Tiempos de establecimiento de los controladores PID}
+
+Además de comprobar la estabilidad de cada controlador durante trayectorias continuas, se realizaron tres pruebas específicas para estimar su tiempo de establecimiento. El objetivo de estas pruebas fue medir cuánto tarda cada PID en reducir su error y alcanzar una respuesta estable cuando se introduce una desviación inicial controlada. Para que los resultados fueran representativos del caso de uso del proyecto, las pruebas se plantearon con distancias cortas entre drones, ya que el sistema está orientado a seguimiento cercano del UAV objetivo y no a navegación a larga distancia.
+
+\vspace{0.3cm}
+
+En la prueba del PID de \textit{yaw}, el UAV cazador se situó inicialmente 1 metro desplazado hacia la izquierda respecto al objetivo, manteniendo una separación aproximada de 3 metros entre ambos drones. Esta configuración genera un error horizontal claro en la imagen sin introducir de forma dominante errores verticales o longitudinales. La respuesta obtenida se muestra en la Figura \ref{fig:pid-yaw-ts}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{imagenes/PID_YAW_Ts_V2.png}
+\caption{Tiempo de establecimiento del PID de \textit{yaw}. Imagen de elaboración propia.}
+\label{fig:pid-yaw-ts}
+\end{figure}
+
+\vspace{0.3cm}
+
+El tiempo de establecimiento obtenido para el PID de \textit{yaw} fue de aproximadamente $0.65\,\mathrm{s}$. Este valor es el menor de las tres pruebas porque la corrección de orientación se realiza mediante una velocidad angular, sin requerir un desplazamiento lineal completo del UAV cazador. Por ello, el sistema puede reducir rápidamente el error horizontal y centrar el objetivo en la imagen con una respuesta directa y poco oscilatoria.
+
+\vspace{0.3cm}
+
+En la prueba del PID de altura, el UAV cazador se colocó con un desfase vertical de 1 metro hacia arriba, manteniendo también una distancia aproximada de 3 metros respecto al UAV objetivo. Con esta configuración se fuerza un error vertical inicial que debe ser compensado por el controlador de altura, mientras que la separación cercana entre drones mantiene la prueba dentro del rango habitual de seguimiento visual. La respuesta se representa en la Figura \ref{fig:pid-altura-ts}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{imagenes/PID_Altura_Ts_V2.png}
+\caption{Tiempo de establecimiento del PID de altura. Imagen de elaboración propia.}
+\label{fig:pid-altura-ts}
+\end{figure}
+
+\vspace{0.3cm}
+
+El tiempo de establecimiento del PID de altura fue de aproximadamente $1.25\,\mathrm{s}$. Esta respuesta es más lenta que la del control de \textit{yaw} porque la corrección vertical depende del movimiento físico del UAV y de las limitaciones impuestas por el controlador de vuelo. Dichas limitaciones reducen la velocidad y la aceleración vertical máximas para evitar maniobras bruscas, por lo que el sistema tarda algo más en alcanzar la referencia, aunque mantiene una evolución estable y sin oscilaciones crecientes.
+
+\vspace{0.3cm}
+
+Por último, se evaluó el PID de distancia situando inicialmente los drones con una separación longitudinal de 3 metros. Esta prueba permite analizar la capacidad del controlador para regular el acercamiento al objetivo manteniendo una distancia de seguimiento segura. La elección de una distancia moderada responde a la necesidad de evitar choques entre drones y de hacer que la prueba sea repetible tanto en simulación como en una futura validación física. La respuesta se muestra en la Figura \ref{fig:pid-distancia-ts}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{imagenes/PID_DISTANCIA_Ts.png}
+\caption{Tiempo de establecimiento del PID de distancia. Imagen de elaboración propia.}
+\label{fig:pid-distancia-ts}
+\end{figure}
+
+\vspace{0.3cm}
+
+El tiempo de establecimiento del PID de distancia fue de aproximadamente $6\,\mathrm{s}$, notablemente superior al de los otros dos controladores. Este comportamiento se debe a que el avance longitudinal se ajustó de forma conservadora para no provocar una aproximación excesivamente agresiva al UAV objetivo. Además, debe tenerse en cuenta que este controlador PID está pensado para seguir a un UAV objetivo en movimiento, por lo que en una prueba estática aparece de forma más marcada la dinámica de aceleración y frenado frente a una referencia fija. Cuando el UAV cazador acelera para avanzar, tiende a inclinarse hacia delante; al frenar de forma brusca, realiza el movimiento contrario, generando un pequeño retroceso y variaciones transitorias en la estimación visual. Estas oscilaciones hacen que la señal tarde más en estabilizarse, pero también permiten mantener una maniobra más segura y reproducible, reduciendo el riesgo de colisión durante las pruebas.
+
+\begin{table}[H]
+\centering
+\caption{Tiempos de establecimiento obtenidos para cada controlador PID.}
+\label{tab:tiempos-establecimiento-pid}
+\begin{tabular}{lcc}
+\hline
+\textbf{Controlador} & \textbf{Condición inicial} & \textbf{$T_s$} \\
+\hline
+PID de \textit{yaw} & 1 m lateral y 3 m de separación & $0.65\,\mathrm{s}$ \\
+PID de altura & 1 m vertical y 3 m de separación & $1.25\,\mathrm{s}$ \\
+PID de distancia & 3 m de separación longitudinal & $6\,\mathrm{s}$ \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+
+En conjunto, estos resultados muestran que los controladores lateral y vertical alcanzan la referencia en tiempos reducidos, mientras que el control de distancia presenta una respuesta más lenta debido a las restricciones de seguridad y a la propia dinámica longitudinal del UAV. Esta diferencia resulta aceptable para el sistema propuesto, ya que en un escenario de seguimiento cercano es preferible priorizar una aproximación suave y repetible antes que una reducción demasiado rápida de la distancia.
+
+\subsubsection{Prueba conjunta de los tres PID activados}
+
+Una vez validados los controladores de forma individual, se realizó una prueba conjunta con los tres PID activados simultáneamente. El objetivo de este experimento fue comprobar cómo reaccionaba el código completo cuando el UAV objetivo generaba errores horizontales, verticales y de distancia al mismo tiempo. A diferencia de las pruebas anteriores, esta validación no aísla un único eje de control, sino que somete al sistema de seguimiento a una trayectoria tridimensional más exigente y cercana a una situación real de persecución.
+
+\vspace{0.3cm}
+
+La trayectoria del UAV objetivo se definió combinando un movimiento circular en el plano horizontal con una onda sinusoidal en altura. En el plano $XY$, el objetivo describe una circunferencia alrededor de un centro de referencia, utilizando una velocidad angular calculada a partir de la velocidad lineal y el radio de giro. Al mismo tiempo, la coordenada vertical se modifica mediante una onda de altura base $Z_0 = 7\,\mathrm{m}$, amplitud de $1\,\mathrm{m}$ y frecuencia de $0.1\,\mathrm{Hz}$. De este modo, la altura del objetivo varía de forma suave alrededor de los 7 metros, con un periodo aproximado de 10 segundos.
+
+\vspace{0.3cm}
+
+Esta configuración permite que el UAV objetivo avance alrededor del cazador mientras asciende y desciende periódicamente. La posición se actualizó a 20 Hz, manteniendo una orientación fija durante la trayectoria, de forma que las variaciones observadas por el sistema provinieran principalmente del movimiento espacial del objetivo. Con ello se buscó evaluar la coordinación entre el PID de \textit{yaw}, encargado del centrado horizontal, el PID de altura, responsable de corregir el error vertical, y el PID de distancia, encargado de mantener la separación longitudinal respecto al objetivo.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{imagenes/trayectoria3D-Total.png}
+\caption{Trayectoria circular ondulada utilizada para la prueba conjunta de los tres PID. Imagen de elaboración propia.}
+\label{fig:trayectoria-total-pid}
+\end{figure}
+
+\vspace{0.3cm}
+
+En la Figura \ref{fig:trayectoria-total-pid} se muestra la trayectoria tridimensional utilizada en la prueba. Se observa que el UAV objetivo no solo se desplaza en círculo, sino que también modifica su altura de forma continua. Esta combinación obliga al UAV cazador a corregir simultáneamente su orientación, su posición vertical y su avance, por lo que resulta adecuada para comprobar el funcionamiento conjunto del sistema de control visual.
+
+\vspace{0.3cm}
+
+La respuesta obtenida durante la ejecución se representa en la Figura \ref{fig:respuesta-pid-total}. En esta gráfica se analiza la evolución de las señales asociadas a los tres controladores cuando trabajan de manera simultánea. Una respuesta adecuada debe mantener los errores acotados, evitar oscilaciones crecientes y permitir que el UAV cazador conserve el seguimiento visual del objetivo a pesar de que la trayectoria introduce cambios continuos en los tres ejes.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{imagenes/RespuestaPID_Total.png}
+\caption{Respuesta conjunta de los tres PID durante la trayectoria circular ondulada. Imagen de elaboración propia.}
+\label{fig:respuesta-pid-total}
+\end{figure}
+
+\vspace{0.3cm}
+
+Los resultados muestran que el sistema es capaz de mantener una respuesta estable cuando los tres controladores actúan a la vez. El PID de \textit{yaw} corrige el desplazamiento horizontal producido por el movimiento circular, el PID de altura compensa la variación sinusoidal de la coordenada vertical y el PID de distancia ajusta el avance del UAV cazador para conservar la separación de seguimiento. Aunque la trayectoria genera perturbaciones continuas y pequeñas oscilaciones en las señales de control, estas permanecen acotadas y no derivan en una pérdida del objetivo. Por tanto, esta prueba confirma que la integración de los tres PID permite abordar un escenario de seguimiento tridimensional más completo que las validaciones individuales.
+
+
+\clearpage
+
+\subsection{Seguimiento del Objetivo}
 \section{Análisis de Resultados}
 \section{Experimentos}

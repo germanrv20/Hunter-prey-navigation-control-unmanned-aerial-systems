@@ -200,7 +200,7 @@ Además del modelo del UAV, se utiliza un archivo de mundo \texttt{.world} para 
 \subsection{Procedimiento de Lanzamiento y Supervisión}
 La ejecución de la simulación se organiza mediante archivos \texttt{.launch}, encargados de cargar el modelo del dron, iniciar el entorno de \textit{Gazebo} y activar los nodos necesarios para la comunicación con el sistema de control. Estos archivos se ajustan para incluir la carga automática del UAV, la inicialización de \textit{MAVROS} como puente de comunicación y la conexión con \textit{ArduPilot} a través de puertos \texttt{UDP} simulados.
 
-Una vez iniciado el entorno, se activa el controlador correspondiente, ya sea el esquema convencional basado en \textit{ArduPilot} o el control propuesto en el proyecto. Durante la ejecución se supervisa la respuesta del sistema mediante la visualización 3D en \textit{Gazebo}, la consulta de tópicos con herramientas como \texttt{rqt\_graph} y \texttt{rostopic echo}, y la inspección del estado de los nodos mediante \texttt{rosnode list}. Esta supervisión permite comprobar que la simulación se ejecuta correctamente y que los módulos de percepción, comunicación y control intercambian información de forma adecuada.
+Una vez iniciado el entorno, se activa el controlador correspondiente.Durante la ejecución se supervisa la respuesta del sistema mediante la visualización 3D en \textit{Gazebo}, la consulta de tópicos con herramientas como \texttt{rqt\_graph} y \texttt{rostopic echo}, y la inspección del estado de los nodos mediante \texttt{rosnode list}. Esta supervisión permite comprobar que la simulación se ejecuta correctamente y que los módulos de percepción, comunicación y control intercambian información de forma adecuada.
 
 \vspace{0.3cm}
 
@@ -388,7 +388,7 @@ Como se indicó en la sección de estado del arte, los detectores basados en red
 
 \vspace{0.3cm}
 
-Por este motivo, en este trabajo se opta por un detector de la familia YOLO. A diferencia de los enfoques de dos etapas, YOLO realiza la detección en una única pasada sobre la imagen, proporcionando directamente la caja delimitadora del UAV objetivo. Esta salida resulta suficiente para la metodología propuesta, ya que a partir de ella se obtiene el centro del objetivo, el error visual respecto al centro de la cámara y el área normalizada utilizada como referencia aproximada de distancia. Así, YOLO ofrece un compromiso adecuado entre rapidez, simplicidad de integración y precisión para una tarea de seguimiento visual de UAVs .
+Por este motivo, en este trabajo se opta por un detector de la familia YOLO. A diferencia de los enfoques de dos etapas, YOLO realiza la detección en una única pasada sobre la imagen, proporcionando directamente la caja delimitadora del UAV objetivo. Esta salida resulta suficiente para la metodología propuesta, ya que a partir de ella se obtiene el centro del objetivo, el error visual respecto al centro de la cámara. Así, YOLO ofrece un compromiso adecuado entre rapidez, simplicidad de integración y precisión para una tarea de seguimiento visual de UAVs .
 
 \vspace{0.3cm}
 
@@ -425,14 +425,11 @@ Como resultado, se obtuvo un dataset final de carácter mixto, compuesto por im�
 
 El procedimiento seguido para llegar al dataset final puede resumirse en cuatro fases: primero, selección y \textit{fork} del dataset sintético de partida; segundo, incorporación de capturas obtenidas en simulación para adaptar el entrenamiento al entorno Gazebo; tercero, inclusión de imágenes reales de drones para aumentar la diversidad del conjunto; y cuarto, etiquetado manual y revisión de las nuevas muestras antes de entrenar los modelos YOLO comparados en la sección siguiente.
 
-
-
-explicar como he hehco el dataset y como lo he entrnado finetuning de yolo
 \subsection{Geometría Proyectiva aplicada a la Percepción Visual}
 
 \vspace{0.3cm}
 
-La geometría proyectiva se incorpora en esta metodología para justificar cómo se interpretan las medidas obtenidas por el detector visual. En este trabajo, YOLO no proporciona directamente la posición tridimensional del UAV objetivo, sino una caja delimitadora en la imagen. A partir de esa caja se calculan el centro del objetivo, el error respecto al centro del fotograma y el área normalizada. Por tanto, esta subsección no se plantea como un bloque independiente de reconstrucción 3D, sino como la base geométrica que permite entender por qué esas magnitudes visuales son válidas para el seguimiento.
+La geometría proyectiva se incorpora en esta metodología para justificar cómo se interpretan las medidas obtenidas por el detector visual. En este trabajo, YOLO no proporciona directamente la posición tridimensional del UAV objetivo, sino una caja delimitadora en la imagen. A partir de esa caja se calculan el centro del objetivo y el error respecto al centro del fotograma . Por tanto, esta subsección no se plantea como un bloque independiente de reconstrucción 3D, sino como la base geométrica que permite entender por qué esas magnitudes visuales son válidas para el seguimiento.
 
 \vspace{0.3cm}
 
@@ -458,7 +455,7 @@ x = f \frac{X_c}{Z_c}, \quad y = f \frac{Y_c}{Z_c}
 
 \vspace{0.3cm}
 
-En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ representa la profundidad y $f$ es la distancia focal. Esta relación conecta directamente con lo realizado en el módulo de percepción: si el UAV objetivo se desplaza lateralmente o verticalmente, cambia el centro de la caja detectada; si se acerca o se aleja, cambia su tamaño aparente. Por esta razón, el error visual y el área normalizada permiten alimentar un seguimiento reactivo sin reconstruir completamente la posición 3D del objetivo \cite{bergamasco2019pinhole, CameraModels}.
+En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ representa la profundidad y $f$ es la distancia focal. Esta relación conecta directamente con lo realizado en el módulo de percepción: si el UAV objetivo se desplaza lateralmente o verticalmente, cambia el centro de la caja detectada; si se acerca o se aleja, cambia su tamaño aparente. Por esta razón y el error visual  permiten alimentar un seguimiento reactivo sin reconstruir completamente la posición 3D del objetivo \cite{bergamasco2019pinhole, CameraModels}.
 
 \vspace{0.3cm}
 
@@ -557,16 +554,11 @@ Además, una cámara real no proyecta la escena de manera perfectamente ideal. L
     \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} sDistorsion Camera pinhole}
  \end{center}
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 
 Desde el punto de vista del sistema propuesto, esto implica que una misma posición real del objetivo podría producir un error visual ligeramente diferente según la zona de la imagen donde aparezca. Por este motivo, conviene trabajar con coordenadas normalizadas o con puntos corregidos mediante calibración antes de usar la medida en las etapas posteriores \cite{opencvCalib3d, CameraModels}.
 
-\vspace{0.3cm}
-
-
-
-\vspace{0.3cm}
-
+\vspace{0.2cm}
 
 \subsection{Flujo General del Módulo de Percepción}
 
@@ -654,7 +646,7 @@ En esta expresión, las variables se interpretan de la siguiente forma para el p
 
 \begin{itemize}
     \item $Z_c$ representa la distancia real entre la cámara del UAV cazador y el UAV objetivo. Es la magnitud que se desea estimar.
-    \item $X_c$ e $Y_c$ representan las dimensiones reales conocidas del UAV objetivo. En este trabajo se considera un ancho aproximado de $X_c = 0.55\,\mathrm{m}$ y una altura aproximada de $Y_c = 0.11\,\mathrm{m}$.
+    \item $X_c$ e $Y_c$ representan las dimensiones reales conocidas del UAV objetivo. En este trabajo se considera para la simulación  un ancho aproximado de $X_c = 0.62\,\mathrm{m}$ y una altura aproximada de $Y_c = 0.27\,\mathrm{m}$.
     \item $x$ e $y$ representan el tamaño del UAV objetivo en la imagen, medido en píxeles. En la práctica, estos valores corresponden al ancho y alto de la caja delimitadora entregada por YOLO, es decir, $x = w_{box}$ e $y = h_{box}$.
     \item $f_x$ y $f_y$ son las distancias focales de la cámara expresadas en píxeles. Estos parámetros se obtienen de la matriz intrínseca publicada por la cámara.
 \end{itemize}
