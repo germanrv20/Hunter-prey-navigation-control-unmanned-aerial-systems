@@ -9,6 +9,86 @@
 
 \section{Revisión del cumplimiento de objetivos}
 
+En esta sección se revisa el grado de cumplimiento de los objetivos planteados al inicio del trabajo. Para cada uno de ellos se indica si se considera cumplido, cumplido parcialmente o pendiente, justificando la valoración a partir de los resultados obtenidos durante la implementación y la validación experimental.
 
-\section{Conclusiones finales}
+\vspace{0.3cm}
+
+\subsection*{\textbf{Objetivo general: Desarrollar e implementar un sistema de control de navegación autónoma para seguimiento de UAVs}}
+
+\textbf{Grado de cumplimiento: Cumplido parcialmente.}
+
+El objetivo general se considera cumplido parcialmente, ya que se ha desarrollado e integrado un sistema completo de seguimiento visual compuesto por percepción mediante YOLO, filtrado Kalman + EMA, estimación de distancia, compensación de actitud y control PID en tres ejes. El sistema ha sido validado en simulación con trayectorias dinámicas, manteniendo el UAV objetivo dentro del campo de visión y generando consignas de control coherentes para el UAV cazador.
+
+\vspace{0.2cm}
+
+No obstante, el cumplimiento no puede considerarse completo porque la validación real se ha limitado a la preparación del hardware, la calibración de la cámara y la comprobación de la estimación de distancia con el UAV objetivo físico. Queda pendiente realizar una persecución real completa con ambos UAV en vuelo, por lo que la autonomía total del sistema en entorno real todavía no ha sido demostrada.
+
+\vspace{0.3cm}
+
+\subsection*{\textbf{OE1: Evaluar y optimizar modelos de percepción visual para sistemas empotrados}}
+
+\textbf{Grado de cumplimiento: Cumplido.}
+
+Este objetivo se considera cumplido. Se entrenaron y compararon distintas arquitecturas de la familia YOLO, evaluando precisión, tamaño del modelo y tiempo de inferencia. A partir de esta comparación se seleccionó YOLOv8n como modelo final, no por ser necesariamente el detector con mayor precisión absoluta, sino por ofrecer el mejor equilibrio entre exactitud, rapidez y coste computacional para su integración en un lazo de control visual en tiempo real.
+
+\vspace{0.2cm}
+
+Los resultados obtenidos confirman esta elección, ya que el modelo alcanzó métricas de detección elevadas y mantuvo una inferencia suficientemente rápida. Además, durante las pruebas de seguimiento en simulación se observaron porcentajes de detección directa muy altos y una tasa de pérdida total del objetivo nula, lo que demuestra que el detector elegido proporciona una señal visual estable para alimentar el sistema de control.
+
+\vspace{0.3cm}
+
+\subsection*{\textbf{OE2: Diseñar e implementar el lazo de control de navegación visual}}
+
+\textbf{Grado de cumplimiento: Cumplido.}
+
+Este objetivo se considera cumplido. Se ha diseñado e implementado el lazo de control completo, transformando las detecciones 2D de la cámara en errores visuales y longitudinales que alimentan tres controladores PID: \textit{yaw}, altura y distancia. Los controladores de \textit{yaw} y altura mostraron una respuesta estable y rápida, permitiendo mantener el objetivo centrado horizontal y verticalmente en la imagen.
+
+\vspace{0.2cm}
+
+La parte longitudinal también se implementó y permitió mantener una separación de seguimiento segura. Aunque su respuesta fue más lenta y presentó un error mayor que los ejes de centrado visual, este comportamiento resulta coherente con la función del controlador de distancia: no debe aproximar el UAV cazador de forma agresiva al objetivo, sino mantener un equilibrio entre reactividad y seguridad para evitar colisiones. Por tanto, el lazo de control cumple su objetivo, ya que permite seguir al UAV objetivo, mantenerlo centrado y conservar una distancia de seguridad durante el seguimiento.
+
+\vspace{0.3cm}
+
+\subsection*{\textbf{OE3: Integrar la arquitectura software en un entorno de simulación realista}}
+
+\textbf{Grado de cumplimiento: Cumplido.}
+
+Este objetivo se considera cumplido. La arquitectura software fue integrada en un entorno basado en ROS, Gazebo, ArduPilot y MAVROS, permitiendo conectar los nodos de percepción, estimación del error y control con el autopiloto simulado mediante SITL. El sistema quedó organizado como un flujo cerrado desde la imagen de entrada hasta la publicación de consignas de velocidad.
+
+\vspace{0.2cm}
+
+Además, la integración se verificó mediante los grafos de comunicación de ROS y mediante pruebas de funcionamiento con el sistema completo activo. La existencia de tópicos diferenciados para imagen, detección, error visual, estado del UAV y consignas de velocidad demuestra que la arquitectura quedó correctamente conectada y preparada para ejecutar ensayos de seguimiento en simulación.
+
+\vspace{0.3cm}
+
+\subsection*{\textbf{OE4: Validar la robustez del sistema frente a maniobras evasivas}}
+
+\textbf{Grado de cumplimiento: Cumplido parcialmente.}
+
+Este objetivo se considera cumplido parcialmente. Se diseñaron y ejecutaron distintas pruebas dinámicas en simulación, incluyendo trayectorias en zigzag, trayectorias circulares con variación de altura y una ruta final por \textit{waypoints}. En todas ellas el sistema mantuvo la referencia visual del objetivo, con una tasa de pérdida total nula, lo que confirma una robustez adecuada de la percepción y del centrado visual.
+
+\vspace{0.2cm}
+
+Sin embargo, algunas maniobras evidenciaron limitaciones en el eje longitudinal. En particular, la trayectoria en zigzag produjo un error de distancia superior al observado en otras pruebas, mostrando que el seguimiento de separación todavía es sensible a cambios rápidos de movimiento. Por ello, el objetivo se considera parcialmente cumplido: el sistema es robusto para mantener el objetivo visible y seguirlo en simulación, pero la respuesta de distancia ante maniobras exigentes aún puede mejorarse.
+
+\vspace{0.3cm}
+
+\subsection*{\textbf{OE5: Desplegar y evaluar la viabilidad computacional en una plataforma empotrada real}}
+
+\textbf{Grado de cumplimiento: Cumplido parcialmente.}
+
+Este objetivo se considera cumplido parcialmente. Se avanzó en la preparación del sistema para pruebas reales mediante la calibración de la cámara, la medición física del UAV objetivo y la adaptación de los parámetros necesarios para emplear el sistema fuera del entorno simulado. También se validó la estimación de distancia con cámara real, comprobando que el método proporciona una referencia útil en distancias cortas y medias.
+
+\vspace{0.2cm}
+
+No obstante, no se completó una validación real del seguimiento autónomo en vuelo ni una evaluación exhaustiva del rendimiento del sistema empotrado durante una misión completa. Por tanto, aunque la viabilidad inicial queda apoyada por la selección de un modelo ligero y por las pruebas reales de percepción, queda pendiente medir de forma definitiva la tasa de procesamiento, la latencia y la seguridad del sistema durante un despliegue real completo.
+
 \section{Futuros Trabajos}
+
+Como continuación del trabajo desarrollado, se proponen las siguientes líneas futuras:
+
+\begin{itemize}
+    \item \textbf{Finalización y evaluación de las pruebas reales:} completar el seguimiento con ambos UAV en vuelo y analizar el rendimiento del sistema fuera de simulación. Estas pruebas permitirían comprobar su comportamiento ante iluminación variable, viento, movimiento real del objetivo y posibles pérdidas temporales de detección.
+    \item \textbf{Implementación de una cámara de eventos:} estudiar la incorporación de este tipo de sensor para detectar cambios rápidos en la escena con menor latencia. Esto podría ayudar a localizar antes al UAV objetivo y aumentar la capacidad de reacción del sistema ante maniobras bruscas.
+    \item \textbf{Optimización del sistema:} reducir la latencia global del procesamiento, mejorar la estimación de distancia y ajustar los parámetros de control. Con ello se buscaría una respuesta más rápida, estable y adecuada para su funcionamiento en tiempo real.
+\end{itemize}

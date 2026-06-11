@@ -200,7 +200,7 @@ Además del modelo del UAV, se utiliza un archivo de mundo \texttt{.world} para 
 \subsection{Procedimiento de Lanzamiento y Supervisión}
 La ejecución de la simulación se organiza mediante archivos \texttt{.launch}, encargados de cargar el modelo del dron, iniciar el entorno de \textit{Gazebo} y activar los nodos necesarios para la comunicación con el sistema de control. Estos archivos se ajustan para incluir la carga automática del UAV, la inicialización de \textit{MAVROS} como puente de comunicación y la conexión con \textit{ArduPilot} a través de puertos \texttt{UDP} simulados.
 
-Una vez iniciado el entorno, se activa el controlador correspondiente.Durante la ejecución se supervisa la respuesta del sistema mediante la visualización 3D en \textit{Gazebo}, la consulta de tópicos con herramientas como \texttt{rqt\_graph} y \texttt{rostopic echo}, y la inspección del estado de los nodos mediante \texttt{rosnode list}. Esta supervisión permite comprobar que la simulación se ejecuta correctamente y que los módulos de percepción, comunicación y control intercambian información de forma adecuada.
+Una vez iniciado el entorno, se activa el controlador correspondiente. Durante la ejecución se supervisa la respuesta del sistema mediante la visualización 3D en \textit{Gazebo}, la consulta de tópicos con herramientas como \texttt{rqt\_graph} y \texttt{rostopic echo}, y la inspección del estado de los nodos mediante \texttt{rosnode list}. Esta supervisión permite comprobar que la simulación se ejecuta correctamente y que los módulos de percepción, comunicación y control intercambian información de forma adecuada.
 
 \vspace{0.3cm}
 
@@ -327,7 +327,7 @@ Una vez definidos los modelos \texttt{drone1} y \texttt{drone2}, sus identificad
 \begin{center}
 \refstepcounter{figure}\label{fig:panel-basico-ejecucion}
 \includegraphics[width=1.0 \textwidth]{imagenes/PanelBasico.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Panel básico de ejecución con varias terminales organizadas en \textit{Terminator}. Imagen de elaboración propia.}
+{\small \textbf{Figura \thefigure.} Panel básico de ejecución con varias terminales organizadas en \textit{Terminator}. (Imagen de Elaboración Propia)}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Panel básico de ejecución con varias terminales organizadas en Terminator}
 \end{center}
 
@@ -366,7 +366,7 @@ Las terminales cuarta y quinta ejecutan el archivo \texttt{apm.launch} para crea
 \begin{center}
 \refstepcounter{figure}\label{fig:frames-basico}
 \includegraphics[width=1.0 \textwidth]{imagenes/frames.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Marcos de referencia publicados durante la ejecución inicial con dos UAVs. Imagen de elaboración propia.}
+{\small \textbf{Figura \thefigure.} Marcos de referencia publicados durante la ejecución inicial con dos UAVs. (Imagen de Elaboración Propia)}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Marcos de referencia publicados durante la ejecución inicial con dos UAVs}
 \end{center}
 
@@ -388,7 +388,7 @@ Como se indicó en la sección de estado del arte, los detectores basados en red
 
 \vspace{0.3cm}
 
-Por este motivo, en este trabajo se opta por un detector de la familia YOLO. A diferencia de los enfoques de dos etapas, YOLO realiza la detección en una única pasada sobre la imagen, proporcionando directamente la caja delimitadora del UAV objetivo. Esta salida resulta suficiente para la metodología propuesta, ya que a partir de ella se obtiene el centro del objetivo, el error visual respecto al centro de la cámara. Así, YOLO ofrece un compromiso adecuado entre rapidez, simplicidad de integración y precisión para una tarea de seguimiento visual de UAVs .
+Por este motivo, en este trabajo se opta por un detector de la familia YOLO. A diferencia de los enfoques de dos etapas, YOLO realiza la detección en una única pasada sobre la imagen, proporcionando directamente la caja delimitadora del UAV objetivo. Esta salida resulta suficiente para la metodología propuesta, ya que a partir de ella se obtiene el centro del objetivo, el error visual respecto al centro de la cámara. Así, YOLO ofrece un compromiso adecuado entre rapidez, simplicidad de integración y precisión para una tarea de seguimiento visual de UAVs.
 
 \vspace{0.3cm}
 
@@ -417,8 +417,8 @@ Como resultado, se obtuvo un dataset final de carácter mixto, compuesto por im�
 \begin{center}
 \refstepcounter{figure}\label{fig:dataset-roboflow}
 \includegraphics[width=0.9\textwidth]{imagenes/roboflow_2.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Vista del dataset final organizado en Roboflow. (Imagen de elaboración propia).}
-\addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Vista del dataset final organizado en Roboflow. (Imagen de elaboración propia)}
+{\small \textbf{Figura \thefigure.} Vista del dataset final organizado en Roboflow. (Imagen de Elaboración Propia)}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Vista del dataset final organizado en Roboflow. (Imagen de Elaboración Propia)}
 \end{center}
 
 \vspace{0.3cm}
@@ -429,7 +429,7 @@ El procedimiento seguido para llegar al dataset final puede resumirse en cuatro 
 
 \vspace{0.3cm}
 
-La geometría proyectiva se incorpora en esta metodología para justificar cómo se interpretan las medidas obtenidas por el detector visual. En este trabajo, YOLO no proporciona directamente la posición tridimensional del UAV objetivo, sino una caja delimitadora en la imagen. A partir de esa caja se calculan el centro del objetivo y el error respecto al centro del fotograma . Por tanto, esta subsección no se plantea como un bloque independiente de reconstrucción 3D, sino como la base geométrica que permite entender por qué esas magnitudes visuales son válidas para el seguimiento.
+La geometría proyectiva se incorpora en esta metodología para justificar cómo se interpretan las medidas obtenidas por el detector visual. En este trabajo, YOLO no proporciona directamente la posición tridimensional del UAV objetivo, sino una caja delimitadora en la imagen. A partir de esa caja se calculan el centro del objetivo y el error respecto al centro del fotograma. Por tanto, esta subsección no se plantea como un bloque independiente de reconstrucción 3D, sino como la base geométrica que permite entender por qué esas magnitudes visuales son válidas para el seguimiento.
 
 \vspace{0.3cm}
 
@@ -455,7 +455,7 @@ x = f \frac{X_c}{Z_c}, \quad y = f \frac{Y_c}{Z_c}
 
 \vspace{0.3cm}
 
-En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ representa la profundidad y $f$ es la distancia focal. Esta relación conecta directamente con lo realizado en el módulo de percepción: si el UAV objetivo se desplaza lateralmente o verticalmente, cambia el centro de la caja detectada; si se acerca o se aleja, cambia su tamaño aparente. Por esta razón y el error visual  permiten alimentar un seguimiento reactivo sin reconstruir completamente la posición 3D del objetivo \cite{bergamasco2019pinhole, CameraModels}.
+En esta expresión, $X_c$ e $Y_c$ representan la posición lateral y vertical del punto respecto al eje óptico, $Z_c$ representa la profundidad y $f$ es la distancia focal. Esta relación conecta directamente con lo realizado en el módulo de percepción: si el UAV objetivo se desplaza lateralmente o verticalmente, cambia el centro de la caja detectada; si se acerca o se aleja, cambia su tamaño aparente. Por esta razón, el error visual permite alimentar un seguimiento reactivo sin reconstruir completamente la posición 3D del objetivo \cite{bergamasco2019pinhole, CameraModels}.
 
 \vspace{0.3cm}
 
@@ -550,8 +550,8 @@ Además, una cámara real no proyecta la escena de manera perfectamente ideal. L
 \begin{center}
     \refstepcounter{figure}\label{fig:Camera-distorsion}
     \includegraphics[width=0.85\textwidth]{imagenes/distosionCamera.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Imágenes de una pantalla de objeto rectangular mostradas con (a) ninguna distorsión; (b) distorsión radial; (c) distorsión tangencial.,  \cite{ImgDistorsion}.}
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} sDistorsion Camera pinhole}
+    {\small \textbf{Figura \thefigure.} Imágenes de una pantalla de objeto rectangular mostradas con (a) ninguna distorsión; (b) distorsión radial; (c) distorsión tangencial. Fuente: \cite{ImgDistorsion}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Distorsión de cámara pinhole}
  \end{center}
 
 \vspace{0.2cm}
@@ -569,7 +569,7 @@ El flujo metodológico del módulo comienza con la captura de una imagen desde l
 \begin{center}
 \refstepcounter{figure}\label{fig:dron-error-visual}
 \includegraphics[width=0.75\textwidth]{imagenes/dron_error.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Representación del error visual entre el centro de la imagen y el UAV objetivo detectado. Imagen de elaboración propia.}
+{\small \textbf{Figura \thefigure.} Representación del error visual entre el centro de la imagen y el UAV objetivo detectado. (Imagen de Elaboración Propia)}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Representación del error visual entre el centro de la imagen y el UAV objetivo detectado}
 \end{center}
 
@@ -626,7 +626,15 @@ Al plantear la estimación de distancia se valoró inicialmente emplear directam
 
 \vspace{0.3cm}
 
-Por este motivo, se optó por convertir el tamaño de la caja en una distancia aproximada expresada en metros. Esta decisión permite que el PID de distancia trabaje con una variable física, comparando la distancia estimada con una distancia deseada real. La ventaja de este planteamiento es que el controlador queda desacoplado del sensor concreto: si en el futuro se incorpora otro sistema capaz de medir distancia en metros, el PID de distancia no tendría que cambiar, ya que seguiría recibiendo una entrada con las mismas unidades.
+Por ello, se consideró necesario transformar esa información visual en una distancia aproximada expresada en metros antes de entregarla al controlador. Esta decisión permite que el PID de distancia trabaje con una variable física, comparando la distancia estimada con una distancia deseada real de seguimiento. Además, desacopla el controlador del sensor concreto: si en el futuro se incorpora otro sistema capaz de medir distancia en metros, el PID de distancia no tendría que cambiar, ya que seguiría recibiendo una entrada con las mismas unidades.
+
+\vspace{0.3cm}
+
+A partir de esta necesidad, antes de adoptar el modelo geométrico final, se planteó el uso de un modelo de aprendizaje automático basado en regresión. Este modelo utilizaba principalmente el área normalizada de la caja delimitadora respecto al tamaño total de la imagen y predecía directamente la distancia al UAV objetivo en metros. Inicialmente parecía una opción mejor que usar el área como error directo, porque mantenía una entrada visual sencilla, evitaba fijar manualmente un área objetivo y proporcionaba una salida física compatible con el PID de distancia.
+
+\vspace{0.3cm}
+
+Sin embargo, al comparar esta alternativa con la estimación basada en el modelo geométrico de cámara, se observó que el método geométrico proporcionaba una estimación más precisa y coherente para el sistema. Al apoyarse en la distancia focal de la cámara y en las dimensiones reales aproximadas del UAV objetivo, la relación entre tamaño aparente y distancia quedaba definida de forma explícita, sin depender de que un modelo aprendiese dicha relación a partir de ejemplos concretos. Por este motivo, la alternativa basada en regresión fue descartada y se adoptó el planteamiento geométrico como solución final para alimentar el PID de distancia.
 
 \vspace{0.3cm}
 
@@ -646,7 +654,7 @@ En esta expresión, las variables se interpretan de la siguiente forma para el p
 
 \begin{itemize}
     \item $Z_c$ representa la distancia real entre la cámara del UAV cazador y el UAV objetivo. Es la magnitud que se desea estimar.
-    \item $X_c$ e $Y_c$ representan las dimensiones reales conocidas del UAV objetivo. En este trabajo se considera para la simulación  un ancho aproximado de $X_c = 0.62\,\mathrm{m}$ y una altura aproximada de $Y_c = 0.27\,\mathrm{m}$.
+    \item $X_c$ e $Y_c$ representan las dimensiones reales conocidas del UAV objetivo. En este trabajo se considera para la simulación un ancho aproximado de $X_c = 0.62\,\mathrm{m}$ y una altura aproximada de $Y_c = 0.27\,\mathrm{m}$.
     \item $x$ e $y$ representan el tamaño del UAV objetivo en la imagen, medido en píxeles. En la práctica, estos valores corresponden al ancho y alto de la caja delimitadora entregada por YOLO, es decir, $x = w_{box}$ e $y = h_{box}$.
     \item $f_x$ y $f_y$ son las distancias focales de la cámara expresadas en píxeles. Estos parámetros se obtienen de la matriz intrínseca publicada por la cámara.
 \end{itemize}
@@ -695,7 +703,7 @@ El filtro de Kalman es una técnica de estimación que permite suavizar medidas 
 \begin{center}
     \refstepcounter{figure}\label{fig:Filtro-kalman}
     \includegraphics[width=1\textwidth]{imagenes/KalmanYolo2.png}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Ejemplo de uso del filtro de Kalman sobre la detección visual. Imagen de elaboración propia.}
+    {\small \textbf{Figura \thefigure.} Ejemplo de uso del filtro de Kalman sobre la detección visual. (Imagen de Elaboración Propia)}
     \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Ejemplo de uso del filtro de Kalman sobre la detección visual}
 \end{center}
 

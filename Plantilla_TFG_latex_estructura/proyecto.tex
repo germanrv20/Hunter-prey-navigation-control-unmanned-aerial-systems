@@ -82,9 +82,15 @@ pdfproducer = {pdflatex}
 \fancyhead[LO]{\leftmark}
 \fancyhead[RE]{\rightmark}
 \fancyhead[RO,LE]{}
+\fancyfoot[C]{\thepage}
 \renewcommand{\chaptermark}[1]{\markboth{\textbf{#1}}{}}
 \renewcommand{\sectionmark}[1]{\markright{\textbf{\thesection. #1}}}
 \renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
 
 \setlength{\headheight}{1.5\headheight}
 
@@ -215,6 +221,6 @@ pdfproducer = {pdflatex}
 %\input{glosario/entradas_glosario}
 % \addcontentsline{toc}{chapter}{Glosario}
 % \printglossary
-\thispagestyle{empty}
+\thispagestyle{plain}
 
 \end{document}

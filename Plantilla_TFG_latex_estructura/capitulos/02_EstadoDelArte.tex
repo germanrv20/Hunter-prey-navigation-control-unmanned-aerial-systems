@@ -36,11 +36,11 @@ Para conectar el plano de la imagen con el mundo físico, se presentan los funda
 
 \vspace{0.4cm}
 
-Finalmente, se describe el Stack de Software y Hardware, detallando los frameworks de comunicación robótica (ROS/Mavros) y las herramientas de simulación (Gazebo) que permiten la validación segura de los algoritmos desarrollados .
+Finalmente, se describe el Stack de Software y Hardware, detallando los frameworks de comunicación robótica (ROS/Mavros) y las herramientas de simulación (Gazebo) que permiten la validación segura de los algoritmos desarrollados.
 
 \section{Sistemas Aéreos no Tripulados}
 
-Los Sistemas Aéreos no Tripulados (UAS, por sus siglas en inglés, \textit{Unmanned Aerial Systems}) han experimentado una evolución notable en las últimas décadas. Lo que comenzó como una tecnología asociada principalmente al ámbito militar se ha transformado en una plataforma versátil con aplicaciones en ingeniería civil, agricultura de precisión, logística, inspección y vigilancia. Esta expansión ha sido posible gracias a la miniaturización de sensores y al incremento de la capacidad de cómputo embarcado, lo que ha permitido desplegar drones en escenarios complejos donde la autonomía constituye un requisito crítico .
+Los Sistemas Aéreos no Tripulados (UAS, por sus siglas en inglés, \textit{Unmanned Aerial Systems}) han experimentado una evolución notable en las últimas décadas. Lo que comenzó como una tecnología asociada principalmente al ámbito militar se ha transformado en una plataforma versátil con aplicaciones en ingeniería civil, agricultura de precisión, logística, inspección y vigilancia. Esta expansión ha sido posible gracias a la miniaturización de sensores y al incremento de la capacidad de cómputo embarcado, lo que ha permitido desplegar drones en escenarios complejos donde la autonomía constituye un requisito crítico.
 
 \vspace{0.4cm}
 
@@ -111,19 +111,19 @@ A partir de esta idea, la navegación autónoma adquiere especial relevancia en 
 
 \vspace{0.3cm}
 
-\noindent\textbf{Apoyo en emergencias y búsqueda de objetivos:} En escenarios de emergencia, catástrofe o difícil acceso, la navegación autónoma permite explorar áreas amplias, evitar obstáculos y centrar la misión en la localización de objetivos de interés, como personas, embarcaciones, vehículos o puntos críticos del terreno. Esta capacidad resulta  valiosa en operaciones de apoyo en emergencias, donde el sistema debe reaccionar, adaptarse a cambios del entorno y mantener una búsqueda continua \cite{WebDronRescate}.
+\noindent\textbf{Apoyo en emergencias y búsqueda de objetivos:} En escenarios de emergencia, catástrofe o difícil acceso, la navegación autónoma permite explorar áreas amplias, evitar obstáculos y centrar la misión en la localización de objetivos de interés, como personas, embarcaciones, vehículos o puntos críticos del terreno. Esta capacidad resulta valiosa en operaciones de apoyo en emergencias, donde el sistema debe reaccionar, adaptarse a cambios del entorno y mantener una búsqueda continua \cite{WebDronRescate}.
 
  \begin{center}
     \refstepcounter{figure}\label{fig:dron-Rescate}
     \includegraphics[width=0.65\textwidth]{imagenes/DronRescate.jpeg}\\[0.5ex]
-    {\small \textbf{Figura \thefigure.} Dron utilizado en busqueda y rescate Marítimo. Fuente: \cite{ImagenDronRescate}.}
-    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron utilizado en Busqueda y rescate Marítimo}
+    {\small \textbf{Figura \thefigure.} Dron utilizado en búsqueda y rescate marítimo. Fuente: \cite{ImagenDronRescate}.}
+    \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Dron utilizado en búsqueda y rescate marítimo}
   \end{center}
 
 
 \vspace{0.4cm}
 
-\noindent\textbf{Transporte autónomo de mercancías:} En entornos urbanos, industriales o logísticos \cite{WebDronMerca}, los UAV pueden convertirse en una alternativa eficiente para el envío de pequeñas cargas, repuestos o material de primera necesidad. En este tipo de operaciones, la navegación autónoma permite reajustar la ruta ante restricciones del entorno, variaciones en el trayecto o condiciones externas no previstas, manteniendo al mismo tiempo un vuelo estable y seguro .
+\noindent\textbf{Transporte autónomo de mercancías:} En entornos urbanos, industriales o logísticos \cite{WebDronMerca}, los UAV pueden convertirse en una alternativa eficiente para el envío de pequeñas cargas, repuestos o material de primera necesidad. En este tipo de operaciones, la navegación autónoma permite reajustar la ruta ante restricciones del entorno, variaciones en el trayecto o condiciones externas no previstas, manteniendo al mismo tiempo un vuelo estable y seguro.
 
 \vspace{0.2cm}
     \begin{center}
@@ -156,7 +156,7 @@ En consecuencia, los métodos basados exclusivamente en pilotaje humano o en tra
 
 \section{ Métodos de Control de Navegación para UAVs}
 
-Para alcanzar este nivel de autonomía, el control del vehículo no puede entenderse como una acción aislada, sino como parte de un sistema integrado de Guiado, Navegación y Control, habitualmente denominado GNC (\textit{Guidance, Navigation and Control}). Este marco organiza el comportamiento inteligente de la aeronave en tres niveles jerárquicos y complementarios: el guiado determina la estrategia de la misión y la trayectoria a seguir; la navegación estima el estado del UAV y su posición relativa respecto al entorno; y el control transforma esta información en comandos específicos de actitud y empuje. En conjunto, el sistema GNC permite cerrar el lazo entre la percepción sensorial y la respuesta dinámica del dron, un factor crítico cuando el escenario de operación cambia en tiempo real y el objetivo se mueve de forma continua .
+Para alcanzar este nivel de autonomía, el control del vehículo no puede entenderse como una acción aislada, sino como parte de un sistema integrado de Guiado, Navegación y Control, habitualmente denominado GNC (\textit{Guidance, Navigation and Control}). Este marco organiza el comportamiento inteligente de la aeronave en tres niveles jerárquicos y complementarios: el guiado determina la estrategia de la misión y la trayectoria a seguir; la navegación estima el estado del UAV y su posición relativa respecto al entorno; y el control transforma esta información en comandos específicos de actitud y empuje. En conjunto, el sistema GNC permite cerrar el lazo entre la percepción sensorial y la respuesta dinámica del dron, un factor crítico cuando el escenario de operación cambia en tiempo real y el objetivo se mueve de forma continua.
 
 \vspace{0.3cm}
 
@@ -164,17 +164,17 @@ Dentro de este esquema, el control de navegación actúa como el núcleo de deci
 
 \vspace{0.3cm}
 
-Dada la complejidad de este desafío, la literatura científica ha evolucionado hacia diversos paradigmas de control, diferenciados principalmente por la fuente de los datos y la arquitectura del procesamiento \ref{fig:esquema-Sevoing}. Estos enfoques se pueden clasificar en tres grandes categorías : los métodos basados en localización global, los enfoques fundamentados en aprendizaje profundo (\textit{Deep Learning}) y los sistemas de control basado en imagen (\textit{Visual Servoing}). Cada una de estas metodologías presenta un compromiso distinto entre precisión, coste computacional y robustez, factores que determinan su idoneidad para operar en sistemas empotrados de recursos limitados. A continuación, se describen los fundamentos y aplicaciones de estos paradigmas para situar las soluciones propuestas en la literatura y preparar el marco metodológico del trabajo.
+Dada la complejidad de este desafío, la literatura científica ha evolucionado hacia diversos paradigmas de control, diferenciados principalmente por la fuente de los datos y la arquitectura del procesamiento \ref{fig:esquema-Servoing}. Estos enfoques se pueden clasificar en tres grandes categorías: los métodos basados en localización global, los enfoques fundamentados en aprendizaje profundo (\textit{Deep Learning}) y los sistemas de control basado en imagen (\textit{Visual Servoing}). Cada una de estas metodologías presenta un compromiso distinto entre precisión, coste computacional y robustez, factores que determinan su idoneidad para operar en sistemas empotrados de recursos limitados. A continuación, se describen los fundamentos y aplicaciones de estos paradigmas para situar las soluciones propuestas en la literatura y preparar el marco metodológico del trabajo.
 
 
 \begin{center}
-      \refstepcounter{figure}\label{fig:esquema-Sevoing}
+      \refstepcounter{figure}\label{fig:esquema-Servoing}
       
       % Aquí aplicamos el truco de la caja (\makebox) y el tamaño 1.4
       \makebox[\textwidth][c]{\includegraphics[width=1.4\textwidth]{imagenes/TipoControles2.jpg}}\\[0.5ex]
       
-      {\small \textbf{Figura \thefigure.} Diferencias entre los tipos de algoritmos de visual Servoing(Elaboración propia).}
-      \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Tipos de algoritmos de visual Servoing (Elaboración propia)}
+      {\small \textbf{Figura \thefigure.} Diferencias entre los tipos de algoritmos de Visual Servoing. (Imagen de Elaboración Propia)}
+      \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Tipos de algoritmos de Visual Servoing. (Imagen de Elaboración Propia)}
 \end{center}
 
 \subsection{Tipos de control de navegación}
@@ -210,7 +210,7 @@ Por tanto, la elección entre PBVS, enfoques basados en aprendizaje e IBVS no de
 
 
 
-\section{Deep Learning}
+\section{\textit{Deep Learning}}
 
 El \textit{Deep Learning} es una rama del aprendizaje automático basada en redes neuronales artificiales con múltiples capas, capaces de aprender representaciones jerárquicas directamente a partir de los datos. A diferencia de otros enfoques más tradicionales, reduce la necesidad de diseñar manualmente las características de entrada, ya que el propio modelo ajusta internamente niveles sucesivos de abstracción durante el proceso de entrenamiento \cite{goodfellow2016deep}.
 
@@ -249,7 +249,7 @@ En las últimas décadas, el incremento de la capacidad de cómputo, la disponib
 
 \vspace{0.3cm}
 
-Entre sus aplicaciones destacan la conducción autónoma, la videovigilancia, la robótica, la inspección automática y la interacción persona-máquina. En el contexto de este trabajo, la visión por computador se empleará como base perceptiva para la detección y el seguimiento visual del dron objetivo, lo que enlaza de forma natural con la detección de objetos tratada en el apartado siguiente .
+Entre sus aplicaciones destacan la conducción autónoma, la videovigilancia, la robótica, la inspección automática y la interacción persona-máquina. En el contexto de este trabajo, la visión por computador se empleará como base perceptiva para la detección y el seguimiento visual del dron objetivo, lo que enlaza de forma natural con la detección de objetos tratada en el apartado siguiente.
 
 \vspace{0.3cm}
 
@@ -321,11 +321,11 @@ La cámara estenopeica, también conocida como modelo \textit{pinhole}, es una i
 
 \vspace{0.3cm}
 
-Sus antecedentes históricos se asocian a la cámara oscura y a las primeras observaciones sobre la propagación rectilínea de la luz.  desde la Antigüedad se estudiaron fenómenos de proyección similares, y con el tiempo estos principios dieron lugar a dispositivos estenopeicos cada vez más elaborados, primero con fines de observación y más adelante también con aplicaciones fotográficas y didácticas \cite{wikipediaCamaraEstenopeica}.
+Sus antecedentes históricos se asocian a la cámara oscura y a las primeras observaciones sobre la propagación rectilínea de la luz. Desde la Antigüedad se estudiaron fenómenos de proyección similares, y con el tiempo estos principios dieron lugar a dispositivos estenopeicos cada vez más elaborados, primero con fines de observación y más adelante también con aplicaciones fotográficas y didácticas \cite{wikipediaCamaraEstenopeica}.
 
 \vspace{0.3cm}
 
-Desde un punto de vista funcional, su funcionamiento se basa en que solo una pequeña fracción de la luz procedente de cada punto de la escena atraviesa el orificio, lo que genera una imagen invertida sobre el plano de proyección. Así, el sistema no mide directamente la profundidad ni las coordenadas espaciales del entorno, sino su proyección en la imagen. Esta idea resulta fundamental para comprender cómo la posición, el tamaño aparente y la perspectiva de los objetos quedan codificados visualmente .
+Desde un punto de vista funcional, su funcionamiento se basa en que solo una pequeña fracción de la luz procedente de cada punto de la escena atraviesa el orificio, lo que genera una imagen invertida sobre el plano de proyección. Así, el sistema no mide directamente la profundidad ni las coordenadas espaciales del entorno, sino su proyección en la imagen. Esta idea resulta fundamental para comprender cómo la posición, el tamaño aparente y la perspectiva de los objetos quedan codificados visualmente.
 
 \vspace{0.3cm}
 
@@ -378,7 +378,7 @@ Por ello, incluso en enfoques IBVS que evitan una reconstrucción tridimensional
 \vspace{0.3cm}
 \section{Métodos de Control}
 
-En robótica aérea, el control puede definirse como el conjunto de algoritmos encargados de manipular las variables de entrada del sistema, como la velocidad de los motores o las consignas de actitud, para lograr que las variables de salida del vehículo, entre ellas su posición, velocidad y orientación, sigan un comportamiento deseado. Su papel es fundamental para mantener la estabilidad frente a perturbaciones externas y para garantizar que el UAV cumpla de forma autónoma los objetivos de la misión .
+En robótica aérea, el control puede definirse como el conjunto de algoritmos encargados de manipular las variables de entrada del sistema, como la velocidad de los motores o las consignas de actitud, para lograr que las variables de salida del vehículo, entre ellas su posición, velocidad y orientación, sigan un comportamiento deseado. Su papel es fundamental para mantener la estabilidad frente a perturbaciones externas y para garantizar que el UAV cumpla de forma autónoma los objetivos de la misión.
 
 \vspace{0.3cm}
 
@@ -550,7 +550,7 @@ Esta expresión también puede escribirse como:
 
 \vspace{0.3cm}
 
-Esta segunda forma resulta útil para interpretar el funcionamiento del filtro: la nueva salida se obtiene corrigiendo el valor filtrado anterior en función de la diferencia entre la medida actual y la estimación previa. Si $\alpha$ toma valores pequeños, el suavizado es mayor y la respuesta del filtro es más lenta; si $\alpha$ se aproxima a 1, la salida sigue más de cerca la medida y el efecto de suavizado disminuye .
+Esta segunda forma resulta útil para interpretar el funcionamiento del filtro: la nueva salida se obtiene corrigiendo el valor filtrado anterior en función de la diferencia entre la medida actual y la estimación previa. Si $\alpha$ toma valores pequeños, el suavizado es mayor y la respuesta del filtro es más lenta; si $\alpha$ se aproxima a 1, la salida sigue más de cerca la medida y el efecto de suavizado disminuye.
 
 \vspace{0.3cm}
 
@@ -609,11 +609,11 @@ La decisión de emplear ROS frente a otras alternativas técnicas se sustenta en
 
 \vspace{0.4cm}
 
-Esta arquitectura modular resulta fundamental para la naturaleza del proyecto, permitiendo que el nodo de proyección geométrica  pueda intercambiar información de forma eficiente con el bucle de control de guiado. A diferencia de protocolos como MQTT, que destacan por su ligereza en aplicaciones de telemetría y entornos de Internet de las Cosas (IoT), estos carecen de las capacidades necesarias para el control de actuadores en tiempo real y la sincronización de estados cinemáticos exigida en maniobras de persecución.
+Esta arquitectura modular resulta fundamental para la naturaleza del proyecto, permitiendo que el nodo de proyección geométrica pueda intercambiar información de forma eficiente con el bucle de control de guiado. A diferencia de protocolos como MQTT, que destacan por su ligereza en aplicaciones de telemetría y entornos de Internet de las Cosas (IoT), estos carecen de las capacidades necesarias para el control de actuadores en tiempo real y la sincronización de estados cinemáticos exigida en maniobras de persecución.
 
 \vspace{0.4cm}
 
-El ecosistema de ROS proporciona, además, una serie de bibliotecas  y herramientas de grabación de datos que agilizan el ciclo de validación experimental. Esta flexibilidad facilita el escalado del sistema, permitiendo la incorporación de nuevas capacidades de visión artificial o técnicas de filtrado estocástico sin comprometer la cohesión del diseño original.ROS se presenta como la opción más completa y robusta para
+El ecosistema de ROS proporciona, además, una serie de bibliotecas y herramientas de grabación de datos que agilizan el ciclo de validación experimental. Esta flexibilidad facilita el escalado del sistema, permitiendo la incorporación de nuevas capacidades de visión artificial o técnicas de filtrado estocástico sin comprometer la cohesión del diseño original. ROS se presenta como la opción más completa y robusta para
 implementar un sistema de navegación vectorial distribuido, garantizando tanto la
 eficiencia computacional como la cohesión arquitectónica del conjunto.
 
@@ -749,8 +749,8 @@ Uno de los aspectos más relevantes de esta elección es la integración con MAV
 \begin{center}
 \refstepcounter{figure}\label{fig:Gazebo-camera}
 \includegraphics[width=0.8\textwidth]{imagenes/Gazebo+camera_2.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Uso de Gazebo con la camara. (Imagen de Elaboración Propia).}
-\addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Uso de Gazebo con la camara. (Imagen de Elaboración Propia)}
+{\small \textbf{Figura \thefigure.} Uso de Gazebo con la cámara. (Imagen de Elaboración Propia)}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Uso de Gazebo con la cámara. (Imagen de Elaboración Propia)}
 \end{center}
 
 

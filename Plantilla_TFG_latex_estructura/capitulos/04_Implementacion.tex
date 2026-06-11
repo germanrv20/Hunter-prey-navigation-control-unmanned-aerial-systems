@@ -63,7 +63,7 @@ La arquitectura del sistema se plantea como un lazo cerrado de seguimiento visua
 
     \end{tikzpicture}%
     }
-    \caption{Arquitectura general del sistema de seguimiento visual, válida tanto para simulación como para despliegue real. Elaboración propia.}
+    \caption{Arquitectura general del sistema de seguimiento visual, válida tanto para simulación como para despliegue real. (Imagen de Elaboración Propia)}
     \label{fig:arquitectura_nodos}
 \end{figure}
 
@@ -88,7 +88,7 @@ Para visualizar la evolución de la arquitectura se emplea \texttt{rqt\_graph}, 
 \begin{center}
 \refstepcounter{figure}\label{fig:rqt-graph-primero}
 \includegraphics[width=0.95\textwidth]{imagenes/rosgraph_primero.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Grafo inicial del sistema sin nodos de visión ni control activos. Imagen de elaboración propia.}
+{\small \textbf{Figura \thefigure.} Grafo inicial del sistema sin nodos de visión ni control activos. (Imagen de Elaboración Propia)}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Grafo inicial del sistema sin nodos de visión ni control activos}
 \end{center}
 
@@ -99,7 +99,7 @@ Posteriormente se activan los nodos de visión. En este segundo estado aparecen 
 \begin{center}
 \refstepcounter{figure}\label{fig:rqt-graph-segundo}
 \includegraphics[width=1.0\textwidth]{imagenes/rosgraph_segundo.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Grafo del sistema con los nodos de visión activados. Imagen de elaboración propia.}
+{\small \textbf{Figura \thefigure.} Grafo del sistema con los nodos de visión activados. (Imagen de Elaboración Propia)}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Grafo del sistema con los nodos de visión activados}
 \end{center}
 
@@ -113,7 +113,7 @@ Finalmente, se activa el nodo de control \texttt{drone1\_follow\_xy\_pid}. Este 
 \begin{minipage}{0.98\textheight}
 \centering
 \includegraphics[width=1.0\textheight]{imagenes/rosgraph_tercero.png}\\[0.8ex]
-{\small \textbf{Figura \thefigure.} Grafo completo del sistema con visión y control activos. Imagen de elaboración propia.}
+{\small \textbf{Figura \thefigure.} Grafo completo del sistema con visión y control activos. (Imagen de Elaboración Propia)}
 \end{minipage}%
 }
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Grafo completo del sistema con visión y control activos}
@@ -124,7 +124,7 @@ Finalmente, se activa el nodo de control \texttt{drone1\_follow\_xy\_pid}. Este 
 \begin{center}
 \refstepcounter{figure}\label{fig:topic-list}
 \includegraphics[width=0.75\textwidth]{imagenes/TopicList.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Listado de  algunos tópicos ROS obtenido mediante \texttt{rostopic list}. Imagen de elaboración propia.}
+{\small \textbf{Figura \thefigure.} Listado de algunos tópicos ROS obtenido mediante \texttt{rostopic list}. (Imagen de Elaboración Propia)}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Listado de tópicos ROS obtenido mediante rostopic list}
 \end{center}
 
@@ -182,7 +182,7 @@ La evolución del entrenamiento se resume en la Figura \ref{fig:yolo-training-re
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\textwidth]{imagenes/results.png}
-\caption{Evolución de pérdidas y métricas durante el entrenamiento de YOLOv8n. Imagen de elaboración propia.}
+\caption{Evolución de pérdidas y métricas durante el entrenamiento de YOLOv8n. (Imagen de Elaboración Propia)}
 \label{fig:yolo-training-results}
 \end{figure}
 
@@ -197,7 +197,7 @@ La matriz de confusión de la Figura \ref{fig:yolo-confusion-matrix} refuerza es
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\textwidth]{imagenes/confusion_matrix.png}
-\caption{Matriz de confusión obtenida tras el entrenamiento de YOLOv8n. Imagen de elaboración propia.}
+\caption{Matriz de confusión obtenida tras el entrenamiento de YOLOv8n. (Imagen de Elaboración Propia)}
 \label{fig:yolo-confusion-matrix}
 \end{figure}
 
@@ -208,7 +208,7 @@ Por último, la Figura \ref{fig:yolo-validation-predictions} muestra ejemplos de
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\textwidth]{imagenes/val_batch2_pred.jpg}
-\caption{Ejemplos de detección sobre el conjunto de validación tras el entrenamiento. Imagen de elaboración propia.}
+\caption{Ejemplos de detección sobre el conjunto de validación tras el entrenamiento. (Imagen de Elaboración Propia)}
 \label{fig:yolo-validation-predictions}
 \end{figure}
 
@@ -240,7 +240,7 @@ D_H = \frac{f_y \cdot H_{real}}{\bar{h}_k}
 
 \vspace{0.3cm}
 
-En estas expresiones, $f_x$ y $f_y$ representan las focales de la cámara en píxeles, y $W_{real}$ y $H_{real}$ corresponden a las dimensiones reales aproximadas del UAV objetivo. La distancia final se obtiene promediando ambas estimaciones:
+En estas expresiones, $f_x$ y $f_y$ representan las focales de la cámara en píxeles, y $W_{real}$ y $H_{real}$ corresponden a las dimensiones reales aproximadas del UAV objetivo. En una primera aproximación se planteó calcular la distancia final como la media aritmética de ambas estimaciones:
 
 \begin{equation}
 D_{final} = \frac{D_W + D_H}{2}
@@ -248,11 +248,23 @@ D_{final} = \frac{D_W + D_H}{2}
 
 \vspace{0.3cm}
 
-Este procedimiento permite aprovechar simultáneamente la información horizontal y vertical de la detección. Si YOLO genera una caja ligeramente más ancha de lo real, pero mantiene una altura coherente, la estimación basada en la altura compensa parcialmente el error. Del mismo modo, si la altura presenta una pequeña variación, la anchura ayuda a estabilizar el resultado. Así, el sistema obtiene una medida de profundidad más robusta que si dependiera de una sola dimensión de la caja.
+Esta formulación inicial permitía aprovechar simultáneamente la información horizontal y vertical de la detección. Si YOLO generaba una caja ligeramente más ancha de lo real, pero mantenía una altura coherente, la estimación basada en la altura podía compensar parcialmente el error. Del mismo modo, si la altura presentaba una pequeña variación, la anchura ayudaba a estabilizar el resultado. Por tanto, desde el punto de vista teórico, el promedio entre $D_W$ y $D_H$ ofrecía una medida de profundidad más robusta que depender únicamente de una sola dimensión de la caja.
 
 \vspace{0.3cm}
 
-Finalmente, la distancia calculada se utiliza como entrada del controlador longitudinal, comparándola con una distancia deseada de seguimiento. De esta forma, el dron cazador puede acercarse o alejarse del objetivo manteniendo un margen de seguridad, sin depender únicamente del desplazamiento del centro de la imagen.
+Sin embargo, durante las pruebas se observó que esta relación no era suficientemente estable en todas las maniobras. En particular, cuando el UAV se inclinaba para avanzar, la altura aparente de la caja delimitadora podía aumentar de forma notable aunque la distancia real al objetivo no cambiase en la misma proporción. Este efecto rompía parcialmente la relación geométrica utilizada para estimar la distancia a partir de $\bar{h}_k$, ya que el incremento del alto de la caja se interpretaba como un acercamiento artificial. Como consecuencia, la estimación $D_H$ introducía variaciones bruscas en el error longitudinal y podía generar órdenes de control poco estables.
+
+\vspace{0.3cm}
+
+A partir de estas pruebas se comprobó que la anchura de la caja era una medida más estable para el escenario considerado. Por este motivo, después de evaluar la estimación mediante la media entre $D_W$ y $D_H$, se prefirió utilizar únicamente la distancia obtenida a partir del ancho de la caja. Esta decisión se debe a que la altura aparente del UAV podía variar mucho durante el vuelo, especialmente cuando el objetivo cambiaba de inclinación o cuando la detección ajustaba la caja con pequeñas diferencias entre frames.
+
+\vspace{0.3cm}
+
+De este modo, la implementación final toma como referencia principal $D_W$. La estimación basada en el alto, $D_H$, se mantiene como parte del análisis geométrico inicial, pero no se utiliza para alimentar el controlador longitudinal. Así se evita que variaciones bruscas del alto de la caja se traduzcan en cambios artificiales de distancia y en órdenes de control menos estables.
+
+\vspace{0.3cm}
+
+Finalmente, la distancia estimada a partir del ancho de la caja se utiliza como entrada del controlador longitudinal, comparándola con una distancia deseada de seguimiento. De esta forma, el dron cazador puede acercarse o alejarse del objetivo manteniendo un margen de seguridad, sin depender únicamente del desplazamiento del centro de la imagen ni de una altura de caja demasiado sensible a la inclinación del UAV.
 
 \section{Compensación de Actitud y Proyección}
 
@@ -281,7 +293,7 @@ La Figura \ref{fig:compensacion-actitud} ilustra la idea utilizada para desplaza
 
 \vspace{0.3cm}
 
-La compensación se implementa a partir de la pose del dron cazador en \textit{Gazebo} y de la transformación fija entre el cuerpo del dron y la cámara. En primer lugar, se construye la transformación homogénea del dron en el mundo y se compone con la transformación de la cámara:
+La compensación se implementa a partir de la pose del dron cazador en \textit{Gazebo} o del dron Real y de la transformación fija entre el cuerpo del dron y la cámara. En primer lugar, se construye la transformación homogénea del dron en el mundo y se compone con la transformación de la cámara:
 
 \begin{equation}
 \mathbf{T}_{w}^{c} = \mathbf{T}_{w}^{d1} \mathbf{T}_{d1}^{c}
@@ -390,8 +402,8 @@ v_y = \mathrm{sat}_{[-5,5]}\left(
 Finalmente, el control longitudinal utiliza el error de distancia estimada, \texttt{e\_dist}, calculado a partir de la diferencia entre la distancia estimada al UAV objetivo y la distancia de referencia. Su salida es la velocidad frontal \texttt{v\_x}:
 
 \begin{equation}
-v_x = \mathrm{sat}_{[-5,5]}\left(
-0.8\,e_{dist}(t)
+v_x = \mathrm{sat}_{[-10,10]}\left(
+0.9\,e_{dist}(t)
 + 0.0 \int_0^t e_{dist}(\tau)\,d\tau
 + 0.35\,\frac{de_{dist}(t)}{dt}
 \right)
@@ -413,10 +425,91 @@ PID de \textit{yaw} & \texttt{ex\_virtual} & \texttt{w\_yaw} & 2.365625 & 0.06 &
 \hline
 PID de altura & \texttt{ey\_virtual} & \texttt{v\_y} & 2.15 & 0.0 & 0.205 & $\pm 5.0$ m/s \\
 \hline
-PID de distancia & \texttt{e\_dist} & \texttt{v\_x} & 0.8 & 0.0 & 0.35 & $\pm 5.0$ m/s \\
+PID de distancia & \texttt{e\_dist} & \texttt{v\_x} & 0.9 & 0.0 & 0.35 & $\pm 10.0$ m/s \\
 \hline
 \end{tabular}%
 }
 \caption{Parámetros finales de los controladores PID utilizados para el seguimiento visual.}
 \label{tab:pid-control}
 \end{table}
+
+
+\section{Configuración para Pruebas Reales}
+
+\subsection{Preparación del Dron Real}
+
+Antes de trasladar el sistema desde el entorno simulado al UAV real fue necesario preparar los elementos de percepción que dependen directamente del hardware. En particular, la cámara utilizada en las pruebas reales debía proporcionar medidas coherentes para que el cálculo del centro de la detección, la compensación de actitud y la estimación de distancia no estuvieran afectados por errores de distorsión o por parámetros intrínsecos incorrectos. Por ello, la primera tarea de preparación consistió en calibrar la cámara real y guardar sus parámetros para que pudieran ser reutilizados por los nodos de visión.
+
+\vspace{0.3cm}
+
+\subsection{Calibración de la Cámara}
+
+La calibración se realizó siguiendo el procedimiento de calibración monocular propuesto en la documentación de ROS para el paquete \texttt{camera\_calibration} \cite{rosCameraCalibrationMono}. Para ello se empleó un tablero de calibración de $6 \times 9$ cuadrados, con un tamaño de cuadrado de $30\,\mathrm{mm}$. Aunque físicamente el tablero disponía de $6 \times 9$ cuadrados, en la herramienta de ROS se indicó el tamaño $5 \times 8$, ya que el parámetro \texttt{--size} hace referencia al número de esquinas interiores detectables y no al número total de cuadrados del patrón.
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:calibracion-camara-real}
+\includegraphics[width=0.78\textwidth]{imagenes/calibracionCamara.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Proceso de calibración de la cámara real mediante tablero de ajedrez. (Imagen de Elaboración Propia)}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Proceso de calibración de la cámara real mediante tablero de ajedrez}
+\end{center}
+
+\vspace{0.3cm}
+
+En primer lugar, se instalaron las dependencias necesarias del paquete de calibración mediante \texttt{rosdep}:
+
+\begin{verbatim}
+rosdep install camera_calibration
+\end{verbatim}
+
+\vspace{0.3cm}
+
+Posteriormente se lanzó la herramienta de calibración monocular, remapeando los tópicos de imagen y de cámara al nodo de captura utilizado durante las pruebas reales:
+
+\begin{verbatim}
+rosrun camera_calibration cameracalibrator.py --size 5x8 --square 0.03 \
+  image:=/capture_node/camera/image \
+  camera:=/capture_node/camera \
+  /capture_node/camera/set_camera_info:=/capture_node/set_camera_info
+\end{verbatim}
+
+\vspace{0.3cm}
+
+El parámetro \texttt{--square 0.03} indica que el lado de cada cuadrado del tablero es de $0.03\,\mathrm{m}$, equivalente a los $30\,\mathrm{mm}$ empleados físicamente. Durante el proceso se movió el tablero frente a la cámara cubriendo distintas posiciones, orientaciones y distancias, de forma que la herramienta pudiera observar las esquinas interiores en varias zonas de la imagen. Con estas muestras se estimaron los parámetros intrínsecos de la cámara y los coeficientes de distorsión necesarios para corregir la imagen.
+
+\vspace{0.3cm}
+
+Una vez finalizada la calibración, se obtuvieron los parámetros de la cámara, incluyendo la matriz intrínseca y los coeficientes de distorsión. Estos valores se copiaron al archivo de configuración \texttt{camara\_params.yaml}, que posteriormente es leído por el nodo de visión para trabajar siempre con los mismos parámetros calibrados. De este modo, las pruebas reales no dependen de una calibración manual en cada ejecución y el sistema mantiene una referencia de cámara coherente con la empleada en los cálculos de proyección, compensación y estimación de distancia.
+
+
+\vspace{0.3cm}
+
+\subsection{Medición del UAV Objetivo y Posición de la Cámara}
+
+Posteriormente a la calibración de la cámara, fue necesario medir físicamente el UAV objetivo para poder aplicar correctamente la estimación de distancia. Como se explicó anteriormente, esta estimación depende de las dimensiones reales del objeto detectado, por lo que los valores $W_{real}$ y $H_{real}$ no pueden elegirse de forma arbitraria. Tras medir el dron objetivo, se obtuvo una anchura aproximada de $34\,\mathrm{cm}$ y una altura aproximada de $14\,\mathrm{cm}$:
+
+\begin{equation}
+W_{real} = 0.34\,\mathrm{m}, \quad H_{real} = 0.14\,\mathrm{m}
+\end{equation}
+
+\vspace{0.3cm}
+
+Estos valores se emplean como referencia física en el cálculo de $D_W$ y $D_H$. De este modo, la anchura y la altura de la caja detectada en píxeles pueden transformarse en una estimación de distancia en metros. Esta medición resulta especialmente importante en las pruebas reales, ya que un error en las dimensiones del UAV objetivo se trasladaría directamente al cálculo de profundidad y, por tanto, al error longitudinal utilizado por el controlador de distancia.
+
+\vspace{0.3cm}
+
+También fue necesario determinar la posición de la cámara respecto al centro geométrico del dron cazador. Esta información es necesaria para que la compensación de actitud y la proyección geométrica representen correctamente el punto desde el que se observa la escena. Si se asumiera que la cámara se encuentra exactamente en el centro del UAV, se introduciría un desplazamiento artificial entre el sistema de referencia usado en los cálculos y la posición real del sensor.
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:dron-medidas-camara}
+\includegraphics[width=0.78\textwidth]{imagenes/DronMedidas.png}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Montaje del dron cazador con la cámara utilizada en las pruebas reales. (Imagen de Elaboración Propia)}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Montaje del dron cazador con la cámara utilizada en las pruebas reales. (Imagen de Elaboración Propia)}
+\end{center}
+
+\vspace{0.3cm}
+
+En el montaje utilizado, la cámara se situó aproximadamente $9\,\mathrm{cm}$ por debajo del centro geométrico del dron y a unos $13\,\mathrm{cm}$ de distancia respecto a dicho centro en la dirección de montaje. Por tanto, esta traslación se tuvo en cuenta como parte de la relación geométrica entre el cuerpo del UAV y la cámara. Con ello, las proyecciones sobre el plano de imagen y la compensación de actitud se calculan a partir de una posición de cámara más próxima al montaje real, reduciendo errores sistemáticos durante las pruebas fuera de simulación.

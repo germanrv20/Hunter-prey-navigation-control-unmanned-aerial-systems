@@ -31,7 +31,7 @@ Para superar estas vulnerabilidades, este Trabajo Fin de Grado aborda el desarro
 
 \vspace{0.4cm}
 
-A su vez, para que esta solución mantenga su viabilidad económica frente a alternativas que utilizan sensores costosos (como LiDAR o radar) que erosionan la rentabilidad de los UAVs pequeños , el sistema propuesto está diseñado para operar con un conjunto sensorial mínimo: una cámara monocular y una unidad de medida inercial (IMU).
+A su vez, para que esta solución mantenga su viabilidad económica frente a alternativas que utilizan sensores costosos (como LiDAR o radar) que erosionan la rentabilidad de los UAVs pequeños, el sistema propuesto está diseñado para operar con un conjunto sensorial mínimo: una cámara monocular y una unidad de medida inercial (IMU).
 
 
 \vspace{0.4cm}
@@ -44,7 +44,7 @@ Esta investigación se enmarca directamente en la necesidad de fortalecer la sob
 \begin{center}
 \refstepcounter{figure}
 \includegraphics[width=0.65\textwidth]{imagenes/Inta.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Logo del INTA.}
+{\small \textbf{Figura \thefigure.} Logo del INTA. Fuente: \cite{LogoInta}.}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Logo del INTA}
 \end{center}
 
@@ -56,7 +56,7 @@ Esta investigación se enmarca directamente en la necesidad de fortalecer la sob
 
 \vspace{0.4cm}
 
-Por ello, el problema específico abordado en este trabajo es demostrar que un sistema de control de navegación visual, basado en modelos de percepción profunda (Deep Learning) y algoritmos de control reactivo, permite a un UAV cazador realizar una persecución autónoma, estable y robusta en tiempo real.Los criterios principales a validar durante la investigación son:
+Por ello, el problema específico abordado en este trabajo es demostrar que un sistema de control de navegación visual, basado en modelos de percepción profunda (\textit{Deep Learning}) y algoritmos de control reactivo, permite a un UAV cazador realizar una persecución autónoma, estable y robusta en tiempo real. Los criterios principales a validar durante la investigación son:
 
 \begin{itemize}
     \item Mantener al UAV objetivo enfocado y centrado en el campo de visión de la cámara de forma continua, minimizando el error de seguimiento.
@@ -66,7 +66,7 @@ Por ello, el problema específico abordado en este trabajo es demostrar que un s
 
 \vspace{0.4cm}
 
-Para llevar a cabo esta validación, el sistema propuesto se probará inicialmente en entornos de simulación 3D , utilizando ROS y Gazebo, integrados con ArduPilot mediante simulaciones SITL. Finalmente, tras analizar las métricas obtenidas, se preparará su despliegue en plataformas empotradas reales para su evaluación práctica.
+Para llevar a cabo esta validación, el sistema propuesto se probará inicialmente en entornos de simulación 3D, utilizando ROS y Gazebo, integrados con ArduPilot mediante simulaciones SITL. Finalmente, tras analizar las métricas obtenidas, se preparará su despliegue en plataformas empotradas reales para su evaluación práctica.
 
 \section{Motivación}
 
@@ -74,7 +74,7 @@ El uso en aumento de sistemas aéreos no tripulados en defensa con la amenaza qu
 
 \vspace{0.4cm}
  
-La principal motivación de este trabajo es dotar a los UAVs cazadores de la capacidad de percepción y navegación que permitan adaptarse rápidamente a maniobras evasivas o a cambios inesperados en las trayectorias de los objetivos. Se trata de ir más allá de las limitaciones de los clásicos métodos de navegación basados en control remoto o en la recepción continua de coordenadas GPS, y de ofrecer una solución basada en modelos de Deep Learning y en algoritmos de control reactivo basados en visión artificial.
+La principal motivación de este trabajo es dotar a los UAVs cazadores de la capacidad de percepción y navegación que permitan adaptarse rápidamente a maniobras evasivas o a cambios inesperados en las trayectorias de los objetivos. Se trata de ir más allá de las limitaciones de los clásicos métodos de navegación basados en control remoto o en la recepción continua de coordenadas GPS, y de ofrecer una solución basada en modelos de \textit{Deep Learning} y en algoritmos de control reactivo basados en visión artificial.
 
 \vspace{0.4cm}
 
@@ -97,10 +97,10 @@ Desarrollar e implementar un sistema robusto de control de navegación autónoma
 \subsection{Objetivos Específicos}
 Para alcanzar el objetivo general, se proponen los siguientes objetivos específicos:
 \begin{itemize}
-    \item \textbf{OE1: Evaluar y optimizar modelos de percepción visual para sistemas empotrados}.Entrenar y comparar distintas arquitecturas de detección de objetos de última generación (familia YOLO) evaluando el equilibrio (trade-off) entre precisión matemática (mAP) , tiempo de inferencia y tamaño del modelo para seleccionar el modelo óptimo que garantice un seguimiento fluido en tiempo real.
-    \item \textbf{OE2: Diseñar e implementar el lazo de control de navegación visual}.Desarrollar el algoritmo encargado de traducir las detecciones 2D de la cámara en comandos de vuelo 3D. Esto implicará el uso de transformaciones geométricas de coordenadas y la sintonización de un controlador reactivo (PID) para mantener a la presa centrada en el campo de visión.
-    \item \textbf{OE3: Integrar la arquitectura software en un entorno de simulación realista}.Implementar el sistema completo utilizando ROS como middleware de comunicación, acoplando los nodos de visión y control con el simulador físico 3D Gazebo y ArduPilot mediante simulaciones SITL (Software In The Loop).
-    \item \textbf{OE4: Validar la robustez del sistema frente a maniobras evasivas}.Diseñar y ejecutar una batería de pruebas automatizadas donde el UAV objetivo (presa) realice diferentes perfiles de vuelo dinámicos (slalom, espirales, frenadas de emergencia) para cuantificar el error de seguimiento y los tiempos de respuesta del cazador.
+    \item \textbf{OE1: Evaluar y optimizar modelos de percepción visual para sistemas empotrados}. Entrenar y comparar distintas arquitecturas de detección de objetos de última generación (familia YOLO) evaluando el equilibrio (trade-off) entre precisión matemática (mAP), tiempo de inferencia y tamaño del modelo para seleccionar el modelo óptimo que garantice un seguimiento fluido en tiempo real.
+    \item \textbf{OE2: Diseñar e implementar el lazo de control de navegación visual}. Desarrollar el algoritmo encargado de traducir las detecciones 2D de la cámara en comandos de vuelo 3D. Esto implicará el uso de transformaciones geométricas de coordenadas y la sintonización de un controlador reactivo (PID) para mantener a la presa centrada en el campo de visión.
+    \item \textbf{OE3: Integrar la arquitectura software en un entorno de simulación realista}. Implementar el sistema completo utilizando ROS como middleware de comunicación, acoplando los nodos de visión y control con el simulador físico 3D Gazebo y ArduPilot mediante simulaciones SITL (Software In The Loop).
+    \item \textbf{OE4: Validar la robustez del sistema frente a maniobras evasivas}. Diseñar y ejecutar una batería de pruebas automatizadas donde el UAV objetivo (presa) realice diferentes perfiles de vuelo dinámicos (slalom, espirales, frenadas de emergencia) para cuantificar el error de seguimiento y los tiempos de respuesta del cazador.
     \item \textbf{OE5: Desplegar y evaluar la viabilidad computacional en una plataforma empotrada real}. Migrar el stack de software desarrollado a un hardware de recursos limitados para verificar que el sistema es capaz de mantener la tasa de procesamiento necesaria (FPS) sin comprometer la latencia ni la seguridad del vuelo.
 \end{itemize}
 
