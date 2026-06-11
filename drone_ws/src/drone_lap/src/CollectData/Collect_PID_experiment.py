@@ -12,7 +12,7 @@ from gazebo_msgs.msg import ModelState, ModelStates
 # --- PARÁMETROS DE CONFIGURACIÓN ---
 # ==========================================
 
-MODO_ACTIVO = "YAW"  
+MODO_ACTIVO = "ALTURA"  
 
 # !!! IMPORTANTE: Cambia este nombre para cada prueba !!!
 NOMBRE_PRUEBA = "PID_V1_Optimo" 

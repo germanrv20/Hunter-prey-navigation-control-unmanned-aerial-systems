@@ -181,6 +181,19 @@ drone_lap_projection/fast:
 .PHONY : drone_lap_projection/fast
 
 #=============================================================================
+# Target rules for targets named drone2_waypoints_node
+
+# Build rule for target.
+drone2_waypoints_node: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 drone2_waypoints_node
+.PHONY : drone2_waypoints_node
+
+# fast build rule for target.
+drone2_waypoints_node/fast:
+	$(MAKE) -f CMakeFiles/drone2_waypoints_node.dir/build.make CMakeFiles/drone2_waypoints_node.dir/build
+.PHONY : drone2_waypoints_node/fast
+
+#=============================================================================
 # Target rules for targets named drone2_spin_up_down_node
 
 # Build rule for target.
@@ -530,6 +543,19 @@ geometry_msgs_generate_messages_eus: cmake_check_build_system
 geometry_msgs_generate_messages_eus/fast:
 	$(MAKE) -f CMakeFiles/geometry_msgs_generate_messages_eus.dir/build.make CMakeFiles/geometry_msgs_generate_messages_eus.dir/build
 .PHONY : geometry_msgs_generate_messages_eus/fast
+
+#=============================================================================
+# Target rules for targets named drone2_distance_test_node
+
+# Build rule for target.
+drone2_distance_test_node: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 drone2_distance_test_node
+.PHONY : drone2_distance_test_node
+
+# fast build rule for target.
+drone2_distance_test_node/fast:
+	$(MAKE) -f CMakeFiles/drone2_distance_test_node.dir/build.make CMakeFiles/drone2_distance_test_node.dir/build
+.PHONY : drone2_distance_test_node/fast
 
 #=============================================================================
 # Target rules for targets named geometry_msgs_generate_messages_py
@@ -1194,6 +1220,33 @@ gtest/fast:
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest.dir/build.make gtest/googletest/CMakeFiles/gtest.dir/build
 .PHONY : gtest/fast
 
+src/dron2_go_back.o: src/dron2_go_back.cpp.o
+
+.PHONY : src/dron2_go_back.o
+
+# target to build an object file
+src/dron2_go_back.cpp.o:
+	$(MAKE) -f CMakeFiles/drone2_distance_test_node.dir/build.make CMakeFiles/drone2_distance_test_node.dir/src/dron2_go_back.cpp.o
+.PHONY : src/dron2_go_back.cpp.o
+
+src/dron2_go_back.i: src/dron2_go_back.cpp.i
+
+.PHONY : src/dron2_go_back.i
+
+# target to preprocess a source file
+src/dron2_go_back.cpp.i:
+	$(MAKE) -f CMakeFiles/drone2_distance_test_node.dir/build.make CMakeFiles/drone2_distance_test_node.dir/src/dron2_go_back.cpp.i
+.PHONY : src/dron2_go_back.cpp.i
+
+src/dron2_go_back.s: src/dron2_go_back.cpp.s
+
+.PHONY : src/dron2_go_back.s
+
+# target to generate assembly for a file
+src/dron2_go_back.cpp.s:
+	$(MAKE) -f CMakeFiles/drone2_distance_test_node.dir/build.make CMakeFiles/drone2_distance_test_node.dir/src/dron2_go_back.cpp.s
+.PHONY : src/dron2_go_back.cpp.s
+
 src/dron2_prueba.o: src/dron2_prueba.cpp.o
 
 .PHONY : src/dron2_prueba.o
@@ -1464,6 +1517,33 @@ src/drone_projectionV2.cpp.s:
 	$(MAKE) -f CMakeFiles/drone_lap_projection.dir/build.make CMakeFiles/drone_lap_projection.dir/src/drone_projectionV2.cpp.s
 .PHONY : src/drone_projectionV2.cpp.s
 
+src/trayectoria_f.o: src/trayectoria_f.cpp.o
+
+.PHONY : src/trayectoria_f.o
+
+# target to build an object file
+src/trayectoria_f.cpp.o:
+	$(MAKE) -f CMakeFiles/drone2_waypoints_node.dir/build.make CMakeFiles/drone2_waypoints_node.dir/src/trayectoria_f.cpp.o
+.PHONY : src/trayectoria_f.cpp.o
+
+src/trayectoria_f.i: src/trayectoria_f.cpp.i
+
+.PHONY : src/trayectoria_f.i
+
+# target to preprocess a source file
+src/trayectoria_f.cpp.i:
+	$(MAKE) -f CMakeFiles/drone2_waypoints_node.dir/build.make CMakeFiles/drone2_waypoints_node.dir/src/trayectoria_f.cpp.i
+.PHONY : src/trayectoria_f.cpp.i
+
+src/trayectoria_f.s: src/trayectoria_f.cpp.s
+
+.PHONY : src/trayectoria_f.s
+
+# target to generate assembly for a file
+src/trayectoria_f.cpp.s:
+	$(MAKE) -f CMakeFiles/drone2_waypoints_node.dir/build.make CMakeFiles/drone2_waypoints_node.dir/src/trayectoria_f.cpp.s
+.PHONY : src/trayectoria_f.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -1476,6 +1556,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... test"
 	@echo "... drone_lap_projection"
+	@echo "... drone2_waypoints_node"
 	@echo "... drone2_spin_up_down_node"
 	@echo "... drone1_pitch_pid_node"
 	@echo "... drone2_wavy_circle_node"
@@ -1503,6 +1584,7 @@ help:
 	@echo "... mavros_msgs_generate_messages_nodejs"
 	@echo "... std_msgs_generate_messages_nodejs"
 	@echo "... geometry_msgs_generate_messages_eus"
+	@echo "... drone2_distance_test_node"
 	@echo "... geometry_msgs_generate_messages_py"
 	@echo "... tf2_msgs_generate_messages_eus"
 	@echo "... sensor_msgs_generate_messages_py"
@@ -1556,6 +1638,9 @@ help:
 	@echo "... gmock"
 	@echo "... gtest_main"
 	@echo "... gtest"
+	@echo "... src/dron2_go_back.o"
+	@echo "... src/dron2_go_back.i"
+	@echo "... src/dron2_go_back.s"
 	@echo "... src/dron2_prueba.o"
 	@echo "... src/dron2_prueba.i"
 	@echo "... src/dron2_prueba.s"
@@ -1586,6 +1671,9 @@ help:
 	@echo "... src/drone_projectionV2.o"
 	@echo "... src/drone_projectionV2.i"
 	@echo "... src/drone_projectionV2.s"
+	@echo "... src/trayectoria_f.o"
+	@echo "... src/trayectoria_f.i"
+	@echo "... src/trayectoria_f.s"
 .PHONY : help
 
 

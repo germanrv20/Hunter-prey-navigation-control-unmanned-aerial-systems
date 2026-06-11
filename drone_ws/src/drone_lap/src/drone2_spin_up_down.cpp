@@ -12,7 +12,7 @@ bool local_pose_received = false;
 
 // --- CONFIGURACIÓN DEL MOVIMIENTO ---
 const double CENTER_Z = 7.0;    // Altura media (Despegue)
-const double AMPLITUDE = 5.0;   // Oscila +/- 5 metros (Rango: 2m a 12m)
+const double AMPLITUDE = 7.0;   // Oscila +/- 7 metros (Rango: 0m a 14m)
 const double PERIOD = 20.0;     // Tarda 20 segundos por ciclo (para que sea suave)
 // ------------------------------------
 
@@ -38,22 +38,26 @@ int main(int argc, char** argv)
     ros::Rate rate(20.0); 
 
     // 1. Esperar conexión
-    ROS_INFO("Esperando conexión con FCU de Drone 2...");
+    ROS_INFO("Esperando conexion con FCU de Drone 2...");
     while (ros::ok() && (!current_state.connected || !local_pose_received)) {
         ros::spinOnce();
         rate.sleep();
     }
-    ROS_INFO("Drone 2 listo. Iniciando secuencia de oscilación vertical.");
+    ROS_INFO("Drone 2 listo. Iniciando secuencia de oscilacion vertical.");
 
     geometry_msgs::PoseStamped pose_msg;
     pose_msg.pose.position.x = 0.0; 
-    pose_msg.pose.position.y = 0.0; 
+    
+    // ==========================================
+    // CAMBIO AQUÍ: Posición Y a 3.0 metros
+    // ==========================================
+    pose_msg.pose.position.y = -7.5; 
     
     // Guardamos la orientación actual para no girar
     geometry_msgs::Quaternion fixed_quat = current_local_pose.pose.orientation;
 
-    // 2. Despegue a la altura central (7.0m)
-    ROS_INFO("Despegando a %.1fm...", CENTER_Z);
+    // 2. Despegue a la altura central (7.0m) y desplazamiento a Y=3.0m
+    ROS_INFO("Despegando a %.1fm y moviendose a Y=3.0m...", CENTER_Z);
     
     // Enviamos setpoints hasta llegar a la altura objetivo
     while (ros::ok() && std::abs(current_local_pose.pose.position.z - CENTER_Z) > 0.5) {
@@ -67,7 +71,7 @@ int main(int argc, char** argv)
         ros::spinOnce();
         rate.sleep();
     }
-    ROS_INFO("Altura alcanzada. Iniciando oscilación (+/- %.1fm).", AMPLITUDE);
+    ROS_INFO("Altura y posicion alcanzadas. Iniciando oscilacion (+/- %.1fm).", AMPLITUDE);
 
     // 3. Bucle de Oscilación (Seno)
     double t = 0.0;
@@ -85,6 +89,7 @@ int main(int argc, char** argv)
 
         pose_msg.header.stamp = ros::Time::now();
         pose_msg.pose.position.z = z_target;
+        // Ojo: no tocamos pose_msg.pose.position.y, así que se queda en 3.0 para siempre
         pose_msg.pose.orientation = fixed_quat; // Mantener orientación
 
         pos_pub.publish(pose_msg);

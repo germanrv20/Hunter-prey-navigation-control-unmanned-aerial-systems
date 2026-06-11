@@ -1,0 +1,14 @@
+[31m[1mCMake Error[0m at /home/germanrv/drone_ws/src/drone_lap/CMakeLists.txt:203 (add_executable):
+  add_executable cannot create target "drone2_spin_up_down_node" because
+  another target with the same name already exists.  The existing target is
+  an executable created in source directory
+  "/home/germanrv/drone_ws/src/drone_lap".  See documentation for policy
+  CMP0002 for more details.
+
+
+[31m[1mCMake Error[0m at /home/germanrv/drone_ws/src/drone_lap/CMakeLists.txt:206 (target_link_libraries):
+  Cannot specify link libraries for target "drone2_distance_test_node" which
+  is not built by this project.
+
+
+make: *** [Makefile:1600: cmake_check_build_system] Error 1

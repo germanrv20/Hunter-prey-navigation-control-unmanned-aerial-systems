@@ -1,0 +1,15 @@
+[35m[1mScanning dependencies of target drone2_waypoints_node[0m
+[  8%] Built target drone_lap_projection
+[ 16%] Built target drone2_spin_up_down_node
+[ 20%] [32mBuilding CXX object CMakeFiles/drone2_waypoints_node.dir/src/trayectoria_f.cpp.o[0m
+[ 29%] Built target drone1_pitch_pid_node
+[ 37%] Built target drone1_follow_xy_pid
+[ 45%] Built target drone2_aggressive_node
+[ 54%] Built target dron2_prueba
+[ 62%] Built target drone2_wavy_circle_node
+[ 70%] Built target drone2_distance_test_node
+[ 79%] Built target drone2_360lap
+[ 87%] Built target drone1_vertical_pid_node
+[ 95%] Built target drone1_Yaw_pid_node
+[100%] [32m[1mLinking CXX executable /home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_waypoints_node[0m
+[100%] Built target drone2_waypoints_node

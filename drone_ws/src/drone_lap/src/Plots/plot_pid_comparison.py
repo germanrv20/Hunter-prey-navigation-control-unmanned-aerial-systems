@@ -9,15 +9,15 @@ carpeta_datos = os.path.expanduser("~/drone_ws/src/drone_lap/data/")
 pruebas = {
     # YAW
     # "Nombre para la Leyenda": "Nombre del archivo .npy"
-    "PID Óptimo": os.path.join(carpeta_datos, "curvas_YAW_PID_V1_Optimo.npy"),
-    "PID Ondulatorio": os.path.join(carpeta_datos, "curvas_YAW_PID_V1_Lento.npy"),
-    "PID Agresivo": os.path.join(carpeta_datos, "curvas_YAW_PID_V1_agresivo.npy")
+    #"PID Óptimo": os.path.join(carpeta_datos, "curvas_YAW_PID_V1_Optimo.npy"),
+    #"PID Ondulatorio": os.path.join(carpeta_datos, "curvas_YAW_PID_V1_Lento.npy"),
+    #"PID Agresivo": os.path.join(carpeta_datos, "curvas_YAW_PID_V1_agresivo.npy")
 
     #ALTURA
     # "Nombre para la Leyenda": "Nombre del archivo .npy"
-    #"PID Óptimo": os.path.join(carpeta_datos, "curvas_ALTURA_PID_V1_Optimo.npy"),
-    #"PID Lento": os.path.join(carpeta_datos, "curvas_ALTURA_PID_V1_Lento.npy"), 
-    #"PID Agresivo": os.path.join(carpeta_datos, "curvas_ALTURA_PID_V1_agresivo.npy")
+    "PID Óptimo": os.path.join(carpeta_datos, "curvas_ALTURA_PID_V1_Optimo.npy"),
+    "PID Lento": os.path.join(carpeta_datos, "curvas_ALTURA_PID_V1_Lento.npy"), 
+    "PID Agresivo": os.path.join(carpeta_datos, "curvas_ALTURA_PID_V1_agresivo.npy")
 
     #DISTANCIA
     #"PID Óptimo": os.path.join(carpeta_datos, "curvas_DISTANCIA_PID_V1_Optimo.npy"),

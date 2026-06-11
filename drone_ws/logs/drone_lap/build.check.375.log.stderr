@@ -1,0 +1,15 @@
+[31m[1mCMake Error[0m at /home/germanrv/drone_ws/src/drone_lap/CMakeLists.txt:202 (add_executable):
+  Cannot find source file:
+
+    src/trsyectoria_f.cpp
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .cu .m .M .mm .h .hh .h++ .hm
+  .hpp .hxx .in .txx
+
+
+[31m[1mCMake Error[0m at /home/germanrv/drone_ws/src/drone_lap/CMakeLists.txt:202 (add_executable):
+  No SOURCES given to target: drone2_waypoints_node
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.
+make: *** [Makefile:1644: cmake_check_build_system] Error 1

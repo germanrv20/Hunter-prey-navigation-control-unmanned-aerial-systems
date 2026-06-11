@@ -4,6 +4,7 @@
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/rebuild_cache.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/test.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/drone_lap_projection.dir
+/home/germanrv/drone_ws/build/drone_lap/CMakeFiles/drone2_waypoints_node.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/drone2_spin_up_down_node.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/drone1_pitch_pid_node.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/drone2_wavy_circle_node.dir
@@ -31,6 +32,7 @@
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/mavros_msgs_generate_messages_nodejs.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/std_msgs_generate_messages_nodejs.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/geometry_msgs_generate_messages_eus.dir
+/home/germanrv/drone_ws/build/drone_lap/CMakeFiles/drone2_distance_test_node.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/geometry_msgs_generate_messages_py.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/tf2_msgs_generate_messages_eus.dir
 /home/germanrv/drone_ws/build/drone_lap/CMakeFiles/sensor_msgs_generate_messages_py.dir

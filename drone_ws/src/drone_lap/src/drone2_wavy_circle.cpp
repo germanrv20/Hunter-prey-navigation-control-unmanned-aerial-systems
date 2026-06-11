@@ -22,15 +22,14 @@ bool local_pose_received = false;
 const double CENTER_X = 0.0; 
 const double CENTER_Y = -10.0; 
 
-// --- PARÁMETROS DE LA ONDA Z (Tu fórmula) ---
-const double Z0 = 7.0;           // Altura base (z0)
-const double AMP = 1;          // Amplitud (amp) +/- 2m
-const double WAVE_FREQ_HZ = 0.1; // Frecuencia de la onda (0.1 Hz = 10s por ciclo)
-
+// --- PARÁMETROS DE LA ONDA Z (Suavizados) ---
+const double Z0 = 7.0;           
+const double AMP = 0.7;          // Un poco menos exigente en altura
+const double WAVE_FREQ_HZ = 0.05; // El doble de tiempo para subir y bajar
 
 // --- PARÁMETROS DEL CÍRCULO XY ---
 const double RADIUS = 4.0;
-const double SPEED_XY = 0.3; // m/s
+const double SPEED_XY = 0.2;     // Un poco más despacio para que no derrape
 
 void state_cb(const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;

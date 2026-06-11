@@ -110,7 +110,7 @@ def plotter_loop():
             ax3.set_xlabel('Tiempo (s)')
             ax3.set_ylabel('Error en Metros (m)')
             # Ampliamos el rango de Y para metros. Un error de +-2 metros es más que suficiente.
-            ax3.set_ylim(-20, 20.0) 
+            ax3.set_ylim(-12, 12.0) 
             ax3.legend(loc='upper right')
             ax3.grid(True)
             

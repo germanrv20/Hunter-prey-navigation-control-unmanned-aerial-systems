@@ -1,0 +1,14 @@
+/home/germanrv/drone_ws/src/drone_lap/src/dron2_go_back.cpp: In function ‘int main(int, char**)’:
+/home/germanrv/drone_ws/src/drone_lap/src/dron2_go_back.cpp:64:9: error: ‘pose_msg’ was not declared in this scope
+         pose_msg.header.stamp = ros::Time::now();
+         ^~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/dron2_go_back.cpp:64:9: note: suggested alternative: ‘pos_pub’
+         pose_msg.header.stamp = ros::Time::now();
+         ^~~~~~~~
+         pos_pub
+/home/germanrv/drone_ws/src/drone_lap/src/dron2_go_back.cpp:68:37: error: ‘fixed_quat’ was not declared in this scope
+         pose_msg.pose.orientation = fixed_quat;
+                                     ^~~~~~~~~~
+make[2]: *** [CMakeFiles/drone2_distance_test_node.dir/build.make:63: CMakeFiles/drone2_distance_test_node.dir/src/dron2_go_back.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:976: CMakeFiles/drone2_distance_test_node.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

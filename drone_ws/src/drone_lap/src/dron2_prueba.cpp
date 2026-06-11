@@ -21,7 +21,7 @@ bool local_pose_received = false;
 const double Z_TARGET = 7.0; 
 const double CENTER_X_FIXED = -0.0; 
 const double CENTER_Y_FIXED = -10.0; 
-const double RADIUS = 3.0;
+const double RADIUS = 4.0;
 const double SPEED = 0.5; // m/s
 
 void state_cb(const mavros_msgs::State::ConstPtr& msg) {

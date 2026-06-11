@@ -198,6 +198,23 @@ target_link_libraries(drone2_spin_up_down_node
   ${catkin_LIBRARIES}
   )
 
+  # Crea el ejecutable para el controlador PID del drone 1
+add_executable(drone2_waypoints_node src/trayectoria_f.cpp)
+
+# Enlaza las librerías necesarias (ROS)
+target_link_libraries(drone2_waypoints_node
+  ${catkin_LIBRARIES}
+  )
+
+
+# Crea el ejecutable para el controlador PID del drone 1
+add_executable(drone2_distance_test_node src/dron2_go_back.cpp)
+
+# Enlaza las librerías necesarias (ROS)
+target_link_libraries(drone2_distance_test_node
+  ${catkin_LIBRARIES}
+  )
+
 # Renombramos el ejecutable para que sea único en el workspace
 add_executable(drone_lap_projection src/drone_projectionV2.cpp)
 

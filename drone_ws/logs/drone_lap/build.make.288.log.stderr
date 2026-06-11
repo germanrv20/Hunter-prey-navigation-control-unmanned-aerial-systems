@@ -1,0 +1,30 @@
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp: In function ‘void error_cb(const ConstPtr&)’:
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:107:9: error: ‘P_out’ was not declared in this scope
+         P_out = Kp_vert * std::sqrt(err_y);
+         ^~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:110:9: error: ‘P_out’ was not declared in this scope
+         P_out = -Kp_vert * std::sqrt(std::abs(err_y));
+         ^~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:135:36: error: ‘P_out’ was not declared in this scope
+         cmd_z   = vert_pid.compute(P_out) ; //* alt_multiplier;
+                                    ^~~~~
+In file included from /opt/ros/noetic/include/ros/ros.h:40,
+                 from /home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:1:
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:180:34: error: ‘P_out’ was not declared in this scope
+                           err_x, P_out, err_dist, cmd_yaw, cmd_z, cmd_x);
+                                  ^~~~~
+/opt/ros/noetic/include/ros/console.h:351:165: note: in definition of macro ‘ROSCONSOLE_PRINT_AT_LOCATION_WITH_FILTER’
+     ::ros::console::print(filter, __rosconsole_define_location__loc.logger_, __rosconsole_define_location__loc.level_, __FILE__, __LINE__, __ROSCONSOLE_FUNCTION__, __VA_ARGS__)
+                                                                                                                                                                     ^~~~~~~~~~~
+/opt/ros/noetic/include/ros/console.h:466:7: note: in expansion of macro ‘ROSCONSOLE_PRINT_AT_LOCATION’
+       ROSCONSOLE_PRINT_AT_LOCATION(__VA_ARGS__); \
+       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/opt/ros/noetic/include/rosconsole/macros_generated.h:122:40: note: in expansion of macro ‘ROS_LOG_THROTTLE’
+ #define ROS_INFO_THROTTLE(period, ...) ROS_LOG_THROTTLE(period, ::ros::console::levels::Info, ROSCONSOLE_DEFAULT_NAME, __VA_ARGS__)
+                                        ^~~~~~~~~~~~~~~~
+/home/germanrv/drone_ws/src/drone_lap/src/drone1_follow_xy_pid.cpp:179:9: note: in expansion of macro ‘ROS_INFO_THROTTLE’
+         ROS_INFO_THROTTLE(0.5, "Err(X,Y,Dist): (%.3f, %.3f, %.3f) -> Cmd(Yaw,Z,X): (%.3f rad/s, %.2f m/s, %.2f m/s)",
+         ^~~~~~~~~~~~~~~~~
+make[2]: *** [CMakeFiles/drone1_follow_xy_pid.dir/build.make:63: CMakeFiles/drone1_follow_xy_pid.dir/src/drone1_follow_xy_pid.cpp.o] Error 1
+make[1]: *** [CMakeFiles/Makefile2:326: CMakeFiles/drone1_follow_xy_pid.dir/all] Error 2
+make: *** [Makefile:141: all] Error 2

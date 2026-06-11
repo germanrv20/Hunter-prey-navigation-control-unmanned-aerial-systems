@@ -29,7 +29,7 @@
 bool use_yolo = true; 
 bool use_perfect_lidar = false; 
 bool area_mode = false; 
-double TARGET_DIST_METERS = 1.05;
+double TARGET_DIST_METERS = 1.5;
 
 // Variables Gazebo (Ground Truth)
 geometry_msgs::Pose pose_d1_gz;
@@ -367,7 +367,7 @@ int main(int argc, char** argv)
                         cv::putText(cv_ptr->image, "DIST: LIDAR (Perfecto)", cv::Point(10, 30), cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255, 255, 0), 2);
                     }else{
                         // ==========================================
-                        // MODELO GEOMÉTRICO "PRO" (Limpio)
+                        // MODELO GEOMÉTRICO 
                         // ==========================================
                         if (bbox_width > 0.0 && bbox_height > 0.0) {
                             
@@ -378,7 +378,7 @@ int main(int argc, char** argv)
                             double dist_w = (fx * DRONE_REAL_WIDTH) / bbox_width;
                             double dist_h = (fy * DRONE_REAL_HEIGHT) / bbox_height;
                             
-                            double geometric_distance = (dist_w + dist_h) / 2.0;
+                            double geometric_distance = dist_w;//(dist_w + dist_h) / 2.0;
                             
                             error_z = geometric_distance - TARGET_DIST_METERS;
                             

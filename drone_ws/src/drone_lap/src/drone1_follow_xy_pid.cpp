@@ -18,22 +18,21 @@ const double PIXEL_SENTINEL = -999.0;
 
 // 1. PID Yaw (Horizontal - Controla giro)
 const double Kp_yaw = 2.365625;
-const double Ki_yaw = 0.02; 
+const double Ki_yaw = 0.06; 
 const double Kd_yaw = 0.320;
-const double MAX_YAW_RATE = 20.0; // rad/s
+const double MAX_YAW_RATE = 10.0; // rad/s
 
 // 2. PID Altura (Vertical - Controla subida/bajada)
-const double Kp_vert = 2.65; 
-const double Ki_vert = 0.02;
-const double Kd_vert = 0.192; ;
-const double MAX_VERT_VEL = 10.0; // m/s
+const double Kp_vert = 2.4; 
+const double Ki_vert = 0.0;
+const double Kd_vert = 0.145;
+const double MAX_VERT_VEL = 5.0; // m/s
 
 
-// 3. PID Avance (Distancia - Eje X Frontal)
-const double Kp_dist = 0.47;//0.47; //0.01; // valores sin modelo regresion
-const double Ki_dist = 0.02;//0.02;
-const double Kd_dist = 0.0014;//0.0014; //0.0014; 
-const double MAX_LINEAR_X = 10.0; // 
+const double Kp_dist = 0.9;   
+const double Ki_dist = 0.0; 
+const double Kd_dist = 0.35;  
+const double MAX_LINEAR_X = 10.0;
 
 
 // -----------------------------------------
@@ -101,7 +100,7 @@ void error_cb(const geometry_msgs::PointStamped::ConstPtr& msg) {
     double err_x = msg->point.x; // Error Horizontal
     double err_y = msg->point.y; // Error Vertical
     double err_dist = msg->point.z; //Error Distancia
-
+    
 
 
     // Failsafe: Si el dron no está listo, no hacemos nada
@@ -130,8 +129,9 @@ void error_cb(const geometry_msgs::PointStamped::ConstPtr& msg) {
   
         // ZONAS MUERTAS APLICADAS A LOS MOTORES 
         //if (std::abs(err_x) < 0.017)  cmd_yaw = 0.0;
-        if (std::abs(err_y) < 0.017) cmd_z   = 0.0;
-        //if (std::abs(err_dist) < 10.0) cmd_x = 0.0;
+        if (std::abs(err_x) < 0.038 and std::abs(err_dist) < 0.1 ) cmd_z   = 0.0;
+        if (std::abs(err_y) < 0.06 and std::abs(err_dist) < 0.1 ) cmd_z   = 0.0;
+        if (std::abs(err_dist) < 0.08) cmd_x = 0.0;
 
 
         //   LÍMITES DE SEGURIDAD
