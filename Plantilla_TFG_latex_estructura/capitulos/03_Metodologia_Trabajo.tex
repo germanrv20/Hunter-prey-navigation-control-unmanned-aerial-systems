@@ -43,7 +43,7 @@ Las pruebas del sistema se plantean siguiendo una estrategia progresiva: primero
 
 \vspace{0.3cm}
 
-La metodología seguida se plantea de forma incremental. En primer lugar, se prepara un entorno reproducible basado en ROS, Gazebo, MAVROS y ArduPilot. A continuación, se configura una simulación con dos UAVs diferenciados para poder evaluar tareas de seguimiento visual. Sobre esta base se incorporan los módulos de percepción y estimación, encargados de obtener una medida visual del objetivo y suavizarla antes de alimentar el controlador. Finalmente, el sistema se valida inicialmente mediante pruebas en simulación, observando la comunicación entre nodos, la coherencia de los marcos de referencia y la respuesta del UAV ante las consignas generadas, como paso previo a una posible validación posterior con hardware real.
+La metodología seguida se plantea de forma incremental. En primer lugar, se prepara un entorno reproducible basado en ROS, Gazebo, MAVROS y ArduPilot, cuya relación con el resto de módulos del sistema se sintetiza en el esquema general de la Figura \ref{fig:arquitectura_nodos}. A continuación, se configura una simulación con dos UAVs diferenciados para poder evaluar tareas de seguimiento visual. Sobre esta base se incorporan los módulos de percepción y estimación, encargados de obtener una medida visual del objetivo y suavizarla antes de alimentar el controlador. Finalmente, el sistema se valida inicialmente mediante pruebas en simulación, observando la comunicación entre nodos, la coherencia de los marcos de referencia y la respuesta del UAV ante las consignas generadas, como paso previo a una posible validación posterior con hardware real.
 
 \vspace{0.3cm}
 
@@ -108,7 +108,8 @@ rosinstall_generator --upstream mavros | tee /tmp/mavros.rosinstall
 rosinstall_generator mavlink | tee -a /tmp/mavros.rosinstall
 wstool merge -t src /tmp/mavros.rosinstall
 wstool update -t src
-rosdep install --from-paths src --ignore-src --rosdistro `echo $ROS_DISTRO` -y
+rosdep install --from-paths src --ignore-src --rosdistro \ 
+`echo $ROS_DISTRO` -y
 
 catkin build
 \end{verbatim}
@@ -155,8 +156,10 @@ cmake ..
 make -j4
 sudo make install
 
-echo 'source "$(pkg-config --variable=prefix gazebo)/share/gazebo/setup.sh"' >> ~/.bashrc
-echo 'export GAZEBO_MODEL_PATH=~/ardupilot_gazebo/models' >> ~/.bashrc
+echo 'source "$(pkg-config --variable=prefix gazebo) \
+/share/gazebo/setup.sh"' >> ~/.bashrc
+echo 'export GAZEBO_MODEL_PATH=~/ardupilot_gazebo/models'\
+ >> ~/.bashrc
 . ~/.bashrc
 \end{verbatim}
 
@@ -165,7 +168,8 @@ echo 'export GAZEBO_MODEL_PATH=~/ardupilot_gazebo/models' >> ~/.bashrc
 Para tratar las imágenes obtenidas en la simulación se incorporan \textit{cv\_bridge}, \textit{vision\_opencv} y \textit{OpenCV}. Estas herramientas permiten convertir mensajes de \textit{ROS} a estructuras de imagen procesables y aplicar operaciones básicas de visión artificial.
 
 \begin{verbatim}
-sudo apt-get install ros-noetic-cv-bridge ros-noetic-vision-opencv libopencv-dev
+sudo apt-get install ros-noetic-cv-bridge \ 
+ros-noetic-vision-opencv libopencv-dev
 \end{verbatim}
 
 
@@ -406,7 +410,7 @@ Posteriormente, se añadieron imágenes obtenidas directamente desde el entorno 
 
 \vspace{0.3cm}
 
-En una etapa final, el dataset se enriqueció con imágenes de drones reales. Estas muestras permitieron introducir mayor variabilidad visual en cuanto a iluminación, fondo, escala, orientación y apariencia del objetivo. Todas las imágenes reales incorporadas en esta última fase fueron etiquetadas manualmente, revisando la posición del dron en cada imagen y ajustando las cajas delimitadoras para asegurar una anotación coherente. Este proceso fue necesario para mejorar la calidad del entrenamiento y reducir la diferencia entre las imágenes sintéticas, las capturas simuladas y las condiciones reales de operación.
+En una etapa final, el dataset se enriqueció con imágenes de drones reales. La recogida de estas muestras se realizó con el apoyo del Ejército del Aire, que facilitó el acceso a sus infraestructuras para la toma de datos en un entorno controlado. Estas muestras permitieron introducir mayor variabilidad visual en cuanto a iluminación, fondo, escala, orientación y apariencia del objetivo. Todas las imágenes reales incorporadas en esta última fase fueron etiquetadas manualmente, revisando la posición del dron en cada imagen y ajustando las cajas delimitadoras para asegurar una anotación coherente. Este proceso fue necesario para mejorar la calidad del entrenamiento y reducir la diferencia entre las imágenes sintéticas, las capturas simuladas y las condiciones reales de operación.
 
 \vspace{0.3cm}
 
@@ -545,7 +549,7 @@ Este parámetro afecta directamente al comportamiento observado. Un FOV amplio f
 
 Además, una cámara real no proyecta la escena de manera perfectamente ideal. La lente puede introducir distorsión radial y tangencial. La distorsión radial desplaza los puntos según su distancia al centro de la imagen, mientras que la distorsión tangencial aparece cuando lente y sensor no están perfectamente alineados. Estas deformaciones son relevantes porque afectan precisamente a las variables usadas por el sistema: centro de la caja, error visual y área aparente \cite{opencvCalib3d, uvaPinholeCamera}.
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 
 \begin{center}
     \refstepcounter{figure}\label{fig:Camera-distorsion}
@@ -554,17 +558,17 @@ Además, una cámara real no proyecta la escena de manera perfectamente ideal. L
     \addcontentsline{lof}{figure}{\protect\numberline{\thefigure} Distorsión de cámara pinhole}
  \end{center}
 
-\vspace{0.2cm}
+\vspace{0.1cm}
 
 Desde el punto de vista del sistema propuesto, esto implica que una misma posición real del objetivo podría producir un error visual ligeramente diferente según la zona de la imagen donde aparezca. Por este motivo, conviene trabajar con coordenadas normalizadas o con puntos corregidos mediante calibración antes de usar la medida en las etapas posteriores \cite{opencvCalib3d, CameraModels}.
 
-\vspace{0.2cm}
+\vspace{0.1cm}
 
 \subsection{Flujo General del Módulo de Percepción}
 
 El flujo metodológico del módulo comienza con la captura de una imagen desde la cámara del UAV cazador. Sobre dicha imagen se ejecuta el detector, que devuelve una caja delimitadora o \textit{bounding box} asociada al UAV objetivo. Esta caja constituye la salida básica del detector y permite calcular tanto la posición del objetivo en el plano imagen como su tamaño aparente.
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 
 \begin{center}
 \refstepcounter{figure}\label{fig:dron-error-visual}

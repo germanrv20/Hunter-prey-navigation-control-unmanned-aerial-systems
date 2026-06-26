@@ -7,142 +7,140 @@
 \vspace{-1.5cm}
 \noindent\HRule\par\vspace{0.1cm}
 
+
+
+
 \section{Planificación de las Pruebas}
 
-La validación del sistema se estructura como una secuencia progresiva de pruebas, diseñada para comprobar primero los elementos individuales y, posteriormente, el comportamiento del sistema completo de seguimiento visual. En las secciones siguientes se evalúan tanto la percepción basada en YOLO como la respuesta de los controladores PID, la continuidad del seguimiento en simulación y una primera comprobación real del sistema de estimación de distancia.
+La validación del sistema se organizó de forma progresiva, comenzando por los componentes más básicos y avanzando hasta pruebas completas de seguimiento. La idea principal fue no evaluar directamente el sistema completo, sino comprobar primero cada bloque por separado y, después, analizar si todos funcionan de forma coordinada dentro del lazo de seguimiento visual.
 
 \vspace{0.3cm}
 
-Antes de presentar los experimentos se definen las métricas utilizadas durante todo el capítulo. Para la selección del detector se consideran el número de parámetros, el tiempo de inferencia, el \textit{mAP50} y el \textit{mAP50-95}. Para las pruebas de control se emplean los errores normalizados de centrado en imagen, el EPE 2D, el RMSE de distancia y el tiempo de establecimiento. Finalmente, en las pruebas de seguimiento se añaden métricas de continuidad visual, diferenciando entre frames con detección directa de YOLO, frames mantenidos mediante Kalman y pérdidas completas del objetivo mediante el TLR.
+De forma esquemática, la planificación de las pruebas se estructuró del siguiente modo:
+
+\begin{itemize}
+    \item \textbf{Definición de métricas de evaluación.} Antes de ejecutar los experimentos se definen las magnitudes que permiten interpretar los resultados: precisión del detector, tiempo de inferencia, tamaño del modelo, error visual de centrado, error de distancia, tiempo de establecimiento y continuidad de la detección. Con ello se intenta demostrar que la comparación entre pruebas se apoya en criterios objetivos y no únicamente en una valoración visual.
+
+    \item \textbf{Selección del detector YOLO.} Se comparan distintas versiones de YOLO bajo condiciones equivalentes, atendiendo al equilibrio entre precisión, velocidad y tamaño. Con esta prueba se intenta demostrar que el modelo elegido no solo detecta correctamente el UAV objetivo, sino que también puede integrarse en un sistema de control en tiempo real sin introducir una carga computacional excesiva.
+
+    \item \textbf{Optimización del detector con TensorRT.} Tras seleccionar el modelo, se evalúa su conversión a TensorRT para el despliegue en una plataforma Jetson, comparando los tiempos de preprocesamiento, inferencia y postprocesamiento del modelo original y del modelo optimizado. Con esta prueba se intenta demostrar que la optimización reduce la latencia del detector y deja margen temporal para ejecutar el resto de nodos de ROS, MAVROS, filtrado y control.
+
+    \item \textbf{Validación individual de los controladores PID.} Se evalúan por separado los controladores de \textit{yaw}, altura y distancia, de manera que la respuesta de cada eje pueda analizarse sin mezclar efectos de otros controladores. Con esta prueba se intenta demostrar que cada PID reduce su error asociado de forma estable y con un tiempo de respuesta aceptable.
+
+    \item \textbf{Prueba conjunta de control visual.} Una vez validados los controladores por separado, se activan conjuntamente los tres PID para comprobar la respuesta global del UAV cazador. Con esta prueba se intenta demostrar que las salidas de los controladores son compatibles entre sí y que los errores visuales y de distancia pueden transformarse en consignas de movimiento coherentes.
+
+    \item \textbf{Seguimiento en trayectorias simuladas.} En simulación se prueban trayectorias más completas, como movimientos en zigzag, trayectorias circulares con cambios de altura y una ruta final por \textit{waypoints}. Con estas pruebas se intenta demostrar que el sistema mantiene el seguimiento cuando el UAV objetivo se mueve de forma dinámica y aparecen variaciones de posición, escala y orientación.
+
+    \item \textbf{Prueba con cámara real.} Finalmente, se realiza una primera validación con el UAV objetivo físico, centrada en la estimación de distancia a partir del tamaño aparente de la caja detectada. Con esta prueba se intenta demostrar que la percepción desarrollada en simulación puede trasladarse a imágenes reales y producir una estimación de distancia coherente en rangos cercanos y medios.
+\end{itemize}
 
 \vspace{0.3cm}
 
-El primer bloque experimental se dedica a la selección del modelo de detección. Para ello se realiza un torneo comparativo entre distintas arquitecturas de la familia YOLO, incluyendo YOLOv8, YOLOv10, YOLO11 y YOLO26 en sus variantes \textit{nano}, \textit{small} y \textit{medium}. Todas las alternativas se entrenan bajo condiciones comunes y se comparan en términos de precisión, tamaño del modelo y velocidad de inferencia. El objetivo es justificar la elección del detector que ofrece el mejor equilibrio para integrarse en un lazo de control visual en tiempo real.
-
-\vspace{0.3cm}
-
-El segundo bloque se centra en la validación de los controladores PID. Primero se prueban de forma individual los tres reguladores principales: el PID de \textit{yaw}, mediante una trayectoria circular; el PID de altura, mediante una trayectoria vertical sinusoidal; y el PID de distancia, mediante una trayectoria recta con separación de seguridad. Después se estudia el tiempo de establecimiento de cada controlador por separado, con el fin de cuantificar la rapidez con la que cada eje reduce su error. Finalmente, se realiza una prueba conjunta con los tres PID activados simultáneamente, donde el UAV objetivo combina desplazamiento circular y variación de altura para comprobar que el sistema completo mantiene una respuesta coordinada y estable.
-
-\vspace{0.3cm}
-
-El tercer bloque evalúa el seguimiento del UAV presa en trayectorias más exigentes. En primer lugar se analiza una trayectoria en zigzag, útil para comprobar la corrección de cambios laterales sucesivos y la estabilidad de la detección. A continuación se reutiliza la trayectoria circular ondulada de la prueba conjunta de PID para medir el seguimiento cuando aparecen errores simultáneos en \textit{yaw}, altura y distancia. Por último, se incorpora una ruta final definida por \textit{waypoints}, con desplazamientos más largos y cambios de altura, para cerrar la validación en simulación con una maniobra tridimensional menos regular y más representativa de un escenario general de persecución.
-
-\vspace{0.3cm}
-
-El cuarto bloque corresponde a las pruebas reales. En esta parte se valida la estimación de distancia utilizando la cámara real y el UAV objetivo físico. Para ello se toman medidas a distintas separaciones conocidas, se comparan con la distancia calculada a partir de la caja delimitadora y se analiza cómo crece el error cuando el objetivo aparece cada vez más pequeño en la imagen. Esta prueba permite comprobar el rango práctico de uso del sistema de percepción antes de plantear maniobras reales de seguimiento completo.
+Esta planificación permite avanzar desde una validación aislada de cada módulo hasta una evaluación global del sistema. Así, los resultados de cada prueba no solo indican si un bloque funciona, sino también qué limitaciones puede introducir cuando se integra con el resto de la arquitectura.
 
 
 \section{Desarrollo de los Experimentos}
 
 \subsection{Métricas de Evaluación}
 
-Para comparar las distintas pruebas de esta sección se emplearon métricas asociadas a tres aspectos del sistema: la calidad del detector visual, la respuesta de los controladores y la continuidad del seguimiento del objetivo. De este modo, no solo se analiza si el UAV objetivo se detecta correctamente, sino también si las señales generadas por la percepción son suficientemente estables para alimentar el lazo de control.
+Para comparar las distintas pruebas de esta sección se emplearon métricas asociadas a cuatro aspectos del sistema: la calidad del detector visual, el rendimiento de inferencia, la respuesta de los controladores y la continuidad del seguimiento del objetivo. De este modo, no solo se analiza si el UAV objetivo se detecta correctamente, sino también si las señales generadas por la percepción son suficientemente estables para alimentar el lazo de control.
 
 \vspace{0.3cm}
 
-En la selección del modelo se utilizaron métricas de detección. El número de parámetros indica el tamaño del modelo y, por tanto, su coste aproximado de memoria y cálculo. El tiempo de inferencia se calculó como el tiempo medio necesario para procesar una imagen:
 
-\begin{equation}
-t_{\mathrm{inf}} = \frac{1}{N}\sum_{i=1}^{N} t_i,
-\end{equation}
+\begin{itemize}
+    
 
-donde $t_i$ es el tiempo de inferencia del frame $i$ y $N$ es el número total de imágenes evaluadas. Para la precisión del detector se empleó la métrica \textit{mean Average Precision}. A partir de la curva precisión--recobrado de cada clase se obtiene el área bajo la curva, denominada $AP$. La métrica $\mathrm{mAP}_{50}$ evalúa esta precisión considerando como correcta una detección cuando la intersección sobre unión, o \textit{IoU}, supera el umbral de 0.50:
+    \item \textbf{Selección del detector YOLO.} En este experimento se comparan modelos de detección. Se utilizan el número de parámetros, el tiempo de inferencia, $\mathrm{mAP}_{50}$ y $\mathrm{mAP}_{50-95}$. El tiempo medio de inferencia se calcula como:
+    \[
+    t_{\mathrm{inf}}=\frac{1}{N}\sum_{i=1}^{N}t_i,
+    \]
+    donde $t_i$ es el tiempo necesario para procesar la imagen $i$ y $N$ es el número total de imágenes evaluadas. Esta métrica sirve para saber si el detector puede ejecutarse suficientemente rápido dentro del lazo de control. La precisión se mide mediante:
+    \[
+    \mathrm{mAP}_{50}=\frac{1}{C}\sum_{c=1}^{C}AP_c(0.50),
+    \]
+    \[
+    \mathrm{mAP}_{50-95}=\frac{1}{10C}\sum_{\tau\in\{0.50,0.55,\ldots,0.95\}}\sum_{c=1}^{C}AP_c(\tau).
+    \]
+    En estas expresiones, $AP_c$ es el área bajo la curva precisión--recobrado de la clase $c$, $C$ es el número de clases y $\tau$ representa el umbral de \textit{IoU}. La métrica $\mathrm{mAP}_{50}$ indica la calidad general de detección, mientras que $\mathrm{mAP}_{50-95}$ es más exigente porque penaliza cajas delimitadoras peor ajustadas. El número de parámetros complementa estas métricas indicando el tamaño y coste computacional del modelo.
 
-\begin{equation}
-\mathrm{mAP}_{50} = \frac{1}{C}\sum_{c=1}^{C} AP_c(0.50),
-\end{equation}
+    \item \textbf{Optimización del detector con TensorRT.} En este experimento se evalúa si el detector seleccionado puede ejecutarse con menor latencia en la plataforma Jetson. Para ello se separa el tiempo total de procesamiento en tres partes:
+    \[
+    t_{\mathrm{total}}=t_{\mathrm{pre}}+t_{\mathrm{inf}}+t_{\mathrm{post}},
+    \]
+    donde $t_{\mathrm{pre}}$ es el tiempo de preprocesamiento, $t_{\mathrm{inf}}$ es el tiempo de inferencia y $t_{\mathrm{post}}$ es el tiempo de postprocesamiento. A partir del tiempo total se calcula la frecuencia máxima teórica:
+    \[
+    \mathrm{FPS}_{\mathrm{teor}}=\frac{1000}{t_{\mathrm{total}}},
+    \]
+    expresando $t_{\mathrm{total}}$ en milisegundos. Estas métricas sirven para comprobar si la conversión a TensorRT reduce la latencia y si queda margen temporal para ejecutar, además del detector, los nodos de ROS, MAVROS, filtrado y control.
 
-donde $C$ es el número de clases. En este proyecto la clase de interés es el UAV objetivo, por lo que esta métrica resume la calidad de detección de dicho objeto. La métrica $\mathrm{mAP}_{50-95}$ es más exigente, ya que promedia el $AP$ para distintos umbrales de \textit{IoU} entre 0.50 y 0.95:
+    \item \textbf{Validación individual de los controladores PID.} En estas pruebas se evalúa cada eje de control por separado. Para el centrado visual se utilizan los errores normalizados:
+    \[
+    E_{x,i}=\frac{u_i-W/2}{W/2}, \qquad E_{y,i}=\frac{v_i-H/2}{H/2},
+    \]
+    donde $(u_i,v_i)$ es el centro de la caja detectada en el frame $i$, y $W$ y $H$ son la anchura y la altura de la imagen. El error $E_x$ sirve para evaluar el PID de \textit{yaw}, ya que mide el desplazamiento horizontal del objetivo. El error $E_y$ sirve para evaluar el PID de altura, ya que mide el desplazamiento vertical. Para el eje longitudinal se utiliza:
+    \[
+    E_{z,i}=d_i-d_{\mathrm{ref}},
+    \]
+    donde $d_i$ es la distancia estimada al objetivo y $d_{\mathrm{ref}}$ es la distancia deseada de seguimiento. Además, se calcula el tiempo de establecimiento:
+    \[
+    T_s=\min\{t_s: |e(t)|\leq\varepsilon,\; \forall t\geq t_s\}.
+    \]
+    Esta métrica indica cuánto tarda cada controlador en entrar y permanecer dentro de una banda de tolerancia $\varepsilon$. En conjunto, estas medidas permiten comprobar si cada PID reduce su error de forma estable antes de combinar los tres ejes.
 
-\begin{equation}
-\mathrm{mAP}_{50-95} = \frac{1}{10C}\sum_{\tau \in \{0.50,0.55,\ldots,0.95\}}\sum_{c=1}^{C} AP_c(\tau).
-\end{equation}
+    \item \textbf{Prueba conjunta de control visual.} En este experimento se activan simultáneamente los PID de \textit{yaw}, altura y distancia. Para resumir el error de centrado en imagen se utiliza el EPE 2D:
+    \[
+    \mathrm{EPE}_i=\sqrt{E_{x,i}^{2}+E_{y,i}^{2}}.
+    \]
+    Esta métrica combina el error horizontal y vertical en una única magnitud, por lo que sirve para saber si el objetivo se mantiene cerca del centro de la cámara. Para el eje longitudinal se utiliza el RMSE de distancia:
+    \[
+    \mathrm{RMSE}_{z}=\sqrt{\frac{1}{|\mathcal{I}_{\mathrm{V}}|}\sum_{i\in\mathcal{I}_{\mathrm{V}}}E_{z,i}^{2}}.
+    \]
+    El RMSE penaliza más los errores grandes que los pequeños y permite detectar desviaciones importantes respecto a la separación deseada. Junto con la evolución temporal de  $E_z$, esta métrica sirve para comprobar que el controlador actúa de forma compatible y sin oscilaciones crecientes.
 
-Esta última métrica penaliza más las cajas delimitadoras mal ajustadas, por lo que resulta útil para valorar si el detector puede proporcionar medidas suficientemente precisas para estimar el centro del objetivo y su distancia aparente.
+    \item \textbf{Seguimiento en trayectorias simuladas.}\\ En estas pruebas se evalúa el lazo cerrado completo durante trayectorias dinámicas. La continuidad de la percepción se mide mediante:
+    \[
+    P_{\mathrm{YOLO}}=\frac{N_{\mathrm{YOLO}}}{N}\cdot100, \qquad P_{\mathrm{Kalman}}=\frac{N_{\mathrm{Kalman}}}{N}\cdot100,
+    \]
+    \[
+    \mathrm{TLR}=\frac{N_{\mathrm{perdidos}}}{N}\cdot100.
+    \]
+    En estas expresiones, $N$ es el número total de frames, $N_{\mathrm{YOLO}}$ es el número de frames con detección directa, $N_{\mathrm{Kalman}}$ es el número de frames mantenidos por predicción y $N_{\mathrm{perdidos}}$ es el número de frames sin referencia válida. $P_{\mathrm{YOLO}}$ sirve para medir la disponibilidad del detector, $P_{\mathrm{Kalman}}$ indica cuánto apoyo requiere el filtro predictivo y TLR mide la tasa de pérdida completa del objetivo. Además, el error de centrado se resume por estado de percepción:
+    \[
+    \mathrm{EPE}_{\mathrm{YOLO}}=\frac{1}{|\mathcal{I}_{\mathrm{YOLO}}|}\sum_{i\in\mathcal{I}_{\mathrm{YOLO}}}\mathrm{EPE}_i,
+    \]
+    \[
+    \mathrm{EPE}_{\mathrm{Kalman}}=\frac{1}{|\mathcal{I}_{\mathrm{Kalman}}|}\sum_{i\in\mathcal{I}_{\mathrm{Kalman}}}\mathrm{EPE}_i,
+    \]
+    \[
+    \mathrm{EPE}_{\mathrm{total}}=\frac{1}{|\mathcal{I}_{\mathrm{V}}|}\sum_{i\in\mathcal{I}_{\mathrm{V}}}\mathrm{EPE}_i.
+    \]
+    Esta separación permite comprobar si el seguimiento se mantiene principalmente con detecciones directas o si depende de la predicción. Los frames sin referencia válida no se promedian en EPE ni en RMSE; si el código marca una medida con un valor como $-999.0$, dicho valor se interpreta como pérdida de percepción y se contabiliza mediante el TLR.
 
-\vspace{0.3cm}
-
-En las pruebas de control se analizaron los errores visuales y de distancia. Si $(u_i,v_i)$ representa el centro de la caja detectada en el frame $i$, y $W$ y $H$ son la anchura y la altura de la imagen, los errores normalizados de centrado horizontal y vertical se expresan como:
-
-\begin{equation}
-E_{x,i}=\frac{u_i-W/2}{W/2}, \qquad E_{y,i}=\frac{v_i-H/2}{H/2}.
-\end{equation}
-
-El error $E_x$ se asocia al PID de \textit{yaw}, ya que mide el desplazamiento horizontal del objetivo en la imagen. El error $E_y$ se asocia al PID de altura, ya que mide el desplazamiento vertical respecto al centro de la cámara. En ambos casos se trabaja con magnitudes normalizadas, de forma que valores próximos a cero indican que el objetivo se encuentra cerca del centro de la imagen.
-
-\vspace{0.3cm}
-
-En las pruebas completas de seguimiento, el error de centrado en imagen se resumió mediante el \textit{End-Point Error} bidimensional, o EPE 2D. Esta métrica agrupa los errores horizontal y vertical en una única magnitud normalizada:
-
-\begin{equation}
-\mathrm{EPE}_i = \sqrt{E_{x,i}^{2}+E_{y,i}^{2}}.
-\end{equation}
-
-Para analizar correctamente la calidad del seguimiento, el EPE se separó en función del estado de la percepción. Sea $\mathcal{I}_{\mathrm{YOLO}}$ el conjunto de frames con detección directa, $\mathcal{I}_{\mathrm{Kalman}}$ el conjunto de frames en los que se usa la predicción del filtro de Kalman y $\mathcal{I}_{\mathrm{V}}=\mathcal{I}_{\mathrm{YOLO}}\cup\mathcal{I}_{\mathrm{Kalman}}$ el conjunto de frames con referencia visual válida. Entonces:
-
-\begin{equation}
-\mathrm{EPE}_{\mathrm{YOLO}}=\frac{1}{|\mathcal{I}_{\mathrm{YOLO}}|}\sum_{i\in\mathcal{I}_{\mathrm{YOLO}}}\mathrm{EPE}_i,
-\qquad
-\mathrm{EPE}_{\mathrm{Kalman}}=\frac{1}{|\mathcal{I}_{\mathrm{Kalman}}|}\sum_{i\in\mathcal{I}_{\mathrm{Kalman}}}\mathrm{EPE}_i,
-\end{equation}
-
-\begin{equation}
-\mathrm{EPE}_{\mathrm{total}}=\frac{1}{|\mathcal{I}_{\mathrm{V}}|}\sum_{i\in\mathcal{I}_{\mathrm{V}}}\mathrm{EPE}_i.
-\end{equation}
-
-Cuando no se emplea Kalman durante una prueba, el valor $\mathrm{EPE}_{\mathrm{Kalman}}$ no se calcula y se indica como no aplicable. Esta separación permite saber si el error de centrado procede de detecciones directas de YOLO o de intervalos en los que el sistema mantiene el objetivo mediante predicción.
-
-\vspace{0.3cm}
-
-Para el eje longitudinal se utilizó el error de distancia respecto a la separación deseada:
-
-\begin{equation}
-E_{z,i}=d_i-d_{\mathrm{ref}},
-\end{equation}
-
-donde $d_i$ es la distancia estimada en el instante $i$ y $d_{\mathrm{ref}}$ es la distancia de seguimiento fijada como referencia. A diferencia de $E_x$ y $E_y$, este error se expresa en metros. En las pruebas de seguimiento, esta componente se resumió mediante el RMSE de distancia calculado sobre los frames con referencia válida:
-
-\begin{equation}
-\mathrm{RMSE}_{z}=\sqrt{\frac{1}{|\mathcal{I}_{\mathrm{V}}|}\sum_{i\in\mathcal{I}_{\mathrm{V}}}E_{z,i}^{2}}.
-\end{equation}
-
-\vspace{0.3cm}
-
-El RMSE penaliza más los errores grandes que los pequeños, por lo que permite detectar si durante la prueba aparecen desviaciones importantes aunque la respuesta media parezca aceptable. En el análisis se interpreta cada eje por separado, ya que los errores de imagen están normalizados mientras que el error longitudinal se expresa en metros.
-
-\vspace{0.3cm}
-
-En las pruebas específicas de los PID también se empleó el tiempo de establecimiento, definido como el tiempo necesario para que la señal de error entre en una banda de tolerancia alrededor de la referencia y permanezca dentro de ella:
-
-\begin{equation}
-T_s = \min\{t_s: |e(t)| \leq \varepsilon,\; \forall t \geq t_s\}.
-\end{equation}
-
-Esta métrica permite comparar la rapidez de respuesta de cada controlador. Un valor bajo de $T_s$ indica que el sistema alcanza la zona de referencia rápidamente, mientras que un valor alto refleja una respuesta más lenta o una dinámica más conservadora.
-
-\vspace{0.3cm}
-
-Por último, en las pruebas de seguimiento se evaluó la continuidad de la percepción mediante métricas de visión. Sea $N$ el número total de frames analizados, $N_{\mathrm{YOLO}}$ el número de frames en los que el detector localiza directamente el objetivo, $N_{\mathrm{Kalman}}$ el número de frames en los que se recurre al seguimiento predictivo del filtro de Kalman y $N_{\mathrm{perdidos}}$ el número de frames sin una referencia válida. Entonces:
-
-\begin{equation}
-P_{\mathrm{YOLO}}=\frac{N_{\mathrm{YOLO}}}{N}\cdot100, \qquad
-P_{\mathrm{Kalman}}=\frac{N_{\mathrm{Kalman}}}{N}\cdot100,
-\end{equation}
-
-\begin{equation}
-\mathrm{TLR}=\frac{N_{\mathrm{perdidos}}}{N}\cdot100.
-\end{equation}
-
-El porcentaje $P_{\mathrm{YOLO}}$ representa la proporción de frames con detección directa, mientras que $P_{\mathrm{Kalman}}$ indica cuántas veces fue necesario mantener temporalmente el seguimiento mediante predicción. La métrica \textit{Target Loss Rate} (TLR) mide el porcentaje de frames en los que el sistema pierde completamente la referencia del objetivo. Por tanto, un TLR bajo es deseable, y un valor de $0\%$ indica que no se produjo pérdida visual durante la prueba.
+    \item \textbf{Prueba con cámara real.} En este experimento se evalúa la estimación de distancia con imágenes reales. Para cada medida se calcula el error de distancia:
+    \[
+    e_{d,i}=\hat{d}_i-d^{\mathrm{real}}_i,
+    \]
+    donde $\hat{d}_i$ es la distancia estimada a partir de la caja detectada y $d^{\mathrm{real}}_i$ es la distancia medida físicamente. El error absoluto se define como:
+    \[
+    |e_{d,i}|=|\hat{d}_i-d^{\mathrm{real}}_i|,
+    \]
+    y resume cuánto se desvía la estimación en cada muestra sin tener en cuenta el signo. Para resumir el comportamiento global se utiliza el error medio absoluto:
+    \[
+    \mathrm{MAE}=\frac{1}{N}\sum_{i=1}^{N}|e_{d,i}|,
+    \]
+    y la desviación típica:
+    \[
+    \sigma_d=\sqrt{\frac{1}{N-1}\sum_{i=1}^{N}(e_{d,i}-\bar{e}_d)^2}.
+    \]
+    El MAE sirve para cuantificar el error medio de estimación, mientras que $\sigma_d$ indica la dispersión entre repeticiones. Analizar estas métricas en función de la distancia real permite identificar en qué rango la estimación es más fiable y a partir de qué separación comienza a degradarse.
+\end{itemize}
 
 \vspace{0.3cm}
-
-La división entre frames con YOLO, frames con Kalman y frames perdidos es importante para no mezclar errores de naturaleza distinta. Cuando el sistema no dispone de una caja válida, el código marca la medida con un valor prefijado, como $-999.0$, para indicar que no existe una observación fiable. Ese valor no representa un error real del PID, sino una pérdida de percepción. Si se incluyera directamente en la media, unos pocos frames sin detección podrían dominar toda la estadística: por ejemplo, un vuelo con el objetivo casi centrado durante la mayor parte del tiempo quedaría penalizado si durante una oclusión breve se promediaran varios valores $-999.0$. Por este motivo, la calidad del control visual se evalúa con EPE y RMSE únicamente sobre frames válidos, mientras que las pérdidas de percepción se cuantifican por separado mediante el TLR.
-
 
 \subsection{Selección del Modelo}
 
-El primer experimento tuvo como objetivo seleccionar el detector más adecuado para el sistema de seguimiento visual. Para ello se realizó un torneo comparativo entre distintas arquitecturas de la familia YOLO, utilizando el dataset descrito previamente y manteniendo las mismas condiciones de entrenamiento para todos los modelos. El experimento se ejecutó en Google Colab, aprovechando la disponibilidad de GPU para entrenar de forma secuencial las variantes YOLOv8, YOLOv10, YOLO11 y YOLO26 en sus versiones \textit{nano} (n), \textit{small} (s) y \textit{medium} (m).
+El primer experimento tuvo como objetivo seleccionar el detector más adecuado para el sistema de seguimiento visual. Para ello se realizó un torneo comparativo entre distintas arquitecturas de la familia YOLO, utilizando el dataset descrito previamente y manteniendo las mismas condiciones de entrenamiento para todos los modelos. El experimento se ejecutó en Google Colab, utilizando una GPU Nvidia T4 para entrenar de forma secuencial las variantes YOLOv8, YOLOv10, YOLO11 y YOLO26 en sus versiones \textit{nano} (n), \textit{small} (s) y \textit{medium} (m).
 
 \vspace{0.3cm}
 
@@ -167,7 +165,7 @@ Los resultados del torneo se resumen en la Tabla \ref{tab:comparativa-yolo}. Par
 \hline
 \textbf{Modelo} & \textbf{Parámetros (M)} & \textbf{mAP50} & \textbf{mAP50-95} & \textbf{Inferencia (ms)} \\
 \hline
-YOLOv8n  & 3.2          & 0.992507 & 0.733692 & 2.660333  \\
+\textbf{YOLOv8n}  & \textbf{3.2}          & \textbf{0.992507} & \textbf{0.733692} & \textbf{2.660333}  \\
 YOLOv8s  & 11.2         & 0.993716 & 0.734467 & 6.248403  \\
 YOLOv8m  & 25.9         & 0.993991 & 0.750974 & 14.657198 \\
 YOLOv10n & 2.3          & 0.988186 & 0.711153 & 3.258539  \\
@@ -186,7 +184,7 @@ YOLO26m  & 20.04        & 0.988004 & 0.729559 & 17.643815 \\
 
 \vspace{0.3cm}
 
-A partir de estos resultados se seleccionó \textbf{YOLOv8n} como modelo principal para el sistema de percepción. La elección no se basó únicamente en obtener el mayor valor de precisión absoluta, sino en encontrar el mejor compromiso entre precisión, velocidad de inferencia y tamaño del modelo. Este criterio es especialmente relevante en un sistema de seguimiento visual para UAV, donde el detector no trabaja de forma aislada, sino como parte de un lazo cerrado que debe proporcionar medidas frecuentes al controlador.
+A partir de estos resultados se seleccionó YOLOv8n como modelo principal para el sistema de percepción. La elección no se basó únicamente en obtener el mayor valor de precisión absoluta, sino en encontrar el mejor compromiso entre precisión, velocidad de inferencia y tamaño del modelo. Este criterio es especialmente relevante en un sistema de seguimiento visual para UAV, donde el detector no trabaja de forma aislada, sino como parte de un lazo cerrado que debe proporcionar medidas frecuentes al controlador.
 
 \vspace{0.3cm}
 
@@ -204,15 +202,91 @@ El resto de familias tampoco ofreció un compromiso superior. YOLOv10n y YOLO26n
 
 Por todo ello, YOLOv8n fue considerado el modelo más adecuado para el sistema implementado. Su principal ventaja es que mantiene una precisión elevada con el menor tiempo de inferencia de todos los modelos evaluados. Esta combinación permite alimentar al controlador con detecciones rápidas y suficientemente estables, reduciendo el riesgo de respuestas tardías, oscilaciones o pérdida temporal del objetivo durante las maniobras de seguimiento.
 
+\subsection{Optimización del Modelo en Dron Real con TensorRT}
+
+La selección de un detector ligero no es suficiente por sí sola cuando el sistema debe ejecutarse en un dron real. En este proyecto, el modelo de percepción está pensado para funcionar dentro de un sistema embarcado basado en una Jetson Origin Nano, donde los recursos de cómputo, memoria y consumo energético son más limitados que en un ordenador de sobremesa. Además, la detección no se utiliza de forma aislada: cada imagen procesada debe alimentar al filtro de Kalman y a los controladores PID del lazo IBVS, por lo que la inferencia debe realizarse con una latencia baja y de forma sostenida en el tiempo.
+
+\vspace{0.3cm}
+
+En este contexto, optimizar el modelo resulta necesario para que el detector pueda trabajar en tiempo real junto con el resto de nodos del sistema. Si la red neuronal introduce demasiado retardo, las medidas visuales llegan tarde al controlador y la respuesta del UAV cazador puede volverse menos precisa, especialmente cuando el objetivo realiza maniobras rápidas. Por este motivo, tras seleccionar YOLOv8n como detector principal, se evaluó su conversión a TensorRT, una herramienta orientada a acelerar la inferencia de redes neuronales en plataformas NVIDIA.
+
+\vspace{0.3cm}
+
+El experimento consistió en comparar el rendimiento del modelo original entrenado, almacenado en formato \texttt{.pt}, frente al mismo modelo exportado como motor TensorRT en formato \texttt{.engine}. La conversión no modifica el entrenamiento ni cambia la arquitectura utilizada para detectar el UAV, sino que transforma la red a una representación más eficiente para la GPU de la Jetson. Para ello se utilizó precisión reducida FP16, manteniendo el tamaño de entrada de $640$ píxeles:
+
+\begin{lstlisting}[frame=none, numbers=none, backgroundcolor=\color{white}]
+yolo export \
+    model=~/catkin_ws/src/drone_lap/models/best.pt \
+    format=engine \
+    half=True \
+    device=0 \
+    workspace=2 \
+    imgsz=640
+\end{lstlisting}
+
+\vspace{0.3cm}
+
+La comparativa de rendimiento se realizó sobre 100 fotogramas con resolución de entrada $640 \times 480$ píxeles. En cada ejecución se midieron por separado los tiempos de preprocesamiento, inferencia en GPU y postprocesamiento, además del tiempo total medio por frame y los FPS máximos teóricos. Esta separación permite identificar si la mejora procede realmente de la ejecución de la red neuronal o de otras etapas del flujo de percepción. Los resultados se resumen en la Tabla \ref{tab:tensorrt-rendimiento}.
+
+\begin{table}[H]
+\centering
+\caption{Comparativa de rendimiento antes y después de la optimización con TensorRT.}
+\label{tab:tensorrt-rendimiento}
+\begingroup
+\footnotesize
+\renewcommand{\arraystretch}{1.18}
+\setlength{\tabcolsep}{6pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\hline
+\textbf{Ejecución} & \textbf{Preproc.} & \textbf{Infer. GPU} & \textbf{Postproc.} & \textbf{Total} & \textbf{FPS} \\
+ & \textbf{(ms)} & \textbf{(ms)} & \textbf{(ms)} & \textbf{(ms/frame)} & \textbf{teóricos} \\
+\hline
+Modelo original \texttt{.pt} & 2.04 & 17.11 & 3.37 & 22.53 & 44.4 \\
+TensorRT \texttt{.engine} FP16 & 2.26 & 5.75 & 3.73 & 11.74 & 85.2 \\
+\hline
+\end{tabular}%
+}
+\endgroup
+\end{table}
+
+\vspace{0.3cm}
+
+La mejora principal se observa en la fase de inferencia. El tiempo de GPU pasó de $17.11\,\mathrm{ms}$ a $5.75\,\mathrm{ms}$, lo que supone una reducción aproximada del $66.4\%$. Esta diferencia se debe a que TensorRT genera un motor adaptado a la GPU concreta, selecciona operaciones más eficientes y aprovecha la precisión FP16. En la práctica, esto permite ejecutar la misma red neuronal con menor tiempo de cómputo, liberando recursos para el resto del sistema embarcado.
+
+\vspace{0.3cm}
+
+El tiempo total por fotograma se redujo de $22.53\,\mathrm{ms}$ a $11.74\,\mathrm{ms}$, una disminución cercana al $47.9\%$. En un sistema IBVS, este dato es especialmente importante porque el retardo entre la captura de la imagen y la reacción del UAV afecta directamente a la estabilidad del lazo de control. Al reducir la latencia, las medidas visuales que llegan al filtro de Kalman y a los controladores PID representan mejor el estado actual del objetivo, disminuyendo el riesgo de correcciones tardías cuando el UAV objetivo realiza maniobras rápidas.
+
+\vspace{0.3cm}
+
+También se aprecia un cambio en el cuello de botella del sistema. En la ejecución original, la inferencia en GPU representaba aproximadamente el $75.9\%$ del tiempo total, por lo que la red neuronal era el componente dominante. Tras la conversión a TensorRT, la inferencia baja hasta el $49.0\%$ del tiempo total y el conjunto de preprocesamiento y postprocesamiento pasa a tener un peso similar. Esto indica que la optimización ha desplazado la limitación principal desde la red neuronal hacia etapas auxiliares, ejecutadas principalmente mediante operaciones clásicas de tratamiento de imagen y preparación de datos.
+
+\vspace{0.3cm}
+
+La cámara utilizada trabaja a 30 FPS, por lo que cada imagen llega aproximadamente cada $33.3\,\mathrm{ms}$. Con el modelo original, el procesamiento consumía alrededor del $67.7\%$ de esa ventana temporal. Con TensorRT, el consumo baja hasta aproximadamente el $35.3\%$. Aunque la cámara no permite aprovechar directamente los $85.2$ FPS teóricos, este margen adicional resulta muy valioso: reduce la probabilidad de acumulación de retardos, facilita la ejecución concurrente de ROS, MAVROS y los controladores, y deja capacidad disponible para registrar datos, aplicar filtros o incorporar tareas adicionales sin saturar la Jetson.
+
+\vspace{0.3cm}
+
+En consecuencia, la conversión a TensorRT no solo aumenta la velocidad máxima teórica, que pasa de $44.4$ a $85.2$ FPS, sino que mejora la robustez temporal del sistema completo. El detector queda preparado para sensores de mayor frecuencia en trabajos futuros, pero incluso con una cámara de 30 FPS aporta beneficios directos: menor latencia, mayor margen de seguridad computacional, menor carga de GPU y una integración más adecuada para ejecución embarcada durante pruebas reales.
+
 \subsection{Pruebas de Control}
 
-\subsubsection{Pruebas Individuales}
+\subsubsection{Pruebas Individuales en Simulación}
 
-En este bloque se evalúan de forma independiente los tres controladores principales del sistema: \textit{yaw}, altura y distancia. Cada prueba utiliza una trayectoria específica para excitar únicamente el eje de control correspondiente y analizar su respuesta sin mezclar efectos de otros reguladores.
+Estas pruebas sirven para comprobar por separado los tres controladores principales del sistema: \textit{yaw}, altura y distancia. Antes de activar el seguimiento completo, es necesario verificar que cada eje reduce su propio error de forma estable y que ninguna respuesta individual introduce oscilaciones o maniobras bruscas.
+
+\vspace{0.3cm}
+
+Con este bloque se responde a la pregunta de si cada PID es válido como componente aislado del lazo de control visual. Para ello, cada experimento excita principalmente un único eje mediante una trayectoria específica, se registra la evolución del error asociado y, después, se interpretan los resultados antes de combinar los tres controladores en una prueba conjunta.
 
 \paragraph{Prueba del PID de \textit{yaw} con trayectoria circular}\mbox{}\par
 
-La primera prueba de control se diseñó para evaluar de forma aislada el comportamiento del PID de \textit{yaw}. En este experimento, el UAV cazador permanece situado en una posición central, mientras que el UAV objetivo describe una trayectoria circular a su alrededor con un radio de 4 metros. Esta configuración permite comprobar si el controlador es capaz de girar el dron cazador de forma continua para mantener el objetivo centrado en el eje horizontal de la imagen.
+Esta prueba sirve para validar el PID de \textit{yaw}, responsable de corregir el desplazamiento horizontal del objetivo en la imagen. La pregunta que se busca responder es si el UAV cazador puede girar de forma continua y estable para mantener al UAV objetivo cerca del centro horizontal de la cámara cuando este se desplaza lateralmente alrededor de él.
+
+\vspace{0.3cm}
+
+El experimento consiste en mantener el UAV cazador en una posición central mientras el UAV objetivo describe una trayectoria circular a su alrededor con un radio de 4 metros. Esta configuración genera un error horizontal variable y obliga al controlador a transformar dicho error visual en una consigna de giro de \textit{yaw}.
 
 \vspace{0.3cm}
 
@@ -246,7 +320,11 @@ La evolución de la señal muestra una respuesta estable tras el transitorio ini
 
 \paragraph{Prueba del PID de altura con trayectoria vertical}\mbox{}\par
 
-La segunda prueba de control se planteó para evaluar el comportamiento del PID de altura. En este caso, el UAV objetivo se situó inicialmente a una altura de referencia de 7 metros y se hizo oscilar verticalmente alrededor de dicha posición. La finalidad de esta prueba fue comprobar si el controlador era capaz de corregir el error vertical de la imagen cuando el objetivo sube y baja, manteniéndolo próximo al centro visual en el eje vertical.
+Esta prueba sirve para validar el PID de altura, encargado de corregir el desplazamiento vertical del objetivo dentro de la imagen. Con ella se responde a la pregunta de si el UAV cazador puede modificar su altura de forma suave para mantener centrado al objetivo cuando este sube y baja durante el vuelo.
+
+\vspace{0.3cm}
+
+El experimento consiste en situar el UAV objetivo alrededor de una altura de referencia de 7 metros y hacerlo oscilar verticalmente alrededor de dicha posición. De esta manera se genera un error vertical controlado, sin introducir cambios dominantes en el eje horizontal, y se puede analizar la respuesta específica del controlador de altura.
 
 \vspace{0.3cm}
 
@@ -281,7 +359,11 @@ La evolución de la señal muestra que el controlador responde de forma suave an
 
 \paragraph{Prueba del PID de distancia con trayectoria recta}\mbox{}\par
 
-La tercera prueba de control se diseñó para evaluar el comportamiento del PID de distancia, encargado de regular el avance longitudinal del UAV cazador respecto al UAV objetivo. En esta prueba, el UAV objetivo sigue una trayectoria recta a una velocidad constante de 3 m/s, avanzando un total aproximado de 25 metros. El objetivo del experimento es comprobar si el dron cazador es capaz de seguir a un objetivo en movimiento manteniendo una separación longitudinal controlada.
+Esta prueba sirve para validar el PID de distancia, encargado de regular el avance longitudinal del UAV cazador respecto al UAV objetivo. La pregunta que se busca responder es si el dron cazador puede aproximarse y seguir a un objetivo en movimiento sin invadir la distancia de seguridad definida para el seguimiento.
+
+\vspace{0.3cm}
+
+El experimento consiste en hacer que el UAV objetivo siga una trayectoria recta a una velocidad constante de 3 m/s, avanzando un total aproximado de 25 metros. Durante esta maniobra, el controlador de distancia debe adaptar la velocidad frontal del UAV cazador para reducir la separación inicial y mantener una distancia longitudinal controlada.
 
 \vspace{0.3cm}
 
@@ -319,7 +401,15 @@ Los resultados muestran un comportamiento satisfactorio del controlador longitud
 
 \subsubsection{Tiempos de establecimiento de los controladores PID}
 
-Además de comprobar la estabilidad de cada controlador durante trayectorias continuas, se realizaron tres pruebas específicas para estimar su tiempo de establecimiento. El objetivo de estas pruebas fue medir cuánto tarda cada PID en reducir su error y alcanzar una respuesta estable cuando se introduce una desviación inicial controlada. Para que los resultados fueran representativos del caso de uso del proyecto, las pruebas se plantearon con distancias cortas entre drones, ya que el sistema está orientado a seguimiento cercano del UAV objetivo y no a navegación a larga distancia.
+Además de comprobar la estabilidad de cada controlador durante trayectorias continuas, se realizaron tres pruebas específicas para estimar su tiempo de establecimiento. Estas pruebas sirven para cuantificar la rapidez de respuesta de cada PID, no solo para observar si finalmente alcanza la referencia.
+
+\vspace{0.3cm}
+
+Con ellas se responde a la pregunta de cuánto tarda cada eje en reducir su error cuando parte de una desviación inicial conocida. Esta medida es importante porque, en un sistema de seguimiento visual, no basta con que el controlador sea estable: también debe reaccionar con suficiente rapidez para que el objetivo no salga del campo de visión.
+
+\vspace{0.3cm}
+
+El experimento consiste en colocar inicialmente el UAV cazador con un error controlado respecto al UAV objetivo y registrar el tiempo necesario para que la señal entre y permanezca dentro de una banda de tolerancia alrededor de la referencia. Para que los resultados fueran representativos del caso de uso del proyecto, las pruebas se plantearon con distancias cortas entre drones, ya que el sistema está orientado a seguimiento cercano del UAV objetivo y no a navegación a larga distancia.
 
 \vspace{0.3cm}
 
@@ -385,9 +475,17 @@ PID de distancia & 3 m de separación longitudinal & $6\,\mathrm{s}$ \\
 
 En conjunto, estos resultados muestran que los controladores lateral y vertical alcanzan la referencia en tiempos reducidos, mientras que el control de distancia presenta una respuesta más lenta debido a las restricciones de seguridad y a la propia dinámica longitudinal del UAV. Esta diferencia resulta aceptable para el sistema propuesto, ya que en un escenario de seguimiento cercano es preferible priorizar una aproximación suave y repetible antes que una reducción demasiado rápida de la distancia.
 
-\subsubsection{Prueba conjunta de los tres PID activados}
+\subsubsection{Prueba conjunta de los tres PID activados en Simulación}
 
-Una vez validados los controladores de forma individual, se realizó una prueba conjunta con los tres PID activados simultáneamente. El objetivo de este experimento fue comprobar cómo reaccionaba el código completo cuando el UAV objetivo generaba errores horizontales, verticales y de distancia al mismo tiempo. A diferencia de las pruebas anteriores, esta validación no aísla un único eje de control, sino que somete al sistema de seguimiento a una trayectoria tridimensional más exigente y cercana a una situación real de persecución.
+Una vez validados los controladores de forma individual, se realizó una prueba conjunta con los tres PID activados simultáneamente. Esta prueba sirve para comprobar si las acciones de \textit{yaw}, altura y distancia son compatibles cuando trabajan al mismo tiempo dentro del lazo de seguimiento visual.
+
+\vspace{0.3cm}
+
+Con este experimento se responde a la pregunta de si el sistema completo puede mantener errores acotados cuando el UAV objetivo genera desviaciones horizontales, verticales y longitudinales de manera simultánea. A diferencia de las pruebas anteriores, esta validación no aísla un único eje de control, sino que somete al sistema a una trayectoria tridimensional más exigente y cercana a una situación real de persecución.
+
+\vspace{0.3cm}
+
+El experimento consiste en activar los tres controladores y hacer que el UAV objetivo describa una trayectoria que combine movimiento circular en el plano horizontal con variaciones periódicas de altura. De esta forma, el UAV cazador debe corregir orientación, altura y avance de manera coordinada durante toda la maniobra.
 
 \vspace{0.3cm}
 
@@ -427,25 +525,29 @@ Los resultados muestran que el sistema es capaz de mantener una respuesta establ
 
 \clearpage
 
-\subsection{Seguimiento del Objetivo}
+\subsection{Seguimiento del Objetivo en Simulación}
 
-Esta subsección recoge las pruebas destinadas a comprobar el comportamiento del sistema cuando el UAV presa realiza trayectorias completas de seguimiento. A diferencia de las validaciones individuales de los PID, en estas pruebas se analiza el funcionamiento integrado de percepción, estimación y control durante un vuelo continuo. El bloque no se limita a una única maniobra, sino que reúne tres escenarios progresivos: una trayectoria en zigzag, una trayectoria circular ondulada y una ruta final definida por \textit{waypoints}.
-
-\vspace{0.3cm}
-
-La primera prueba corresponde a una trayectoria en zigzag. Esta maniobra resulta adecuada para evaluar el seguimiento visual porque obliga al UAV cazador a corregir cambios laterales sucesivos y alternos, manteniendo al mismo tiempo la distancia de referencia y el centrado vertical del objetivo. Por tanto, se trata de una prueba más exigente que un desplazamiento rectilíneo, ya que introduce variaciones frecuentes en el error horizontal y permite comprobar si el sistema mantiene la referencia visual sin depender de una trayectoria suave y constante.
+Estas pruebas sirven para validar el comportamiento del sistema cuando el UAV presa realiza trayectorias completas y el UAV cazador debe mantener el seguimiento durante un vuelo continuo. A diferencia de las validaciones individuales de los PID, aquí no se evalúa un controlador aislado, sino la integración de percepción, estimación y control.
 
 \vspace{0.3cm}
 
-La segunda prueba reutiliza la trayectoria circular ondulada empleada en la validación conjunta de los tres PID. En este caso, el objetivo combina desplazamiento circular en el plano horizontal con variaciones de altura, por lo que permite evaluar el seguimiento cuando aparecen simultáneamente errores de \textit{yaw}, altura y distancia. Esta prueba sirve como puente entre la validación de control y la evaluación de continuidad visual mediante las métricas EPE/RMSE/TLR.
+Con este bloque se responde a la pregunta de si el sistema completo puede conservar una referencia visual útil cuando el objetivo cambia de posición de forma dinámica. Por ello se analizan las métricas de visión, como la detección directa de YOLO, el apoyo del filtro de Kalman y la tasa de pérdida del objetivo, junto con métricas de control como el EPE de centrado y el RMSE de distancia.
 
 \vspace{0.3cm}
 
-La tercera prueba corresponde a la ruta final por \textit{waypoints}. Esta trayectoria introduce tramos de mayor longitud, cambios de dirección y variaciones de altura entre puntos consecutivos, generando una maniobra tridimensional menos regular que las anteriores. Su objetivo es comprobar si el sistema conserva la referencia visual y mantiene errores acotados en un escenario de seguimiento más general y representativo.
+Los experimentos consisten en ejecutar tres escenarios progresivos en simulación: una trayectoria en zigzag, una trayectoria circular ondulada y una ruta final definida por \textit{waypoints}. En todos los casos se registran los frames analizados, el porcentaje de detección directa, el uso de Kalman, el TLR, el error de centrado y el error de distancia para, posteriormente, exponer los resultados y discutir las limitaciones observadas.
 
 \subsubsection{Prueba de seguimiento con trayectoria en zigzag}
 
-En esta prueba, el UAV presa realiza un desplazamiento en zigzag mientras el UAV cazador intenta mantenerlo dentro del campo de visión. Durante el vuelo permanecen activos los tres controladores principales: el PID de \textit{yaw}, encargado de corregir el error horizontal de la imagen; el PID de altura, responsable de reducir el error vertical; y el PID de distancia, utilizado para regular la separación longitudinal respecto al objetivo.
+Esta prueba sirve para evaluar el seguimiento visual ante cambios laterales sucesivos. La trayectoria en zigzag obliga al UAV cazador a corregir alternancias en el error horizontal mientras intenta mantener la distancia de referencia y el centrado vertical del objetivo.
+
+\vspace{0.3cm}
+
+Con este experimento se responde a la pregunta de si el sistema puede mantener la referencia visual sin depender de una trayectoria suave o rectilínea. Es una prueba relevante porque los cambios de dirección pueden provocar desplazamientos rápidos de la caja detectada, variaciones en la estimación de distancia y posibles pérdidas temporales de detección.
+
+\vspace{0.3cm}
+
+El experimento consiste en hacer que el UAV presa realice un desplazamiento en zigzag mientras el UAV cazador intenta mantenerlo dentro del campo de visión. Durante el vuelo permanecen activos los tres controladores principales: el PID de \textit{yaw}, encargado de corregir el error horizontal de la imagen; el PID de altura, responsable de reducir el error vertical; y el PID de distancia, utilizado para regular la separación longitudinal respecto al objetivo.
 
 \vspace{0.3cm}
 
@@ -456,6 +558,17 @@ La trayectoria utilizada se muestra en la Figura \ref{fig:trayectoria-zigzag-seg
 \includegraphics[width=1.0\textwidth]{imagenes/Trayectoria_ZigZag.png}
 \caption{Trayectoria en zigzag utilizada para la prueba de seguimiento del objetivo. (Imagen de Elaboración Propia)}
 \label{fig:trayectoria-zigzag-seguimiento}
+\end{figure}
+
+\vspace{0.3cm}
+
+La Figura \ref{fig:gazebo-drones-zigzag} muestra una vista del escenario de Gazebo durante esta prueba, con ambos UAV dentro del entorno de simulación utilizado para evaluar el seguimiento.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{imagenes/gazeboDrones2.png}
+\caption{Vista del escenario de Gazebo y la camara durante la prueba de seguimiento en zigzag. (Imagen de Elaboración Propia)}
+\label{fig:gazebo-drones-zigzag}
 \end{figure}
 
 \vspace{0.3cm}
@@ -500,11 +613,26 @@ En conjunto, la prueba de zigzag confirma que el sistema es capaz de mantener la
 
 \subsubsection{Prueba de seguimiento con trayectoria circular ondulada}
 
-Además de la trayectoria en zigzag, se reutilizó la trayectoria circular ondulada empleada en la prueba conjunta de los tres PID para obtener métricas específicas de seguimiento. Esta trayectoria, mostrada previamente en la Figura \ref{fig:trayectoria-total-pid}, combina desplazamiento circular en el plano horizontal con variaciones sinusoidales de altura, por lo que permite evaluar la continuidad del seguimiento cuando el objetivo genera errores simultáneos en \textit{yaw}, altura y distancia.
+Esta prueba sirve para evaluar el seguimiento cuando el objetivo genera errores simultáneos en \textit{yaw}, altura y distancia. La trayectoria circular ondulada combina desplazamiento circular en el plano horizontal con variaciones sinusoidales de altura, por lo que representa una maniobra tridimensional más completa que el zigzag.
 
 \vspace{0.3cm}
 
-El uso de esta misma trayectoria permite conectar la validación de control con la evaluación de seguimiento. En la prueba conjunta de PID se comprobó que los tres reguladores podían actuar de forma simultánea sin provocar una respuesta inestable; en este segundo análisis se estudia, además, si el sistema de percepción mantiene una referencia visual suficientemente continua durante toda la maniobra. Para ello se recogieron las métricas EPE/RMSE/TLR del vuelo y se registraron tanto el error de centrado bidimensional como el error de distancia y los porcentajes de detección directa, seguimiento mediante Kalman y pérdida del objetivo.
+Con este experimento se responde a la pregunta de si la validación conjunta de los tres PID se mantiene también desde el punto de vista de la continuidad visual. Es decir, no solo se comprueba que los controladores puedan actuar de forma simultánea, sino también que la percepción proporcione una referencia suficientemente estable durante toda la maniobra.
+
+\vspace{0.3cm}
+
+El experimento consiste en reutilizar la trayectoria circular ondulada mostrada previamente en la Figura \ref{fig:trayectoria-total-pid} y registrar métricas específicas de seguimiento. Para ello se recogieron las métricas EPE/RMSE/TLR del vuelo, incluyendo el error de centrado bidimensional, el error de distancia y los porcentajes de detección directa, seguimiento mediante Kalman y pérdida del objetivo.
+
+\vspace{0.3cm}
+
+La Figura \ref{fig:gazebo-drones-circular} muestra la escena de Gazebo correspondiente a esta segunda prueba de seguimiento, donde el UAV cazador mantiene la referencia visual del UAV objetivo durante la maniobra circular ondulada.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{imagenes/GazeboDrones.png}
+\caption{Vista del escenario incial de Gazebo  en  la prueba de seguimiento con trayectoria circular ondulada. (Imagen de Elaboración Propia)}
+\label{fig:gazebo-drones-circular}
+\end{figure}
 
 \vspace{0.3cm}
 
@@ -532,7 +660,7 @@ RMSE de distancia ($E_z$) & $0.2200\,\mathrm{m}$ \\
 
 \vspace{0.3cm}
 
-Los resultados de control muestran un seguimiento preciso durante la trayectoria circular ondulada. El EPE medio total fue de 0.0513 en magnitud normalizada, con un valor de 0.0510 durante los frames con detección directa de YOLO. En los instantes en los que fue necesario recurrir al seguimiento ciego mediante Kalman, el EPE aumentó hasta 0.1590, lo que indica que la predicción mantiene una referencia útil, aunque con menor precisión que la detección directa.
+Los resultados de seguimiento muestran un centrado preciso durante la trayectoria circular ondulada. El EPE medio total fue de 0.0513 en magnitud normalizada, con un valor de 0.0510 durante los frames con detección directa de YOLO. En los instantes en los que fue necesario recurrir al seguimiento ciego mediante Kalman, el EPE aumentó hasta 0.1590, lo que indica que la predicción mantiene una referencia útil, aunque con menor precisión que la detección directa.
 
 \vspace{0.3cm}
 
@@ -544,11 +672,15 @@ El RMSE de distancia fue de $0.2200\,\mathrm{m}$, muy inferior al obtenido en la
 
 \subsubsection{Prueba de seguimiento con ruta final por \textit{waypoints}}
 
-Como última prueba de seguimiento se definió una trayectoria formada por una secuencia de \textit{waypoints}. A diferencia de las trayectorias anteriores, esta ruta no sigue una forma periódica simple, sino que combina desplazamientos largos en el plano horizontal con cambios de altura entre puntos consecutivos. En esta versión, la ruta aumenta el recorrido longitudinal y presenta un tramo final más prolongado, por lo que el UAV presa realiza una maniobra más exigente en la que el UAV cazador debe mantener la referencia visual mientras el objetivo cambia simultáneamente su posición lateral, longitudinal y vertical.
+Esta prueba sirve como validación final del seguimiento en simulación. A diferencia de las trayectorias anteriores, la ruta por \textit{waypoints} no sigue una forma periódica simple, sino que combina desplazamientos largos en el plano horizontal con cambios de altura entre puntos consecutivos.
 
 \vspace{0.3cm}
 
-Los puntos utilizados para generar la trayectoria se recogen en la Tabla \ref{tab:waypoints-ruta-final}. Cada \textit{waypoint} está definido mediante sus coordenadas $(x,y,z)$ en metros dentro del entorno de simulación.
+Con este experimento se responde a la pregunta de si el sistema conserva la referencia visual en una maniobra menos regular y más representativa de un seguimiento general. En esta versión, la ruta aumenta el recorrido longitudinal y presenta un tramo final más prolongado, por lo que el UAV presa realiza una maniobra más exigente en la que el UAV cazador debe mantener el objetivo visible mientras cambian simultáneamente la posición lateral, longitudinal y vertical.
+
+\vspace{0.3cm}
+
+El experimento consiste en definir una secuencia de \textit{waypoints} y hacer que el UAV presa los recorra dentro del entorno de simulación. Los puntos utilizados para generar la trayectoria se recogen en la Tabla \ref{tab:waypoints-ruta-final}; cada \textit{waypoint} está definido mediante sus coordenadas $(x,y,z)$ en metros.
 
 \begin{table}[H]
 \centering
@@ -619,23 +751,21 @@ El RMSE de distancia fue de $0.6821\,\mathrm{m}$. Este valor es mayor que el obt
 
 En conjunto, la ruta final confirma que el sistema puede mantener el seguimiento del UAV presa en una trayectoria tridimensional compuesta por varios tramos, cambios de altura y un recorrido longitudinal amplio. La combinación de una detección YOLO prácticamente continua, un uso muy reducido de Kalman, un TLR nulo y un EPE medio total bajo indica que el sistema de percepción y control conserva una referencia visual robusta incluso en una maniobra menos regular y más cercana a un escenario de seguimiento general.
 
-\subsection{Pruebas Reales}
-
 \subsection{Prueba de Estimación de Distancia con Cámara Real}
 
-Esta prueba se plantea como una primera validación del sistema de estimación de distancia utilizando la cámara real y el UAV objetivo real. A diferencia de las pruebas realizadas en simulación, en este caso se emplea el montaje físico del sistema, de forma que la estimación depende de la calibración real de la cámara, de las dimensiones medidas del dron objetivo y de las variaciones propias de una detección visual en un entorno no ideal.
+Esta prueba sirve como primera validación real del sistema de estimación de distancia utilizando la cámara física y el UAV objetivo real. A diferencia de las pruebas en simulación, aquí la estimación depende de la calibración real de la cámara, de las dimensiones medidas del dron objetivo y de las variaciones propias de una detección visual en un entorno no ideal.
 
 \vspace{0.3cm}
 
-El objetivo principal de esta prueba es comprobar si la distancia calculada a partir de la caja delimitadora mantiene una relación coherente con la separación real entre la cámara y el dron objetivo. Para ello se realizarán capturas a distintas distancias, comenzando por separaciones cercanas, donde el UAV ocupa una parte significativa de la imagen, y aumentando progresivamente la separación hasta distancias mayores. De este modo se podrá analizar cómo evoluciona la estimación cuando el tamaño aparente del dron disminuye y la detección se vuelve más sensible a pequeños errores en la caja.
+Con este experimento se responde a la pregunta de si la distancia calculada a partir de la caja delimitadora mantiene una relación coherente con la separación real entre la cámara y el dron objetivo. También permite estudiar el límite práctico del sistema de percepción, identificando a partir de qué rango la estimación empieza a degradarse por el menor tamaño aparente del UAV en la imagen.
 
 \vspace{0.3cm}
 
-Además de evaluar la precisión a corta distancia, esta prueba permitirá estudiar el límite práctico del sistema de percepción. En particular, se buscará determinar hasta qué distancia la cámara y el detector son capaces de localizar el UAV objetivo de forma suficientemente estable como para estimar su profundidad y mantener una referencia útil para el seguimiento. Esta información resulta importante para las futuras pruebas reales de persecución, ya que define el rango aproximado en el que el dron cazador puede detectar, estimar la distancia y comenzar a aproximarse al objetivo con seguridad.
+El experimento consiste en realizar capturas a distintas distancias conocidas, comenzando por separaciones cercanas, donde el UAV ocupa una parte significativa de la imagen, y aumentando progresivamente la separación hasta distancias mayores. La prueba se repitió cinco veces para obtener resultados más consistentes y evaluar la dispersión entre mediciones, ya que una variación de pocos píxeles en la caja delimitadora puede traducirse en un cambio significativo en la distancia, especialmente cuando el UAV objetivo se encuentra más alejado.
 
 \vspace{0.3cm}
 
-El montaje experimental empleado para esta prueba se muestra en la Figura \ref{fig:dron-prueba-distancia}. En él se situó el dron objetivo frente al equipo de captura y se utilizó un metro como referencia física para ir colocando el UAV a distintas separaciones conocidas. De esta forma fue posible comparar la distancia real medida manualmente con la distancia estimada por el sistema.
+El montaje experimental empleado para esta prueba se muestra en la Figura \ref{fig:dron-prueba-distancia}. En él se situó el dron objetivo frente a la cámara del dron cazador y se utilizó un metro como referencia física para ir colocando el UAV a distintas separaciones conocidas. De esta forma fue posible comparar la distancia real medida manualmente con la distancia estimada por el sistema.
 
 \begin{figure}[H]
 \centering
@@ -646,11 +776,11 @@ El montaje experimental empleado para esta prueba se muestra en la Figura \ref{f
 
 \vspace{0.3cm}
 
-Las Figuras \ref{fig:dron-real-1m} y \ref{fig:dron-real-575cm} muestran dos ejemplos de la imagen observada por la cámara durante la prueba. En la primera se representa una distancia cercana de aproximadamente $1\,\mathrm{m}$, donde el dron ocupa una región grande de la imagen y la caja delimitadora dispone de más píxeles para estimar la anchura y la altura. En la segunda se muestra una distancia mucho mayor, cercana a $5.75\,\mathrm{m}$, donde el tamaño aparente del UAV se reduce de forma considerable y cualquier pequeña variación de la caja tiene más efecto sobre la estimación final.
+Las Figuras \ref{fig:dron-real-1m} y \ref{fig:dron-real-575cm} muestran dos ejemplos de la imagen observada por la cámara durante la prueba. En la primera se representa una distancia cercana de aproximadamente $1\,\mathrm{m}$, donde el dron ocupa una región grande de la imagen y la caja delimitadora dispone de más píxeles para estimar la anchura. En la segunda se muestra una distancia mucho mayor, cercana a $5.75\,\mathrm{m}$, donde el tamaño aparente del UAV se reduce de forma considerable y cualquier pequeña variación de la caja tiene más efecto sobre la estimación final.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{imagenes/Dron1m.png}
+\includegraphics[width=0.9\textwidth]{imagenes/Dron1m_3.png}
 \caption{Vista del UAV objetivo a una distancia aproximada de $1\,\mathrm{m}$. (Imagen de Elaboración Propia)}
 \label{fig:dron-real-1m}
 \end{figure}
@@ -664,38 +794,65 @@ Las Figuras \ref{fig:dron-real-1m} y \ref{fig:dron-real-575cm} muestran dos ejem
 
 \vspace{0.3cm}
 
-A partir de las mediciones realizadas se generó la gráfica de error de la Figura \ref{fig:grafica-error-distancia-real}. En ella se representa, para cada distancia estimada, el error de estimación expresado en centímetros. Esta representación permite observar cómo evoluciona la precisión del método cuando aumenta la separación entre la cámara y el UAV objetivo.
+A partir de las cinco repeticiones realizadas se generaron las gráficas de error de las Figuras \ref{fig:grafica-error-distancia-repeticiones} y \ref{fig:grafica-error-distancia-media}. En la primera se representa el error de estimación obtenido en cada una de las cinco pruebas, expresado en centímetros, frente a la distancia real en metros. En la segunda se muestra el error medio para cada distancia junto con la desviación típica, representada mediante una zona sombreada correspondiente a $\pm 1$ desviación típica. De este modo, la primera gráfica permite comparar las repeticiones individuales, mientras que la segunda resume la tendencia general y la variabilidad del modelo.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.0\textwidth]{imagenes/Grafica_error_dist.png}
-\caption{Error de estimación de distancia obtenido con la cámara real y el UAV objetivo real. (Imagen de Elaboración Propia)}
-\label{fig:grafica-error-distancia-real}
+\includegraphics[width=1.0\textwidth]{imagenes/Esti_dist.png}
+\caption{Errores de estimación de distancia obtenidos en las cinco pruebas realizadas con la cámara real y el UAV objetivo real. (Imagen de Elaboración Propia)}
+\label{fig:grafica-error-distancia-repeticiones}
+\end{figure}
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{imagenes/Esti_dist_der.png}
+\caption{Error medio de estimación de distancia con la desviación típica sombreada para las cinco pruebas realizadas. (Imagen de Elaboración Propia)}
+\label{fig:grafica-error-distancia-media}
 \end{figure}
 
 \vspace{0.2cm}
 
-Los resultados muestran que, para distancias cortas y medias, el error se mantiene reducido en comparación con el rango total de medida. En la zona inicial de la gráfica aparecen pequeñas desviaciones positivas y negativas, lo que indica que el sistema puede sobreestimar o subestimar ligeramente la distancia, pero sin perder una relación coherente entre el tamaño aparente del dron y la separación real. Este comportamiento es esperable, ya que a corta distancia la caja delimitadora ocupa más píxeles y la estimación basada en anchura.
+Las métricas globales obtenidas para el modelo de distancia se resumen en la Tabla \ref{tab:metricas-distancia-real}. El error medio absoluto fue de $33.68\,\mathrm{cm}$ y la desviación típica total alcanzó $58.48\,\mathrm{cm}$. Estos valores reflejan que la estimación mantiene una relación útil con la distancia real, pero también que existe una variabilidad apreciable entre repeticiones, especialmente cuando el objetivo ocupa pocos píxeles en la imagen.
+
+\begin{table}[H]
+\centering
+\caption{Métricas globales del modelo de estimación de distancia con cámara real.}
+\label{tab:metricas-distancia-real}
+\begin{tabular}{lc}
+\hline
+\textbf{Métrica} & \textbf{Valor} \\
+\hline
+Error Medio Absoluto (MAE) & $33.68\,\mathrm{cm}$ \\
+Desviación típica total & $58.48\,\mathrm{cm}$ \\
+\hline
+\end{tabular}
+\end{table}
 
 \vspace{0.2cm}
 
-A medida que aumenta la distancia, el error crece de forma más clara. En la parte final de la gráfica, para estimaciones superiores a varios metros, se observan errores del orden de decenas de centímetros, llegando aproximadamente a valores próximos a $55\,\mathrm{cm}$. Esto se debe a que el UAV aparece cada vez más pequeño en la imagen: una diferencia de pocos píxeles en la anchura o en la altura de la caja representa una variación mayor en la distancia calculada. Además, a distancias largas influyen más la resolución de la cámara, la estabilidad de la detección, la orientación del dron y la calidad de la calibración.
+Los resultados muestran que, para distancias cortas y medias, el error se mantiene más acotado en comparación con las zonas de mayor separación. En la zona inicial de la gráfica aparecen desviaciones positivas y negativas de menor magnitud, lo que indica que el sistema puede sobreestimar o subestimar la distancia, pero sin perder una relación coherente entre el tamaño aparente del dron y la separación real. Este comportamiento es esperable, ya que a corta distancia la caja delimitadora ocupa más píxeles y la estimación basada en anchura es menos sensible a pequeñas variaciones de la detección.
 
 \vspace{0.2cm}
 
-En conjunto, la prueba confirma que el sistema de estimación resulta útil para trabajar en rangos cercanos y medios, que son los más relevantes para iniciar y mantener un seguimiento visual seguro. No obstante, también evidencia que la estimación pierde precisión progresivamente a distancias altas. Por tanto, para pruebas reales de persecución conviene interpretar la distancia estimada como una referencia aproximada de control y no como una medida métrica exacta, especialmente cuando el objetivo se encuentra lejos y ocupa pocos píxeles en la imagen.
+A medida que aumenta la distancia, el error y la dispersión entre repeticiones crecen de forma más clara. En particular, a partir de aproximadamente $3.5\,\mathrm{m}$ se observa que la estimación comienza a degradarse ligeramente y aparecen diferencias más apreciables entre pruebas. Esto se debe a que el UAV aparece cada vez más pequeño en la imagen: una diferencia de pocos píxeles en la anchura de la caja representa una variación mayor en la distancia calculada. Además, a distancias largas influyen más la resolución de la cámara, la estabilidad de la detección, la orientación del dron y la calidad de la calibración. Por este motivo, la desviación típica sombreada en la gráfica resulta especialmente útil para interpretar la fiabilidad de la estimación en cada rango de distancia.
 
 \vspace{0.2cm}
+
+En conjunto, la prueba confirma que el sistema de estimación resulta útil para trabajar en rangos cercanos y medios, que son los más relevantes para iniciar y mantener un seguimiento visual seguro. No obstante, también evidencia que la precisión empieza a verse afectada a partir de unos $3.5\,\mathrm{m}$ y que la variabilidad aumenta cuando el objetivo se encuentra más alejado y ocupa pocos píxeles en la imagen. Por tanto, para pruebas reales de persecución conviene tener en cuenta esta degradación progresiva y utilizar la distancia estimada como una referencia de control dentro del rango en el que la detección se mantiene suficientemente estable.
+
+\vspace{0.2cm}
+
 
 
 
 \section{Análisis de Resultados}
 
-El conjunto de pruebas realizado permite valorar en qué medida se han cumplido los objetivos de validación planteados para el sistema. Para ello, los resultados se analizan diferenciando entre percepción, control, seguimiento en simulación y estimación de distancia con cámara real. Esta separación es importante porque el sistema no depende de un único componente: una detección visual precisa no garantiza por sí sola un buen seguimiento si el control de distancia no responde adecuadamente, y un controlador estable tampoco es suficiente si la referencia visual se pierde durante el vuelo.
+Los resultados obtenidos permiten valorar el comportamiento general del sistema desde cinco puntos de vista: la detección visual, la optimización de inferencia, el control del UAV cazador, el seguimiento en simulación y la estimación de distancia con cámara real. Esta lectura conjunta es importante, ya que el buen funcionamiento del sistema no depende de un único elemento, sino de la coordinación entre percepción y control.
 
 \vspace{0.2cm}
 
-En la Tabla \ref{tab:analisis-cumplimiento-resultados} se resume el grado de cumplimiento de los principales puntos evaluados durante el capítulo. Se considera que un punto se ha cumplido cuando los resultados obtenidos satisfacen el objetivo principal de la prueba. Se considera cumplimiento parcial cuando el sistema funciona, pero aparecen limitaciones relevantes que deben tenerse en cuenta. Finalmente, se considera no cumplido o pendiente cuando la prueba evidencia una limitación que no queda completamente resuelta en este trabajo.
+La Tabla \ref{tab:analisis-cumplimiento-resultados} resume el grado de cumplimiento de las pruebas realizadas. Se considera que un punto está cumplido cuando el resultado responde al objetivo principal de la prueba, y cumplido parcialmente cuando el sistema funciona, pero todavía muestra alguna limitación relevante.
 
 \begin{table}[H]
 \centering
@@ -707,15 +864,16 @@ En la Tabla \ref{tab:analisis-cumplimiento-resultados} se resume el grado de cum
 \hline
 \textbf{Punto evaluado} & \textbf{Resultado} & \textbf{Justificación} \\
 \hline
-Selección del detector visual & Cumplido & YOLOv8n ofrece un compromiso adecuado entre precisión, tamaño e inferencia, con \textit{mAP50} de 0.992507, \textit{mAP50-95} de 0.733692 y 2.660333 ms de inferencia. \\
-Control de \textit{yaw} & Cumplido & El error horizontal se corrige de forma rápida, con un tiempo de establecimiento aproximado de $0.65\,\mathrm{s}$. \\
+Selección del detector visual & Cumplido & YOLOv8n ofrece un buen equilibrio entre precisión, tamaño y velocidad, con \textit{mAP50} de 0.992507, \textit{mAP50-95} de 0.733692 y 2.660333 ms de inferencia. \\
+Optimización con TensorRT & Cumplido & La conversión a \texttt{.engine} FP16 reduce el tiempo total de 22.53 ms a 11.74 ms y eleva los FPS teóricos de 44.4 a 85.2, dejando margen suficiente para una cámara de 30 FPS. \\
+Control de \textit{yaw} & Cumplido & El error horizontal se corrige con rapidez, con un tiempo de establecimiento aproximado de $0.65\,\mathrm{s}$. \\
 Control de altura & Cumplido & El error vertical se reduce de forma estable, con un tiempo de establecimiento aproximado de $1.25\,\mathrm{s}$. \\
-Control de distancia & Cumplido parcialmente & El controlador mantiene una separación segura, pero presenta una respuesta más lenta, con $T_s \approx 6\,\mathrm{s}$, y errores de distancia superiores a los errores de centrado visual. \\
-Seguimiento visual en simulación & Cumplido & En las trayectorias evaluadas el TLR fue del $0.00\%$, con detección directa de YOLO igual o superior al $99.74\%$. \\
-Seguimiento en zigzag & Cumplido parcialmente & La referencia visual se mantiene durante toda la prueba, pero el RMSE de distancia alcanza $1.255\,\mathrm{m}$, mostrando mayor dificultad en la separación longitudinal. \\
-Trayectoria circular ondulada & Cumplido & Se obtiene seguimiento estable con EPE medio de 0.0513 y RMSE de distancia de $0.2200\,\mathrm{m}$. \\
-Ruta final por \textit{waypoints} & Cumplido & El sistema mantiene un TLR nulo, detección YOLO del $99.98\%$ y EPE medio total de 0.0221 en una trayectoria tridimensional menos regular. \\
-Estimación de distancia con cámara real & Cumplido parcialmente & La estimación resulta útil a distancias cortas y medias, pero pierde precisión a distancias altas, con errores que llegan a valores próximos a $55\,\mathrm{cm}$. \\
+Control de distancia & Cumplido parcialmente & Mantiene una separación segura, aunque responde más lento que los otros ejes, con $T_s \approx 6\,\mathrm{s}$. \\
+Seguimiento visual en simulación & Cumplido & En las trayectorias evaluadas no se perdió el objetivo, con TLR del $0.00\%$ y detección YOLO igual o superior al $99.74\%$. \\
+Seguimiento en zigzag & Cumplido parcialmente & El objetivo se mantiene visible durante toda la prueba, aunque la distancia presenta más error, con RMSE de $1.255\,\mathrm{m}$. \\
+Trayectoria circular ondulada & Cumplido & Se obtiene seguimiento estable, con EPE medio de 0.0513 y RMSE de distancia de $0.2200\,\mathrm{m}$. \\
+Ruta final por \textit{waypoints} & Cumplido & El sistema mantiene un TLR nulo, detección YOLO del $99.98\%$ y EPE medio total de 0.0221. \\
+Estimación de distancia con cámara real & Cumplido parcialmente & La estimación es útil en distancias cortas y medias, aunque a partir de unos $3.5\,\mathrm{m}$ empieza a perder estabilidad; el MAE fue de $33.68\,\mathrm{cm}$. \\
 Seguimiento real completo & Pendiente & No se valida todavía una persecución real completa con ambos UAV en vuelo, sino una primera prueba real de estimación de distancia. \\
 \hline
 \end{tabular}
@@ -723,24 +881,20 @@ Seguimiento real completo & Pendiente & No se valida todavía una persecución r
 
 \vspace{0.3cm}
 
-Desde el punto de vista de la percepción, el objetivo principal se considera cumplido. El torneo de modelos permitió seleccionar YOLOv8n como detector principal, no por ser el modelo con mayor precisión absoluta, sino por ofrecer la mejor relación entre precisión e inferencia. Esta decisión queda reforzada por las pruebas de seguimiento, donde el detector mantuvo porcentajes de visión activa muy altos: $100.00\%$ en zigzag, $99.74\%$ en la trayectoria circular ondulada y $99.98\%$ en la ruta final por \textit{waypoints}. Además, el TLR fue siempre del $0.00\%$, por lo que no se produjo pérdida completa del UAV objetivo en ninguna trayectoria de simulación.
+En percepción, el objetivo principal se considera cumplido. YOLOv8n fue seleccionado porque combina una precisión alta con un tiempo de inferencia bajo, lo que facilita su uso dentro del lazo de control. Además, la conversión a TensorRT redujo de forma notable la latencia del detector, pasando de 22.53 ms a 11.74 ms por frame, lo que incrementa el margen temporal disponible para el resto de procesos del sistema. En las pruebas de seguimiento, el detector mantuvo porcentajes de detección muy altos y no se produjo pérdida completa del UAV objetivo en simulación.
+
+\vspace{0.2cm}
+
+En cuanto al control, los resultados son claros en los ejes de \textit{yaw} y altura. Ambos controladores corrigen el error de forma rápida y estable, permitiendo que el objetivo vuelva al centro de la imagen. El control de distancia también cumple su función principal, ya que mantiene una separación segura, aunque su respuesta es más lenta y muestra más dificultad en trayectorias como el zigzag.
+
+\vspace{0.2cm}
+
+Las pruebas de seguimiento en simulación muestran un comportamiento global positivo. El sistema fue capaz de seguir al UAV objetivo en trayectorias con cambios laterales, variaciones de altura y rutas por \textit{waypoints}. Aunque el eje de distancia sigue siendo el más exigente, la referencia visual se mantuvo durante las pruebas y el seguimiento no se interrumpió.
+
+\vspace{0.2cm}
+
+En las pruebas reales, la estimación de distancia funcionó de forma coherente en rangos cercanos y medios. Sin embargo, a partir de aproximadamente $3.5\,\mathrm{m}$ el objetivo ocupa menos píxeles en la imagen y la estimación empieza a ser menos estable. Por ello, en ese rango conviene que el control actúe de forma más conservadora y se apoye en la continuidad de la detección visual.
 
 \vspace{0.3cm}
 
-En cuanto al control, los objetivos se cumplen de forma clara en los ejes de \textit{yaw} y altura. El controlador de \textit{yaw} fue el más rápido, con un tiempo de establecimiento de $0.65\,\mathrm{s}$, lo que confirma que el sistema puede corregir de forma eficaz desplazamientos horizontales del objetivo en la imagen. El controlador de altura también mostró un comportamiento satisfactorio, con $T_s \approx 1.25\,\mathrm{s}$ y una respuesta estable. Estos dos resultados indican que el centrado visual del objetivo en imagen se resuelve de forma adecuada en los ejes lateral y vertical.
-
-\vspace{0.2cm}
-
-El punto que se cumple solo parcialmente es el control de distancia. El PID longitudinal consigue mantener una separación de seguimiento segura y evita una aproximación agresiva al objetivo, pero su respuesta es más lenta que la de los otros dos controladores, con un tiempo de establecimiento aproximado de $6\,\mathrm{s}$. Esta limitación también aparece en las pruebas de seguimiento: en la trayectoria en zigzag el RMSE de distancia fue de $1.255\,\mathrm{m}$, superior al de la trayectoria circular ondulada y al de la ruta final. Por tanto, el sistema cumple el objetivo de mantener el seguimiento sin perder el objetivo, pero no alcanza la misma precisión longitudinal que en el centrado visual.
-
-\vspace{0.2cm}
-
-Las pruebas de seguimiento en simulación muestran un cumplimiento global positivo. La trayectoria en zigzag permitió comprobar que el sistema soporta cambios laterales sucesivos sin perder la referencia visual, aunque evidenció la dificultad del eje de distancia. La trayectoria circular ondulada validó el funcionamiento simultáneo de los tres PID en una maniobra tridimensional, con un RMSE de distancia reducido de $0.2200\,\mathrm{m}$. Finalmente, la ruta por \textit{waypoints} confirmó la robustez del sistema en una trayectoria menos regular, con TLR nulo y un EPE medio total de 0.0221. Por tanto, el seguimiento visual y el centrado del objetivo se consideran cumplidos en simulación.
-
-\vspace{0.2cm}
-
-Respecto a las pruebas reales, el objetivo se cumple de forma parcial. La estimación de distancia con cámara real mantiene una relación coherente con la separación física para rangos cercanos y medios, lo que demuestra que el método basado en la caja delimitadora puede proporcionar una referencia útil para el control. Sin embargo, a medida que aumenta la distancia, el objetivo ocupa menos píxeles en la imagen y pequeñas variaciones de la caja producen errores mayores. Por este motivo, la estimación de distancia no debe interpretarse como una medida métrica exacta a largas distancias, sino como una referencia aproximada para iniciar y mantener el seguimiento.
-
-\vspace{0.3cm}
-
-En conjunto, puede afirmarse que se han cumplido los objetivos principales relacionados con la selección del detector, el centrado visual del objetivo, la continuidad de la percepción y el seguimiento en simulación. Los puntos que no quedan completamente cumplidos son la precisión del control longitudinal en maniobras exigentes, la exactitud de la estimación de distancia a largas distancias y la validación de una persecución real completa con ambos UAV en vuelo. Estas limitaciones no invalidan el sistema desarrollado, pero sí marcan las líneas de mejora más importantes para trabajos futuros: ajustar el control de distancia, mejorar la estimación de profundidad y trasladar progresivamente las pruebas de seguimiento desde simulación a un entorno real controlado.
+En conjunto, los objetivos principales del capítulo quedan cubiertos: se selecciona un detector adecuado, se optimiza su ejecución mediante TensorRT, se valida el centrado visual, se comprueba el seguimiento en simulación y se realiza una primera prueba real de distancia. Las principales líneas de mejora se centran en ajustar el control longitudinal, mejorar la estimación de profundidad a distancias mayores y avanzar hacia una validación real completa con ambos UAV en vuelo.

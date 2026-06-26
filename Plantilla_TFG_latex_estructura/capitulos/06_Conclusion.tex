@@ -15,13 +15,13 @@ En esta sección se revisa el grado de cumplimiento de los objetivos planteados 
 
 \subsection*{\textbf{Objetivo general: Desarrollar e implementar un sistema de control de navegación autónoma para seguimiento de UAVs}}
 
-\textbf{Grado de cumplimiento: Cumplido parcialmente.}
+\textbf{Grado de cumplimiento: Cumplido parcialmente, aproximadamente un 85\%.}
 
-El objetivo general se considera cumplido parcialmente, ya que se ha desarrollado e integrado un sistema completo de seguimiento visual compuesto por percepción mediante YOLO, filtrado Kalman + EMA, estimación de distancia, compensación de actitud y control PID en tres ejes. El sistema ha sido validado en simulación con trayectorias dinámicas, manteniendo el UAV objetivo dentro del campo de visión y generando consignas de control coherentes para el UAV cazador.
+El objetivo general se considera cumplido aproximadamente en un 85\%, ya que se ha desarrollado e integrado un sistema completo de seguimiento visual compuesto por percepción mediante YOLO, filtrado Kalman + EMA, estimación de distancia, compensación de actitud y control PID en tres ejes. El sistema ha sido validado en simulación con trayectorias dinámicas, manteniendo el UAV objetivo dentro del campo de visión y generando consignas de control coherentes para el UAV cazador.
 
 \vspace{0.2cm}
 
-No obstante, el cumplimiento no puede considerarse completo porque la validación real se ha limitado a la preparación del hardware, la calibración de la cámara y la comprobación de la estimación de distancia con el UAV objetivo físico. Queda pendiente realizar una persecución real completa con ambos UAV en vuelo, por lo que la autonomía total del sistema en entorno real todavía no ha sido demostrada.
+No obstante, no se ha podido realizar de forma completa porque la validación real se ha limitado a la preparación del hardware, la calibración de la cámara y la comprobación de la estimación de distancia con el UAV objetivo físico. Por tanto, aunque se ha podido completar una parte significativa del trabajo, estimada en torno al 85\%, queda pendiente realizar una persecución real completa con ambos UAV en vuelo y demostrar la autonomía total del sistema en entorno real.
 
 \vspace{0.3cm}
 
@@ -89,6 +89,7 @@ Como continuación del trabajo desarrollado, se proponen las siguientes líneas 
 
 \begin{itemize}
     \item \textbf{Finalización y evaluación de las pruebas reales:} completar el seguimiento con ambos UAV en vuelo y analizar el rendimiento del sistema fuera de simulación. Estas pruebas permitirían comprobar su comportamiento ante iluminación variable, viento, movimiento real del objetivo y posibles pérdidas temporales de detección.
-    \item \textbf{Implementación de una cámara de eventos:} estudiar la incorporación de este tipo de sensor para detectar cambios rápidos en la escena con menor latencia. Esto podría ayudar a localizar antes al UAV objetivo y aumentar la capacidad de reacción del sistema ante maniobras bruscas.
+    \item \textbf{Integración de una cámara de eventos:} estudiar la incorporación de este tipo de sensor para detectar cambios rápidos en la escena con menor latencia. Esto podría ayudar a localizar antes al UAV objetivo y aumentar la capacidad de reacción del sistema ante maniobras bruscas.
     \item \textbf{Optimización del sistema:} reducir la latencia global del procesamiento, mejorar la estimación de distancia y ajustar los parámetros de control. Con ello se buscaría una respuesta más rápida, estable y adecuada para su funcionamiento en tiempo real.
 \end{itemize}
+

@@ -20,7 +20,7 @@ En primer lugar, se revisan los Sistemas Aéreos no Tripulados, analizando su cl
 
 \vspace{0.4cm}
 
-El bloque de percepción visual introduce, en primer lugar, los fundamentos del \textit{Deep Learning} y de los modelos de regresión, para después enmarcarlos dentro de la visión por computador y de la detección de objetos. En este contexto, se analiza la familia YOLO como uno de los enfoques más extendidos para percepción visual en tiempo real sobre plataformas embarcadas \cite{zheng2021air}.
+El bloque de percepción visual introduce, en primer lugar, los fundamentos del \textit{Deep Learning}, para después enmarcarlos dentro de la visión por computador y de la detección de objetos. En este contexto, se analiza la familia YOLO como uno de los enfoques más extendidos para percepción visual en tiempo real sobre plataformas embarcadas \cite{zheng2021air}.
 
 \vspace{0.4cm}
 
@@ -88,7 +88,7 @@ Entre sus distintas configuraciones, el dron multirrotor se ha consolidado como 
 
 \vspace{0.4cm}
 
-Tradicionalmente, muchas de estas operaciones han dependido de un control humano directo, en el que un operador supervisa la trayectoria, corrige desviaciones y decide cada maniobra relevante. Este enfoque puede resultar suficiente en escenarios simples o muy controlados; sin embargo, pierde eficacia cuando el entorno es dinámico, cuando aparecen obstáculos imprevistos o cuando el objetivo modifica su trayectoria de forma continua.
+Tradicionalmente, muchas de estas operaciones han dependido de un control humano directo, en el que un operador supervisa la trayectoria, corrige desviaciones y decide cada maniobra relevante. Este enfoque puede resultar suficiente en escenarios simples o muy controlados, sin embargo, pierde eficacia cuando el entorno es dinámico, cuando aparecen obstáculos imprevistos o cuando el objetivo modifica su trayectoria de forma continua.
 
 \vspace{0.4cm}
 
@@ -253,7 +253,7 @@ Entre sus aplicaciones destacan la conducción autónoma, la videovigilancia, la
 
 \vspace{0.3cm}
 
-\subsection{Paradigmas de detección de objetos}
+\subsection{Métodos de detección de objetos}
 
 El objetivo fundamental de la detección de objetos consiste en localizar y clasificar regiones de interés dentro de una imagen, normalmente representadas mediante cajas delimitadoras. La detección debe resolver simultáneamente qué objetos aparecen y dónde se encuentran. Por ello, se trata de un problema más exigente desde el punto de vista computacional y metodológico, ya que combina percepción semántica y localización espacial en una misma tarea.
 
@@ -335,8 +335,8 @@ Tradicionalmente, la cámara estenopeica se construía de forma muy simple, medi
 
 \begin{center}
 \refstepcounter{figure}\label{fig:camara-estenopeica-funcionamiento}
-\includegraphics[width=0.78\textwidth]{imagenes/pinhole-camera-wikipedia-adaptada.png}\\[0.5ex]
-{\small \textbf{Figura \thefigure.} Funcionamiento simplificado de una cámara estenopeica. Fuente: \cite{commonsPinholeCameraSvg}.}
+\includegraphics[width=0.78\textwidth]{imagenes/camaraEstenopeicaM.jpeg}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Funcionamiento simplificado de una cámara estenopeica. Fuente: \cite{wikipediaCamaraEstenopeica}.}
 \addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Funcionamiento simplificado de una cámara estenopeica}
 \end{center}
 
@@ -697,6 +697,175 @@ La selección de una arquitectura basada en ROS, MAVROS y MAVLink responde a cri
 
 En conjunto, esta arquitectura satisface los requisitos técnicos del proyecto y, además, favorece un proceso de desarrollo más ordenado y sostenible. La combinación de ROS, MAVROS y herramientas de supervisión como RViz ofrece un entorno adecuado para diseñar, observar y validar el comportamiento del sistema. Asimismo, deja abierta la posibilidad de incorporar sensores más avanzados, nuevos algoritmos de percepción y estrategias cooperativas entre múltiples UAV en entornos distribuidos.
 
+
+
+\subsection{Hardware de Procesamiento Embarcado}
+
+Además del software de percepción y control, la selección del hardware de procesamiento resulta determinante en un sistema UAV embarcado. El procesador debe ejecutar el detector visual, recibir imágenes de la cámara, publicar resultados en ROS, comunicarse con MAVROS y mantener suficiente margen temporal para que los controladores reaccionen sin introducir retardos excesivos. Por ello, no basta con escoger una plataforma capaz de ejecutar código general, sino que es necesario valorar su capacidad real para inferencia de redes neuronales, su consumo energético y su integración con herramientas de aceleración.
+
+\vspace{0.3cm}
+
+Entre las alternativas consideradas se encuentran placas basadas en microcontrolador, ordenadores monoplaca de propósito general y plataformas de computación embebida con GPU. En concreto, se analizan Arduino, Raspberry Pi y NVIDIA Jetson, ya que representan tres niveles de capacidad de procesamiento habituales en proyectos de robótica: control electrónico básico, computación Linux de bajo coste e inferencia acelerada.
+
+\subsubsection{Arduino}
+
+Arduino es una plataforma de prototipado electrónico basada en microcontroladores, ampliamente utilizada para leer sensores, generar señales de control, activar actuadores y construir sistemas embebidos sencillos. Su principal fortaleza es la simplicidad: ofrece bajo consumo, arranque rápido, facilidad de programación y una integración directa con entradas y salidas digitales o analógicas. Por ello, resulta especialmente útil para tareas de bajo nivel, como capturar medidas simples, accionar periféricos o servir como placa auxiliar dentro de un sistema robótico.
+
+\vspace{0.3cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:arduino-uno}
+\includegraphics[width=0.55\textwidth]{imagenes/arduino.jpeg}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Arduino Uno. Fuente de referencia visual: \cite{ImagenArduinoUno}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Arduino Uno}
+\end{center}
+
+\vspace{0.2cm}
+
+Sin embargo, su arquitectura no está pensada para ejecutar algoritmos de visión por computador ni modelos de \textit{Deep Learning}. La memoria disponible, la frecuencia de trabajo y la ausencia de sistema operativo completo limitan su uso en tareas que requieren capturar vídeo, procesar imágenes en tiempo real y ejecutar un detector como YOLO. En el contexto de este proyecto, Arduino podría emplearse como apoyo para electrónica auxiliar, pero no como computador principal de percepción y navegación visual.
+
+\subsubsection{Raspberry Pi}
+
+Raspberry Pi es un ordenador monoplaca de bajo coste que ejecuta sistemas operativos Linux y permite integrar cámaras, redes, almacenamiento y librerías de programación de forma más flexible que un microcontrolador. Esta plataforma resulta atractiva en prototipos educativos y robóticos porque combina tamaño reducido, amplia comunidad, facilidad de conexión con periféricos y capacidad suficiente para ejecutar tareas generales de control, adquisición de datos y visión clásica.
+
+\vspace{0.2cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:raspberry-pi}
+\includegraphics[width=0.55\textwidth]{imagenes/rasberry.jpeg}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} Raspberry Pi. Fuente de referencia visual: \cite{ImagenRaspberryPi}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}Raspberry Pi}
+\end{center}
+
+\vspace{0.2cm}
+
+Su desventaja principal aparece cuando la carga de trabajo se desplaza hacia inferencia de redes neuronales en tiempo real. Aunque una Raspberry Pi puede ejecutar modelos ligeros o apoyarse en aceleradores externos, no integra una GPU NVIDIA compatible con CUDA y TensorRT. Esto reduce el margen disponible para ejecutar YOLO de forma estable mientras se mantienen activos ROS, MAVROS, filtrado y control. Por tanto, aunque es una alternativa compacta y económica, su rendimiento resulta menos adecuado para el objetivo de seguimiento visual en tiempo real planteado en este trabajo.
+
+\subsubsection{NVIDIA Jetson}
+
+NVIDIA Jetson es una familia de plataformas de computación embebida orientadas a inteligencia artificial. A diferencia de Arduino y Raspberry Pi, estas placas integran CPU y GPU en un mismo módulo, lo que permite ejecutar modelos de \textit{Deep Learning} optimizados mediante CUDA y TensorRT. Esta característica resulta especialmente relevante en sistemas autónomos que deben procesar imágenes localmente, reducir la latencia y evitar depender de un ordenador externo o de comunicaciones con la nube.
+
+\vspace{0.2cm}
+
+\begin{center}
+\refstepcounter{figure}\label{fig:jetson-orin-nano}
+\includegraphics[width=0.55\textwidth]{imagenes/JetsonOriginNano.jpg}\\[0.5ex]
+{\small \textbf{Figura \thefigure.} NVIDIA Jetson Orin Nano. Fuente de referencia visual: \cite{ImagenJetsonOrinNano}.}
+\addcontentsline{lof}{figure}{\protect\numberline{\thefigure}NVIDIA Jetson Orin Nano}
+\end{center}
+
+\vspace{0cm}
+
+Como contrapartida, la familia Jetson requiere una configuración software más específica, especialmente cuando se trabaja con versiones concretas de CUDA, TensorRT, controladores y dependencias de ROS. No obstante, estas desventajas son asumibles cuando el requisito principal es ejecutar percepción visual acelerada en tiempo real dentro del propio UAV.
+
+\subsection{Selección de la NVIDIA Jetson Orin Nano}
+
+Dado que la percepción del sistema se basa en YOLO y debe ejecutarse en tiempo real, la familia NVIDIA Jetson resulta la opción más adecuada frente a plataformas sin aceleración GPU específica. Dentro de esta familia existen distintos niveles de rendimiento y consumo. La Tabla \ref{tab:comparativa-jetson-orin} compara tres alternativas representativas de la generación Orin \cite{NVIDIAJetsonOrin}.
+
+\vspace{0.1cm}
+
+\begin{table}[H]
+\centering
+\caption{Comparativa de consumo y rendimiento de módulos NVIDIA Jetson Orin considerados.}
+\label{tab:comparativa-jetson-orin}
+\renewcommand{\arraystretch}{1.35}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.21\textwidth}>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}}
+\hline
+\textbf{Modelo} & \textbf{Potencia configurable} & \textbf{Rendimiento IA máximo} & \textbf{Adecuación al UAV} \\
+\hline
+NVIDIA Jetson Orin Nano & 7--25 W & Hasta 67 TOPS & Mejor equilibrio entre inferencia acelerada, consumo moderado y facilidad de integración en una plataforma aérea ligera. \\
+NVIDIA Jetson Orin NX & 10--40 W & Hasta 157 TOPS & Mayor rendimiento para modelos más exigentes, pero con incremento de consumo, coste y necesidades de disipación térmica. \\
+NVIDIA Jetson AGX Orin & 15--60 W & Hasta 275 TOPS & Muy alta capacidad de cómputo, sobredimensionada para el objetivo del proyecto y menos adecuada para maximizar autonomía en un UAV multirrotor. \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+
+Finalmente, se selecciona la \textbf{NVIDIA Jetson Orin Nano} como plataforma de procesamiento embarcado. Aunque los modelos Orin NX y AGX Orin ofrecen un rendimiento máximo superior, también incrementan el consumo, el coste y las necesidades de disipación térmica. En un UAV multirrotor, estos factores afectan directamente a la autonomía, al peso total y a la estabilidad térmica durante el vuelo. La Orin Nano proporciona suficiente capacidad para ejecutar el detector optimizado, manteniendo un rango de potencia más contenido y, por tanto, una mejor eficiencia energética para el escenario planteado.
+
+\vspace{0.3cm}
+
+Para completar la selección, la Tabla \ref{tab:caracteristicas-jetson-orin-nano} resume las características principales de la NVIDIA Jetson Orin Nano consideradas más relevantes para este proyecto: capacidad de inferencia, recursos de CPU/GPU, memoria, almacenamiento, conectividad para cámara y consumo energético \cite{NVIDIAJetsonOrin}.
+
+\begin{table}[H]
+\centering
+\caption{Características principales de la NVIDIA Jetson Orin Nano.}
+\label{tab:caracteristicas-jetson-orin-nano}
+\small
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.28\textwidth}>{\raggedright\arraybackslash}p{0.62\textwidth}}
+\hline
+\textbf{Característica} & \textbf{Especificación relevante} \\
+\hline
+Rendimiento IA & Hasta 67 TOPS. \\
+GPU & Arquitectura NVIDIA Ampere con 1024 núcleos CUDA y 32 núcleos Tensor. \\
+CPU & Arm Cortex-A78AE v8.2 de 64 bits con 6 núcleos, 1.5 MB de caché L2 y 4 MB de caché L3. \\
+Memoria & 4 GB LPDDR5 de 128 bits, con ancho de banda de 102 GB/s. \\
+Almacenamiento & Soporte para tarjeta SD y almacenamiento externo NVMe. \\
+Vídeo y cámara & Decodificación H.265 hasta 1x 4K60, 2x 4K30, 5x 1080p60 u 11x 1080p30; dos conectores de cámara MIPI CSI-2 de 22 pines. \\
+Conectividad e I/O & PCIe M.2, 4x USB 3.2 Gen2, USB-C, 1x GbE, DisplayPort 1.2 y cabecera de expansión de 40 pines. \\
+Consumo & Potencia configurable entre 7 W y 25 W. \\
+Dimensiones & 103 mm x 90.5 mm x 34.77 mm. \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{0.3cm}
+
+\subsection{Métodos de Aceleración de Inferencia}
+
+La ejecución de modelos de detección en una plataforma embarcada exige reducir al máximo el tiempo de inferencia sin comprometer la precisión necesaria para mantener el seguimiento visual. En este proyecto, el detector no actúa de forma aislada: sus salidas alimentan al filtro de Kalman, al suavizado temporal y a los controladores del UAV. Por tanto, cualquier reducción de latencia en la red neuronal tiene un efecto directo sobre la estabilidad del lazo de control y sobre la capacidad de reacción ante maniobras rápidas del objetivo.
+
+\vspace{0.3cm}
+
+A partir del modelo YOLO entrenado, existen varias estrategias de aceleración aplicables antes de su despliegue en una Jetson. Entre las alternativas más relevantes se encuentran la cuantización a INT8, la ejecución mediante ONNX Runtime y la generación de un motor optimizado con TensorRT. Todas persiguen disminuir el coste computacional del detector, pero presentan compromisos distintos entre portabilidad, velocidad, complejidad de integración y posible pérdida de precisión.
+
+\vspace{0.3cm}
+
+\subsubsection{Cuantización INT8}
+
+La cuantización INT8 consiste en representar las operaciones internas de la red neuronal mediante enteros de 8 bits en lugar de utilizar precisión de coma flotante. En comparación con FP16, esta estrategia reduce todavía más el tamaño de las operaciones y puede aumentar de forma significativa la velocidad de inferencia, especialmente en hardware preparado para ejecutar operaciones enteras de baja precisión. En una plataforma Jetson, este enfoque podría permitir tiempos de inferencia muy reducidos, del orden de pocos milisegundos, siempre que el modelo y la arquitectura aprovechen correctamente este tipo de cálculo.
+
+\vspace{0.3cm}
+
+Sin embargo, INT8 introduce un riesgo importante: al reducir de forma agresiva la precisión numérica, el detector puede perder sensibilidad ante objetos pequeños, cambios de escala o variaciones de iluminación. Para evitar esta degradación se requiere un proceso de calibración, en el que se proporciona al optimizador un conjunto representativo de imágenes reales o simuladas para ajustar los rangos numéricos de activaciones y pesos. En el caso de este proyecto, una mala calibración podría provocar cajas menos estables o incluso pérdidas puntuales del UAV objetivo, afectando directamente al cálculo del error visual. Por este motivo, INT8 se considera una alternativa interesante para trabajos futuros, pero no la opción más adecuada para una primera integración robusta.
+
+\vspace{0.3cm}
+
+\subsubsection{Ejecución mediante ONNX Runtime}
+
+Otra posibilidad consiste en convertir el modelo entrenado a ONNX (\textit{Open Neural Network Exchange}) y ejecutarlo mediante ONNX Runtime. Este enfoque tiene como principal ventaja la portabilidad: un modelo ONNX puede ejecutarse sobre distintas plataformas y proveedores de hardware, incluyendo CPU, GPU y aceleradores heterogéneos, sin depender de un único fabricante \cite{ONNXRuntime}. Esta característica resulta útil cuando se busca mantener el mismo modelo entre equipos de desarrollo, estaciones de entrenamiento y distintos sistemas embarcados.
+
+\vspace{0.3cm}
+
+No obstante, esa generalidad también limita su rendimiento máximo en hardware NVIDIA. Aunque ONNX Runtime puede acelerar la inferencia respecto a una ejecución directa en PyTorch, no siempre explota con el mismo nivel de especialización los núcleos y librerías específicas de una Jetson Orin Nano. En consecuencia, podría ser una solución adecuada si la prioridad fuese la compatibilidad multiplataforma, pero no necesariamente la mejor elección cuando el objetivo principal es minimizar la latencia en una GPU NVIDIA concreta.
+
+\vspace{0.3cm}
+
+\subsubsection{TensorRT y FP16}
+
+TensorRT es un SDK desarrollado por NVIDIA para optimizar y acelerar la inferencia de modelos de \textit{Deep Learning} sobre GPU de NVIDIA. A diferencia del entrenamiento, donde la red neuronal ajusta sus pesos a partir de datos, la inferencia corresponde a la fase en la que un modelo ya entrenado procesa nuevas entradas y genera predicciones. Por tanto, en un sistema de navegación visual en tiempo real, TensorRT no se utiliza para entrenar el detector, sino para ejecutar de forma más eficiente el modelo desplegado sobre el hardware embarcado \cite{NVIDIATensorRT,UltralyticsTensorRT}.
+
+\vspace{0.3cm}
+
+Su funcionamiento se basa en transformar un modelo previamente entrenado en un motor de ejecución optimizado para la arquitectura concreta de la GPU. Durante este proceso se aplican técnicas como la fusión de capas, la selección de kernels más eficientes, la gestión optimizada de memoria y el uso de precisión reducida cuando el modelo y el hardware lo permiten. En este trabajo se emplea FP16, o media precisión de coma flotante, que reduce el coste computacional frente a FP32 sin exigir una calibración específica como ocurre con INT8.
+
+\vspace{0.3cm}
+
+\subsection{Selección de TensorRT para el Despliegue Embarcado}
+
+Entre las alternativas consideradas, TensorRT con FP16 se selecciona como la opción más adecuada para el despliegue del detector en la Jetson Orin Nano. La elección responde a un compromiso entre rendimiento, estabilidad y complejidad de integración. Frente a ONNX Runtime, TensorRT ofrece una optimización más específica para la GPU NVIDIA utilizada. Frente a INT8, FP16 evita el proceso adicional de calibración y reduce el riesgo de degradar la precisión del detector, manteniendo al mismo tiempo una mejora notable de velocidad respecto a la ejecución original.
+
+\vspace{0.3cm}
+
+En el contexto de este proyecto, esta decisión resulta especialmente relevante porque la plataforma NVIDIA Jetson Orin Nano integra CPU y GPU en un formato compacto y de bajo consumo, adecuado para aplicaciones embarcadas, pero limitado por potencia, temperatura y capacidad de cómputo frente a un ordenador de sobremesa. Al convertir el modelo de detección a un motor optimizado, TensorRT permite aprovechar mejor los recursos de la Jetson y mantener una tasa de fotogramas más estable durante la ejecución del nodo de percepción.
+
+\vspace{0.3cm}
+
+Además, al reducir el tiempo necesario para obtener cada predicción, se mejora la capacidad del sistema para reaccionar ante movimientos rápidos del objetivo, reducir retrasos acumulados en el lazo de control y sostener el seguimiento visual en condiciones compatibles con la operación en tiempo real. De esta forma, TensorRT no solo incrementa los frames por segundo máximos teóricos del detector, sino que también aporta margen temporal para que los nodos de ROS, MAVROS, filtrado y control puedan ejecutarse de manera concurrente sin saturar la plataforma embarcada.
 
 
 \subsection{Simulación}
