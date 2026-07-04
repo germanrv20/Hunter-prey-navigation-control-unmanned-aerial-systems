@@ -129,8 +129,8 @@ void error_cb(const geometry_msgs::PointStamped::ConstPtr& msg) {
   
         // ZONAS MUERTAS APLICADAS A LOS MOTORES 
         //if (std::abs(err_x) < 0.017)  cmd_yaw = 0.0;
-        if (std::abs(err_x) < 0.038 and std::abs(err_dist) < 0.1 ) cmd_z   = 0.0;
-        if (std::abs(err_y) < 0.06 and std::abs(err_dist) < 0.1 ) cmd_z   = 0.0;
+        if (std::abs(err_x) < 0.038 and std::abs(err_dist) < 0.02 ) cmd_z   = 0.0;
+        if (std::abs(err_y) < 0.06 and std::abs(err_dist) < 0.02 ) cmd_z   = 0.0;
         if (std::abs(err_dist) < 0.08) cmd_x = 0.0;
 
 
@@ -156,9 +156,9 @@ void error_cb(const geometry_msgs::PointStamped::ConstPtr& msg) {
     twist_msg.header.stamp = ros::Time::now(); 
     twist_msg.header.frame_id = "base_link"; 
     
-    twist_msg.twist.linear.x = cmd_x; // Control velocidad (PID 3)
+    twist_msg.twist.linear.x = 0.0;//cmd_x; // Control velocidad (PID 3)
     twist_msg.twist.linear.y = 0.0;
-    twist_msg.twist.linear.z = cmd_z;   // Control Vertical (PID 2)
+    twist_msg.twist.linear.z = 0.0;//cmd_z;   // Control Vertical (PID 2)
     
     twist_msg.twist.angular.x = 0.0;
     twist_msg.twist.angular.y = 0.0;

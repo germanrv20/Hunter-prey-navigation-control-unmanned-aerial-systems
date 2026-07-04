@@ -6,9 +6,11 @@ drone_lap
 /home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone1_Yaw_pid_node /home/germanrv/drone_ws/devel/lib/drone_lap/drone1_Yaw_pid_node
 /home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone1_pitch_pid_node /home/germanrv/drone_ws/devel/lib/drone_lap/drone1_pitch_pid_node
 /home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone_lap_projection /home/germanrv/drone_ws/devel/lib/drone_lap/drone_lap_projection
+/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_waypoints_node /home/germanrv/drone_ws/devel/lib/drone_lap/drone2_waypoints_node
 /home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_aggressive_node /home/germanrv/drone_ws/devel/lib/drone_lap/drone2_aggressive_node
 /home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_360lap /home/germanrv/drone_ws/devel/lib/drone_lap/drone2_360lap
 /home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_spin_up_down_node /home/germanrv/drone_ws/devel/lib/drone_lap/drone2_spin_up_down_node
+/home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_distance_test_node /home/germanrv/drone_ws/devel/lib/drone_lap/drone2_distance_test_node
 /home/germanrv/drone_ws/devel/.private/drone_lap/lib/drone_lap/drone2_wavy_circle_node /home/germanrv/drone_ws/devel/lib/drone_lap/drone2_wavy_circle_node
 /home/germanrv/drone_ws/devel/.private/drone_lap/share/drone_lap/cmake/drone_lapConfig-version.cmake /home/germanrv/drone_ws/devel/share/drone_lap/cmake/drone_lapConfig-version.cmake
 /home/germanrv/drone_ws/devel/.private/drone_lap/share/drone_lap/cmake/drone_lapConfig.cmake /home/germanrv/drone_ws/devel/share/drone_lap/cmake/drone_lapConfig.cmake
