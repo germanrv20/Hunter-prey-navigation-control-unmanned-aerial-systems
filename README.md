@@ -1,4 +1,4 @@
-<img width="1808" height="635" alt="Captura de pantalla de 2026-07-04 14-44-26" src="https://github.com/user-attachments/assets/3fc9576d-cc4e-458b-82f6-0bf33dd194b1" />
+
 # 🚁 Hunter-Prey Navigation & Control for Unmanned Aerial Systems (UAS)
 
 ![ROS](https://img.shields.io/badge/ROS-Noetic-green?logo=ros)
@@ -25,7 +25,7 @@ El sistema implementa una arquitectura de control de tipo **"Cazador-Presa"** (H
 ---
 
 ## 🏗 Arquitectura del Sistema (Separation of Concerns)
-<img width="1808" height="635" alt="Captura de pantalla de 2026-07-04 14-44-26" src="https://github.com/user-attachments/assets/e8da7e0b-0d3e-40d6-a13c-24c97b55e441" />
+<img width="1808" height="635" alt="Captura de pantalla de 2026-07-04 14-44-26" src="https://github.com/user-attachments/assets/3fc9576d-cc4e-458b-82f6-0bf33dd194b1" />
 
 Para asegurar el aislamiento de los procesos y evitar cuellos de botella asíncronos, el sistema divide las responsabilidades en múltiples nodos de ROS:
 
