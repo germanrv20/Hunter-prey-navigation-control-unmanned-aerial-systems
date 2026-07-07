@@ -63,5 +63,5 @@ cd ~/drone_ws/src
 git clone [https://github.com/germanrv20/Hunter-prey-navigation-control-unmanned-aerial-systems.git](https://github.com/germanrv20/Hunter-prey-navigation-control-unmanned-aerial-systems.git) drone_lap
 cd ~/drone_ws
 catkin_make
-source devel/setup.bash<img width="1808" height="635" alt="Captura de pantalla de 2026-07-04 14-44-26" src="https://github.com/user-attachments/assets/3b34cb73-1d04-4b0a-8630-8125af80a509" />
+source devel/setup.bash
 
